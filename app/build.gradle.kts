@@ -1,6 +1,7 @@
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.jetbrains.kotlin.android)
+    alias(libs.plugins.google.gms.google.services)
 }
 
 android {
@@ -37,11 +38,17 @@ android {
 
 dependencies {
 
+    implementation ("com.google.android.gms:play-services-auth:20.2.0")
+    implementation ("com.github.bumptech.glide:glide:4.15.1")
+    implementation ("de.hdodenhof:circleimageview:2.2.0")
+    implementation ("com.pierfrancescosoffritti.androidyoutubeplayer:core:12.0.0")
+
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)
     implementation(libs.material)
     implementation(libs.androidx.activity)
     implementation(libs.androidx.constraintlayout)
+    implementation(libs.firebase.database)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)

@@ -1,3 +1,11 @@
 <resources>
-    <string name="app_name">Don\'t Worry - Your Personal Therapist</string>
+    <string name="app_name">Don\'t Worry</string>
+    <string name="sign_in_button_text">Sign in with Google</string>
+    <string name="sign_out_button_text">Sign out</string>
+    <string name="splash_screen_text">Your Personal Therapist</string>
+    <string name="desc"><![CDATA[“ Your mental health is just as important as your physical health. ”]]></string>
+    <string name="title"><![CDATA[Track Moods & Emotions]]></string>
+    <string name="desc2"><![CDATA[“ Taking care of your mental health is an act of self-love. ”]]></string>
+
+
 </resources>

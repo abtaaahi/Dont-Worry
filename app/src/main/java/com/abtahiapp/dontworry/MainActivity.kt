@@ -1,20 +1,36 @@
 package com.abtahiapp.dontworry
 
 import android.os.Bundle
-import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.view.ViewCompat
-import androidx.core.view.WindowInsetsCompat
+import android.content.Intent
+import com.google.android.gms.auth.api.signin.GoogleSignInAccount
+import com.bumptech.glide.Glide
+import de.hdodenhof.circleimageview.CircleImageView
 
 class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        enableEdgeToEdge()
         setContentView(R.layout.activity_main)
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets ->
-            val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
-            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
-            insets
+
+
+        val profileImageView: CircleImageView = findViewById(R.id.profile_image)
+
+        val account = intent.getParcelableExtra<GoogleSignInAccount>("account")
+        if (account != null) {
+
+            Glide.with(this)
+                .load(account.photoUrl)
+                .into(profileImageView)
+
+            profileImageView.setOnClickListener {
+                val intent = Intent(this, MyProfile::class.java)
+
+                intent.putExtra("name", account.displayName)
+                intent.putExtra("email", account.email)
+                intent.putExtra("photoUrl", account.photoUrl.toString())
+
+                startActivity(intent)
+            }
         }
     }
 }
