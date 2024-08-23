@@ -12,7 +12,6 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-
         val profileImageView: CircleImageView = findViewById(R.id.profile_image)
 
         val account = intent.getParcelableExtra<GoogleSignInAccount>("account")
@@ -20,11 +19,14 @@ class MainActivity : AppCompatActivity() {
 
             Glide.with(this)
                 .load(account.photoUrl)
+                .placeholder(R.drawable.person)
+                .error(R.drawable.person)
+                .fallback(R.drawable.person)
                 .into(profileImageView)
 
             profileImageView.setOnClickListener {
                 val intent = Intent(this, MyProfile::class.java)
-
+                intent.putExtra("userId", account.id)
                 intent.putExtra("name", account.displayName)
                 intent.putExtra("email", account.email)
                 intent.putExtra("photoUrl", account.photoUrl.toString())

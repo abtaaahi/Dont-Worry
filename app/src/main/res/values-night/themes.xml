@@ -5,5 +5,11 @@
         <item name="android:windowBackground">@color/black</item>
         <item name="android:statusBarColor">@color/black</item>
         <item name="android:windowLightStatusBar">false</item>
+        <item name="android:fontFamily">@font/amaranth</item>
+    </style>
+
+    <style name="CustomTextInputLayout" parent="Widget.MaterialComponents.TextInputLayout.OutlinedBox">
+        <item name="boxStrokeColor">@color/color_one</item>
+        <item name="hintTextColor">@color/color_one</item>
     </style>
 </resources>

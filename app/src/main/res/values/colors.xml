@@ -4,5 +4,8 @@
     <color name="white">#FFFFFFFF</color>
     <color name="color_one">#A02334 </color>
     <color name="textColor">#000000</color>
+    <color name="buttonTextColor">#FFFFFFFF</color>
+    <color name="subtitlecolor">#474747</color>
+
 
 </resources>

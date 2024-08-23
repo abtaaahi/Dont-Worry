@@ -5,7 +5,12 @@
         <item name="android:windowBackground">@color/white</item>
         <item name="android:statusBarColor">@color/white</item>
         <item name="android:windowLightStatusBar">true</item>
+        <item name="android:fontFamily">@font/amaranth</item>
+    </style>
 
+    <style name="CustomTextInputLayout" parent="Widget.MaterialComponents.TextInputLayout.OutlinedBox">
+        <item name="boxStrokeColor">@color/color_one</item>
+        <item name="hintTextColor">@color/color_one</item>
     </style>
 
     <style name="Theme.DontWorryYourPersonalTherapist" parent="Base.Theme.DontWorryYourPersonalTherapist" />

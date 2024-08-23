@@ -1,7 +1,5 @@
 package com.abtahiapp.dontworry
 
-import android.animation.Animator
-import android.animation.ObjectAnimator
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import android.content.Intent
@@ -19,7 +17,10 @@ import com.google.android.gms.auth.api.signin.GoogleSignInClient
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.android.gms.tasks.Task
 import com.google.android.gms.common.api.ApiException
+import com.google.firebase.database.DataSnapshot
+import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.FirebaseDatabase
+import com.google.firebase.database.ValueEventListener
 
 class SignInActivity : AppCompatActivity() {
 
@@ -39,10 +40,11 @@ class SignInActivity : AppCompatActivity() {
 
         val account = GoogleSignIn.getLastSignedInAccount(this)
         if (account != null) {
-            val intent = Intent(this, MainActivity::class.java)
-            intent.putExtra("account", account)
-            startActivity(intent)
-            finish()
+//            val intent = Intent(this, MainActivity::class.java)
+//            intent.putExtra("account", account)
+//            startActivity(intent)
+//            finish()
+            checkUserInformationExists(account)
         }
 
         val signInButton: Button = findViewById(R.id.sign_in_button)
@@ -77,16 +79,44 @@ class SignInActivity : AppCompatActivity() {
             val account = completedTask.getResult(ApiException::class.java)
             if (account != null) {
 
-                storeUserInfoInDatabase(account)
+                checkUserInformationExists(account)
 
-                val intent = Intent(this, MainActivity::class.java)
-                intent.putExtra("account", account)
-                startActivity(intent)
-                finish()
+//                storeUserInfoInDatabase(account)
+//
+//                val intent = Intent(this, MainActivity::class.java)
+//                intent.putExtra("account", account)
+//                startActivity(intent)
+//                finish()
             }
         } catch (e: ApiException) {
             makeText(this, "Google sign in failed: ${e.message}", Toast.LENGTH_SHORT).show()
         }
+    }
+
+    private fun checkUserInformationExists(account: GoogleSignInAccount) {
+        val databaseReference = FirebaseDatabase.getInstance().getReference("user_information")
+
+        databaseReference.child(account.id!!).addListenerForSingleValueEvent(object :
+            ValueEventListener {
+            override fun onDataChange(dataSnapshot: DataSnapshot) {
+                if (dataSnapshot.exists()) {
+                    val intent = Intent(this@SignInActivity, MainActivity::class.java)
+                    intent.putExtra("account", account)
+                    startActivity(intent)
+                    finish()
+                } else {
+                    storeUserInfoInDatabase(account)
+                    val intent = Intent(this@SignInActivity, PersonalInfoActivity::class.java)
+                    intent.putExtra("account", account)
+                    startActivity(intent)
+                    finish()
+                }
+            }
+
+            override fun onCancelled(databaseError: DatabaseError) {
+                Toast.makeText(this@SignInActivity, "Failed to check user information", Toast.LENGTH_SHORT).show()
+            }
+        })
     }
 
     private fun storeUserInfoInDatabase(account: GoogleSignInAccount) {

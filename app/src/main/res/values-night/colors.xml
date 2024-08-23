@@ -1,4 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <color name="textColor">#FFFFFF</color>
+    <color name="color_one">#A02334 </color>
+    <color name="buttonTextColor">#000000</color>
+    <color name="subtitlecolor">#8F8F8F</color>
+
 </resources>
