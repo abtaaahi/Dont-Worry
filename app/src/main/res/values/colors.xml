@@ -6,6 +6,8 @@
     <color name="textColor">#000000</color>
     <color name="buttonTextColor">#FFFFFFFF</color>
     <color name="subtitlecolor">#474747</color>
+    <color name="dialogbackground">#E1E1E1</color>
+
 
 
 </resources>

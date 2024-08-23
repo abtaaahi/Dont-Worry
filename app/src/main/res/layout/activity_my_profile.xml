@@ -181,8 +181,6 @@
 
     </LinearLayout>
 
-
-
     <Button
         android:id="@+id/activity_button"
         android:layout_width="match_parent"

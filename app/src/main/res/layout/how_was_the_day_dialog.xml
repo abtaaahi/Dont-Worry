@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:padding="16dp"
+    android:background="@color/dialogbackground"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="How are you feeling today?"
+            android:maxLines="1"
+            android:textSize="16sp"
+            android:textColor="@color/textColor"
+            android:layout_weight="1"
+            android:textStyle="bold"
+            android:layout_gravity="center"/>
+        <Button
+            android:id="@+id/submit"
+            android:layout_width="wrap_content"
+            android:layout_height="40dp"
+            android:backgroundTint="@color/color_one"
+            android:textColor="@color/white"
+            android:text="Submit">
+
+        </Button>
+    </LinearLayout>
+
+
+
+    <LinearLayout
+        android:orientation="horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:layout_marginTop="16dp"
+        android:layout_marginBottom="16dp">
+
+        <ImageView
+            android:id="@+id/mood_1"
+            android:layout_width="60dp"
+            android:layout_height="60dp"
+            android:src="@drawable/angry"
+            android:padding="8dp"
+            android:clickable="true"/>
+
+        <ImageView
+            android:id="@+id/mood_2"
+            android:layout_width="60dp"
+            android:layout_height="60dp"
+            android:src="@drawable/very_sad"
+            android:padding="8dp"
+            android:clickable="true"/>
+
+        <ImageView
+            android:id="@+id/mood_3"
+            android:layout_width="60dp"
+            android:layout_height="60dp"
+            android:src="@drawable/sad"
+            android:padding="8dp"
+            android:clickable="true"/>
+
+        <ImageView
+            android:id="@+id/mood_4"
+            android:layout_width="60dp"
+            android:layout_height="60dp"
+            android:src="@drawable/fine"
+            android:padding="8dp"
+            android:clickable="true"/>
+
+        <ImageView
+            android:id="@+id/mood_5"
+            android:layout_width="60dp"
+            android:layout_height="60dp"
+            android:src="@drawable/very_fine"
+            android:padding="8dp"
+            android:clickable="true"/>
+    </LinearLayout>
+
+    <EditText
+        android:id="@+id/et_details"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textColor="@color/textColor"
+        android:hint="Tell us about your day!"
+        android:padding="12dp"/>
+</LinearLayout >

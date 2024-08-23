@@ -4,5 +4,6 @@
     <color name="color_one">#A02334 </color>
     <color name="buttonTextColor">#000000</color>
     <color name="subtitlecolor">#8F8F8F</color>
+    <color name="dialogbackground">#202020</color>
 
 </resources>

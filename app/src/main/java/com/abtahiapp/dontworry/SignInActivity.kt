@@ -40,10 +40,6 @@ class SignInActivity : AppCompatActivity() {
 
         val account = GoogleSignIn.getLastSignedInAccount(this)
         if (account != null) {
-//            val intent = Intent(this, MainActivity::class.java)
-//            intent.putExtra("account", account)
-//            startActivity(intent)
-//            finish()
             checkUserInformationExists(account)
         }
 
@@ -80,13 +76,6 @@ class SignInActivity : AppCompatActivity() {
             if (account != null) {
 
                 checkUserInformationExists(account)
-
-//                storeUserInfoInDatabase(account)
-//
-//                val intent = Intent(this, MainActivity::class.java)
-//                intent.putExtra("account", account)
-//                startActivity(intent)
-//                finish()
             }
         } catch (e: ApiException) {
             makeText(this, "Google sign in failed: ${e.message}", Toast.LENGTH_SHORT).show()

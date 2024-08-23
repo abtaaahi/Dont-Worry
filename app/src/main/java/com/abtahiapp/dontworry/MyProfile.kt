@@ -32,11 +32,18 @@ class MyProfile : AppCompatActivity() {
         val profileImageView: CircleImageView = findViewById(R.id.profile_image)
         val logoutButton: Button = findViewById(R.id.logout_button)
         val editDetailsButton: ImageButton = findViewById(R.id.editDetails)
+        val activityButton: Button = findViewById(R.id.activity_button)
 
         userId = intent.getStringExtra("userId") ?: ""
         val name = intent.getStringExtra("name")
         val email = intent.getStringExtra("email")
         val photoUrl = intent.getStringExtra("photoUrl")
+
+        activityButton.setOnClickListener {
+            val intent = Intent(this, MyActivity::class.java)
+            intent.putExtra("userId", userId)
+            startActivity(intent)
+        }
 
         userNameTextView.text = name
         userEmailTextView.text = email
@@ -96,15 +103,14 @@ class MyProfile : AppCompatActivity() {
                 if (dataSnapshot.exists()) {
                     val userData = dataSnapshot.getValue<Map<String, Any>>()
                     userData?.let {
-                        musicTextView.text = "Favorite Music: " + it["music"].toString()
-                        bookMovieTextView.text =
-                            "Favorite Book/Movie: " + it["bookMovie"].toString()
+                        musicTextView.text = "Favorite Music Type: " + it["music"].toString()
+                        bookMovieTextView.text = "Favorite Book/Movie: " + it["bookMovie"].toString()
                         likesTextView.text = "Likes: " + it["likes"].toString()
                         dislikesTextView.text = "Dislikes: " + it["dislikes"].toString()
-                        trustTextView.text = "Trust: " + it["trust"].toString()
-                        waterTextView.text = "Water Intake: " + it["water"].toString()
+                        trustTextView.text = "Trustworthy Person: " + it["trust"].toString()
+                        waterTextView.text = "Water Intake: " + it["water"].toString() + " Glass"
                         choicesTextView.text = "Choices: " + it["choices"].toString()
-                        sleepTextView.text = "Sleep: " + it["sleep"].toString()
+                        sleepTextView.text = "Sleep: " + it["sleep"].toString() + " Hours"
                     }
                 } else {
                     Toast.makeText(this@MyProfile, "No data found for this user.", Toast.LENGTH_SHORT).show()
