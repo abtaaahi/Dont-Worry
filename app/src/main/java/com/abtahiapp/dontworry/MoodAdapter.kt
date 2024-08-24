@@ -29,7 +29,7 @@ class MoodAdapter(private val moodList: List<Mood>) : RecyclerView.Adapter<MoodA
         private val moodDetails: TextView = itemView.findViewById(R.id.mood_details)
 
         fun bind(mood: Mood) {
-            moodImage.setImageResource(mood.moodImage) // Assuming you use drawable resource
+            moodImage.setImageResource(mood.moodImage)
             moodDateTime.text = mood.dateTime
             moodDetails.text = mood.details
         }

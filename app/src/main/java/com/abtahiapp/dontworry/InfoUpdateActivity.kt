@@ -23,14 +23,6 @@ class InfoUpdateActivity : AppCompatActivity() {
 
         val userID = intent.getStringExtra("userID") ?: ""
 
-//        val musicEditText: TextInputEditText = findViewById(R.id.textInputLayout.editText as TextInputEditText)
-//        val bookMovieEditText: TextInputEditText = findViewById(R.id.textInputLayout2.editText as TextInputEditText)
-//        val likesEditText: TextInputEditText = findViewById(R.id.textInputLayout4.editText as TextInputEditText)
-//        val dislikesEditText: TextInputEditText = findViewById(R.id.textInputLayout3.editText as TextInputEditText)
-//        val trustEditText: TextInputEditText = findViewById(R.id.textInputLayout5.editText as TextInputEditText)
-//        val waterEditText: TextInputEditText = findViewById(R.id.textInputLayout6.editText as TextInputEditText)
-//        val sleepEditText: TextInputEditText = findViewById(R.id.textInputLayout8.editText as TextInputEditText)
-
         val musicTextInputLayout = findViewById<TextInputLayout>(R.id.textInputLayout)
         val bookMovieTextInputLayout = findViewById<TextInputLayout>(R.id.textInputLayout2)
         val likesTextInputLayout = findViewById<TextInputLayout>(R.id.textInputLayout4)

@@ -38,10 +38,15 @@ android {
 
 dependencies {
 
-    implementation ("com.google.android.gms:play-services-auth:20.2.0")
-    implementation ("com.github.bumptech.glide:glide:4.15.1")
-    implementation ("de.hdodenhof:circleimageview:2.2.0")
-    implementation ("com.pierfrancescosoffritti.androidyoutubeplayer:core:12.0.0")
+    implementation (libs.play.services.auth)
+    implementation (libs.glide)
+    implementation (libs.circleimageview)
+    implementation (libs.core)
+    implementation ("com.squareup.retrofit2:retrofit:2.9.0")
+    implementation ("com.squareup.retrofit2:converter-gson:2.9.0")
+    implementation ("com.squareup.okhttp3:logging-interceptor:4.9.1")
+    //implementation ("com.google.apis:google-api-services-youtube:v3-rev222-1.25.0")
+    implementation ("com.google.android.exoplayer:exoplayer:2.18.1")
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)
