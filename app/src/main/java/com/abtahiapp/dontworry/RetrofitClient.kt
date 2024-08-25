@@ -1,5 +1,8 @@
 package com.abtahiapp.dontworry
 
+import com.abtahiapp.dontworry.apiservice.AudioApiService
+import com.abtahiapp.dontworry.apiservice.NewsApiService
+import com.abtahiapp.dontworry.apiservice.YouTubeApiService
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit

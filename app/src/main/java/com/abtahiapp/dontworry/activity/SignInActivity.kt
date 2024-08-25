@@ -1,4 +1,4 @@
-package com.abtahiapp.dontworry
+package com.abtahiapp.dontworry.activity
 
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
@@ -11,6 +11,7 @@ import android.widget.Button
 import android.widget.ImageView
 import android.widget.Toast
 import android.widget.Toast.makeText
+import com.abtahiapp.dontworry.R
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount
 import com.google.android.gms.auth.api.signin.GoogleSignInClient

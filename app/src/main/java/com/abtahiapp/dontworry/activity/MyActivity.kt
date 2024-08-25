@@ -1,9 +1,12 @@
-package com.abtahiapp.dontworry
+package com.abtahiapp.dontworry.activity
 
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.abtahiapp.dontworry.Mood
+import com.abtahiapp.dontworry.adapter.MoodAdapter
+import com.abtahiapp.dontworry.R
 import com.google.firebase.database.FirebaseDatabase
 
 class MyActivity : AppCompatActivity() {

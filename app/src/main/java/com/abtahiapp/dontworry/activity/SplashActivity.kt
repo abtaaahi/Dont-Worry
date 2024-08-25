@@ -1,10 +1,11 @@
-package com.abtahiapp.dontworry
+package com.abtahiapp.dontworry.activity
 
 import android.content.Intent
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
 import androidx.appcompat.app.AppCompatActivity
+import com.abtahiapp.dontworry.R
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 
 class SplashActivity : AppCompatActivity() {

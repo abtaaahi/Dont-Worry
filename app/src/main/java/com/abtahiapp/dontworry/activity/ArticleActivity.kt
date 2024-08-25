@@ -1,12 +1,10 @@
-package com.abtahiapp.dontworry
+package com.abtahiapp.dontworry.activity
 
 import android.os.Bundle
 import android.webkit.WebView
 import android.webkit.WebViewClient
 import androidx.appcompat.app.AppCompatActivity
-import android.widget.ImageView
-import android.widget.TextView
-import com.bumptech.glide.Glide
+import com.abtahiapp.dontworry.R
 
 class ArticleActivity : AppCompatActivity() {
 

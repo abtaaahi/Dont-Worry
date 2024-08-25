@@ -1,4 +1,4 @@
-package com.abtahiapp.dontworry
+package com.abtahiapp.dontworry.adapter
 
 import android.content.Context
 import android.content.Intent
@@ -8,6 +8,9 @@ import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
+import com.abtahiapp.dontworry.R
+import com.abtahiapp.dontworry.VideoItem
+import com.abtahiapp.dontworry.activity.VideoActivity
 import com.bumptech.glide.Glide
 
 class VideoAdapter(private val context: Context, private var videos: MutableList<VideoItem>) :

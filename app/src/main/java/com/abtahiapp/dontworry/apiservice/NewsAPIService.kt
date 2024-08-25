@@ -1,5 +1,6 @@
-package com.abtahiapp.dontworry
+package com.abtahiapp.dontworry.apiservice
 
+import com.abtahiapp.dontworry.NewsResponse
 import retrofit2.Call
 import retrofit2.http.GET
 import retrofit2.http.Query

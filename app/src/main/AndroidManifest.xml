@@ -15,31 +15,31 @@
         android:theme="@style/Theme.DontWorryYourPersonalTherapist"
         tools:targetApi="31">
         <activity
-            android:name=".AudioActivity"
+            android:name=".activity.AudioActivity"
             android:exported="false" />
         <activity
-            android:name=".VideoActivity"
+            android:name=".activity.VideoActivity"
             android:exported="false" />
         <activity
-            android:name=".ArticleActivity"
+            android:name=".activity.ArticleActivity"
             android:exported="false" />
         <activity
-            android:name=".MyActivity"
+            android:name=".activity.MyActivity"
             android:exported="false" />
         <activity
-            android:name=".InfoUpdateActivity"
+            android:name=".activity.InfoUpdateActivity"
             android:exported="false" />
         <activity
-            android:name=".PersonalInfoActivity"
+            android:name=".activity.PersonalInfoActivity"
             android:exported="false" />
         <activity
-            android:name=".MyProfile"
+            android:name=".activity.MyProfile"
             android:exported="false" />
         <activity
-            android:name=".SignInActivity"
+            android:name=".activity.SignInActivity"
             android:exported="false" />
         <activity
-            android:name=".SplashActivity"
+            android:name=".activity.SplashActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -48,7 +48,7 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".MainActivity"
+            android:name=".activity.MainActivity"
             android:exported="false" />
 
         <meta-data

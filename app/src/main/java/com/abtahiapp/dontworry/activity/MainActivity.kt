@@ -1,4 +1,4 @@
-package com.abtahiapp.dontworry
+package com.abtahiapp.dontworry.activity
 
 import android.app.Dialog
 import android.os.Bundle
@@ -11,6 +11,15 @@ import android.widget.ImageView
 import android.widget.Toast
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.abtahiapp.dontworry.Article
+import com.abtahiapp.dontworry.adapter.ArticleAdapter
+import com.abtahiapp.dontworry.adapter.AudioAdapter
+import com.abtahiapp.dontworry.AudioResponse
+import com.abtahiapp.dontworry.NewsResponse
+import com.abtahiapp.dontworry.R
+import com.abtahiapp.dontworry.RetrofitClient
+import com.abtahiapp.dontworry.adapter.VideoAdapter
+import com.abtahiapp.dontworry.VideoResponse
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount
 import com.bumptech.glide.Glide
 import com.google.firebase.database.DataSnapshot
