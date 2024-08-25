@@ -14,7 +14,6 @@ import androidx.recyclerview.widget.RecyclerView
 import com.abtahiapp.dontworry.Article
 import com.abtahiapp.dontworry.adapter.ArticleAdapter
 import com.abtahiapp.dontworry.adapter.AudioAdapter
-import com.abtahiapp.dontworry.AudioResponse
 import com.abtahiapp.dontworry.NewsResponse
 import com.abtahiapp.dontworry.R
 import com.abtahiapp.dontworry.RetrofitClient
@@ -217,26 +216,26 @@ class MainActivity : AppCompatActivity() {
                 }
             })
     }
-
     private fun fetchAudios(mood: String?) {
-        val artistName = when (mood) {
-            "Angry" -> "Linkin Park"
-            "Very Sad", "Sad" -> "Adele"
-            "Fine", "Very Fine" -> "Coldplay"
-            else -> "Enya"
+        val apiKey = "AIzaSyBi_Bg1FYzX9R6yIfREZZH0_yatJ5hkerw"
+        val query = when (mood) {
+            "Angry" -> "relaxing sound"
+            "Very Sad", "Sad" -> "soothing sound"
+            "Fine", "Very Fine" -> "cheerful sound"
+            else -> "calmness sound"
         }
 
-        RetrofitClient.audioInstance.searchAlbum(artistName)
-            .enqueue(object : Callback<AudioResponse> {
-                override fun onResponse(call: Call<AudioResponse>, response: Response<AudioResponse>) {
+        RetrofitClient.youtubeInstance.getVideos(query = query, apiKey = apiKey)
+            .enqueue(object : Callback<VideoResponse> {
+                override fun onResponse(call: Call<VideoResponse>, response: Response<VideoResponse>) {
                     if (response.isSuccessful) {
-                        val audios = response.body()?.album ?: emptyList()
-                        audioAdapter.updateAudios(audios)
+                        val videos = response.body()?.items ?: emptyList()
+                        audioAdapter.updateAudios(videos)
                     }
                 }
 
-                override fun onFailure(call: Call<AudioResponse>, t: Throwable) {
-                    Toast.makeText(this@MainActivity, "Failed to fetch audios", Toast.LENGTH_SHORT).show()
+                override fun onFailure(call: Call<VideoResponse>, t: Throwable) {
+                    Toast.makeText(this@MainActivity, "Failed to fetch videos", Toast.LENGTH_SHORT).show()
                 }
             })
     }

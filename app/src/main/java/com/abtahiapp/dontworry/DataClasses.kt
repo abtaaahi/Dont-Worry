@@ -48,13 +48,3 @@ data class Thumbnail(
     val url: String
 )
 
-data class AudioResponse(
-    val album: List<AudioItem>
-)
-
-data class AudioItem(
-    val idAlbum: String,
-    val strAlbum: String,
-    val strAlbumThumb: String,
-    val strArtist: String
-)

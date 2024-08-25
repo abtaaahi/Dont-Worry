@@ -8,49 +8,45 @@ import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
-import com.abtahiapp.dontworry.AudioItem
 import com.abtahiapp.dontworry.R
+import com.abtahiapp.dontworry.VideoItem
 import com.abtahiapp.dontworry.activity.AudioActivity
+import com.abtahiapp.dontworry.activity.VideoActivity
 import com.bumptech.glide.Glide
 
-class AudioAdapter(private val context: Context, private var audios: List<AudioItem>) :
-    RecyclerView.Adapter<AudioAdapter.AudioViewHolder>() {
+class AudioAdapter(private val context: Context, private var videos: MutableList<VideoItem>) :
+    RecyclerView.Adapter<AudioAdapter.VideoViewHolder>() {
 
-    inner class AudioViewHolder(view: View) : RecyclerView.ViewHolder(view) {
+    inner class VideoViewHolder(view: View) : RecyclerView.ViewHolder(view) {
         val thumbnail: ImageView = view.findViewById(R.id.audio_thumbnail)
         val title: TextView = view.findViewById(R.id.audio_title)
 
-        fun bind(audio: AudioItem) {
-            title.text = audio.strAlbum
-            Glide.with(context)
-                .load(audio.strAlbumThumb)
-                .placeholder(R.drawable.defaultnews)
-                .error(R.drawable.defaultnews)
-                .into(thumbnail)
-
+        fun bind(video: VideoItem) {
+            title.text = video.snippet.title
+            Glide.with(context).load(video.snippet.thumbnails.high.url).into(thumbnail)
             itemView.setOnClickListener {
                 val intent = Intent(context, AudioActivity::class.java)
-                intent.putExtra("audioUrl", "https://www.theaudiodb.com/audio/${audio.idAlbum}")
-                intent.putExtra("album", audio.strAlbum)
-                intent.putExtra("artist", audio.strArtist)
+                intent.putExtra("videoUrl", video.id.videoId)
+                intent.putExtra("title", video.snippet.title)
                 context.startActivity(intent)
             }
         }
     }
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): AudioViewHolder {
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): VideoViewHolder {
         val view = LayoutInflater.from(context).inflate(R.layout.item_audio, parent, false)
-        return AudioViewHolder(view)
+        return VideoViewHolder(view)
     }
 
-    override fun onBindViewHolder(holder: AudioViewHolder, position: Int) {
-        holder.bind(audios[position])
+    override fun onBindViewHolder(holder: VideoViewHolder, position: Int) {
+        holder.bind(videos[position])
     }
 
-    override fun getItemCount(): Int = audios.size
+    override fun getItemCount(): Int = videos.size
 
-    fun updateAudios(newAudios: List<AudioItem>) {
-        audios = newAudios
+    fun updateAudios(newVideos: List<VideoItem>) {
+        videos.clear()
+        videos.addAll(newVideos)
         notifyDataSetChanged()
     }
 }
