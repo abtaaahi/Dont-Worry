@@ -1,5 +1,7 @@
 package com.abtahiapp.dontworry
 
+import com.google.gson.annotations.SerializedName
+
 data class Mood(
     val moodImage: Int,
     val dateTime: String,
@@ -48,3 +50,26 @@ data class Thumbnail(
     val url: String
 )
 
+data class MovieResponse(
+    val page: Int,
+    val results: List<Movie>,
+    val total_results: Int,
+    val total_pages: Int
+)
+
+data class Movie(
+    val id: Int,
+    val title: String,
+    @SerializedName("overview") val description: String,
+    @SerializedName("poster_path") val thumbnailUrl: String,
+    var trailerUrl: String? = null
+)
+
+data class TrailerResponse(
+    val results: List<Trailer>
+)
+
+data class Trailer(
+    val key: String,
+    val type: String
+)

@@ -15,6 +15,9 @@
         android:theme="@style/Theme.DontWorryYourPersonalTherapist"
         tools:targetApi="31">
         <activity
+            android:name=".activity.MovieActivity"
+            android:exported="false" />
+        <activity
             android:name=".activity.AudioActivity"
             android:exported="false" />
         <activity

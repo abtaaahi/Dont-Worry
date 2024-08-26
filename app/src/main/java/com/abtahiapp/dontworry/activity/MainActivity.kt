@@ -12,13 +12,17 @@ import android.widget.Toast
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.abtahiapp.dontworry.Article
+import com.abtahiapp.dontworry.Movie
+import com.abtahiapp.dontworry.MovieResponse
 import com.abtahiapp.dontworry.adapter.ArticleAdapter
 import com.abtahiapp.dontworry.adapter.AudioAdapter
 import com.abtahiapp.dontworry.NewsResponse
 import com.abtahiapp.dontworry.R
 import com.abtahiapp.dontworry.RetrofitClient
+import com.abtahiapp.dontworry.TrailerResponse
 import com.abtahiapp.dontworry.adapter.VideoAdapter
 import com.abtahiapp.dontworry.VideoResponse
+import com.abtahiapp.dontworry.adapter.MovieAdapter
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount
 import com.bumptech.glide.Glide
 import com.google.firebase.database.DataSnapshot
@@ -38,6 +42,8 @@ class MainActivity : AppCompatActivity() {
     private lateinit var articleAdapter: ArticleAdapter
     private lateinit var videoAdapter: VideoAdapter
     private lateinit var audioAdapter: AudioAdapter
+    private lateinit var movieAdapter: MovieAdapter
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -47,6 +53,7 @@ class MainActivity : AppCompatActivity() {
         val articleRecyclerView: RecyclerView = findViewById(R.id.article_recycler_view)
         val videoRecyclerView: RecyclerView = findViewById(R.id.video_recycler_view)
         val audioRecyclerView: RecyclerView = findViewById(R.id.audio_recycler_view)
+        val movieRecyclerView: RecyclerView = findViewById(R.id.movie_recycler_view)
 
         val account = intent.getParcelableExtra<GoogleSignInAccount>("account")
         if (account != null) {
@@ -83,6 +90,7 @@ class MainActivity : AppCompatActivity() {
                             fetchArticles(lastMood)
                             fetchVideos(lastMood)
                             fetchAudios(lastMood)
+                            fetchMovies(lastMood)
                         }
                     }
 
@@ -103,6 +111,10 @@ class MainActivity : AppCompatActivity() {
         audioRecyclerView.layoutManager = LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false)
         audioAdapter = AudioAdapter(this, mutableListOf())
         audioRecyclerView.adapter = audioAdapter
+
+        movieRecyclerView.layoutManager = LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false)
+        movieAdapter = MovieAdapter(this, mutableListOf())
+        movieRecyclerView.adapter = movieAdapter
     }
     private fun showMoodDialog(userId: String) {
         val dialog = Dialog(this)
@@ -144,6 +156,7 @@ class MainActivity : AppCompatActivity() {
                 fetchArticles(it)
                 fetchVideos(it)
                 fetchAudios(it)
+                fetchMovies(it)
                 dialog.dismiss()
             } ?: Toast.makeText(this, "Please select a mood", Toast.LENGTH_SHORT).show()
         }
@@ -239,4 +252,65 @@ class MainActivity : AppCompatActivity() {
                 }
             })
     }
+
+    private fun fetchMovies(mood: String?) {
+        val apiKey = "1d3c78106341dfe37711be964e190207"
+        val genreId = when (mood) {
+            "Angry" -> 35 // Comedy
+            "Very Sad", "Sad" -> 18 // Drama
+            "Fine", "Very Fine" -> 28 // Action
+            else -> null // If no mood, fetch popular movies
+        }
+
+        val call = if (genreId != null) {
+            RetrofitClient.movieInstance.getMoviesByGenre(apiKey, genreId)
+        } else {
+            RetrofitClient.movieInstance.getMovies(apiKey)
+        }
+
+        call.enqueue(object : Callback<MovieResponse> {
+            override fun onResponse(call: Call<MovieResponse>, response: Response<MovieResponse>) {
+                if (response.isSuccessful) {
+                    val movieResponse = response.body()
+                    if (movieResponse != null) {
+                        val movies = movieResponse.results
+                        fetchTrailersForMovies(movies)
+                    } else {
+                        Toast.makeText(this@MainActivity, "No movies found", Toast.LENGTH_SHORT).show()
+                    }
+                } else {
+                    Toast.makeText(this@MainActivity, "Failed to fetch movies", Toast.LENGTH_SHORT).show()
+                }
+            }
+
+            override fun onFailure(call: Call<MovieResponse>, t: Throwable) {
+                Toast.makeText(this@MainActivity, "Failed to fetch movies", Toast.LENGTH_SHORT).show()
+            }
+        })
+    }
+
+    private fun fetchTrailersForMovies(movies: List<Movie>) {
+        val apiKey = "1d3c78106341dfe37711be964e190207"
+
+        movies.forEach { movie ->
+            RetrofitClient.movieInstance.getMovieTrailers(movie.id, apiKey)
+                .enqueue(object : Callback<TrailerResponse> {
+                    override fun onResponse(call: Call<TrailerResponse>, response: Response<TrailerResponse>) {
+                        if (response.isSuccessful) {
+                            val trailers = response.body()?.results ?: emptyList()
+                            val trailer = trailers.find { it.type == "Trailer" }
+                            trailer?.let {
+                                movie.trailerUrl = it.key
+                            }
+                        }
+                        movieAdapter.updateMovies(movies.toMutableList())
+                    }
+
+                    override fun onFailure(call: Call<TrailerResponse>, t: Throwable) {
+                    }
+                })
+        }
+    }
+
+
 }
