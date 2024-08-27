@@ -168,5 +168,37 @@
         app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
         android:orientation="horizontal"/>
 
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="16dp"
+        app:layout_constraintTop_toBottomOf="@id/article_recycler_view"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:gravity="center">
+
+        <TextView
+            android:id="@+id/quoteTextView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="This is a sample quote"
+            android:textSize="24sp"
+            android:textColor="@color/textColor"
+            android:layout_marginBottom="16dp"
+            android:gravity="center"
+            android:textAlignment="center"/>
+
+        <TextView
+            android:id="@+id/authorTextView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="- Sample Author"
+            android:textSize="20sp"
+            android:textColor="#888"
+            android:gravity="center"
+            android:textAlignment="center"/>
+
+    </LinearLayout>
 </androidx.constraintlayout.widget.ConstraintLayout>
 </ScrollView>

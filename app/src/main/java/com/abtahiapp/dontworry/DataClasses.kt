@@ -90,3 +90,8 @@ data class WeatherDescription(
     val description: String,
     val icon: String
 )
+
+data class QuoteResponse(
+    val quote: String,
+    val author: String
+)
