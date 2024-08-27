@@ -1,41 +1,43 @@
 package com.abtahiapp.dontworry.activity
 
 import android.app.Dialog
-import android.os.Bundle
-import androidx.appcompat.app.AppCompatActivity
 import android.content.Intent
+import android.os.Bundle
 import android.view.View
 import android.widget.Button
 import android.widget.EditText
 import android.widget.ImageView
 import android.widget.Toast
+import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.abtahiapp.dontworry.Article
 import com.abtahiapp.dontworry.Movie
 import com.abtahiapp.dontworry.MovieResponse
-import com.abtahiapp.dontworry.adapter.ArticleAdapter
-import com.abtahiapp.dontworry.adapter.AudioAdapter
 import com.abtahiapp.dontworry.NewsResponse
 import com.abtahiapp.dontworry.R
 import com.abtahiapp.dontworry.RetrofitClient
 import com.abtahiapp.dontworry.TrailerResponse
-import com.abtahiapp.dontworry.adapter.VideoAdapter
 import com.abtahiapp.dontworry.VideoResponse
+import com.abtahiapp.dontworry.WeatherResponse
+import com.abtahiapp.dontworry.adapter.ArticleAdapter
+import com.abtahiapp.dontworry.adapter.AudioAdapter
 import com.abtahiapp.dontworry.adapter.MovieAdapter
-import com.google.android.gms.auth.api.signin.GoogleSignInAccount
+import com.abtahiapp.dontworry.adapter.VideoAdapter
+import com.abtahiapp.dontworry.adapter.WeatherAdapter
 import com.bumptech.glide.Glide
+import com.google.android.gms.auth.api.signin.GoogleSignInAccount
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
 import de.hdodenhof.circleimageview.CircleImageView
-import java.text.SimpleDateFormat
-import java.util.Date
-import java.util.Locale
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 class MainActivity : AppCompatActivity() {
 
@@ -43,7 +45,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var videoAdapter: VideoAdapter
     private lateinit var audioAdapter: AudioAdapter
     private lateinit var movieAdapter: MovieAdapter
-
+    private lateinit var weatherAdapter: WeatherAdapter
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -54,6 +56,7 @@ class MainActivity : AppCompatActivity() {
         val videoRecyclerView: RecyclerView = findViewById(R.id.video_recycler_view)
         val audioRecyclerView: RecyclerView = findViewById(R.id.audio_recycler_view)
         val movieRecyclerView: RecyclerView = findViewById(R.id.movie_recycler_view)
+        val weatherRecyclerView: RecyclerView = findViewById(R.id.weather_recycler_view)
 
         val account = intent.getParcelableExtra<GoogleSignInAccount>("account")
         if (account != null) {
@@ -115,6 +118,12 @@ class MainActivity : AppCompatActivity() {
         movieRecyclerView.layoutManager = LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false)
         movieAdapter = MovieAdapter(this, mutableListOf())
         movieRecyclerView.adapter = movieAdapter
+
+        weatherRecyclerView.layoutManager = LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false)
+        weatherAdapter = WeatherAdapter(this, mutableListOf())
+        weatherRecyclerView.adapter = weatherAdapter
+
+        fetchWeatherForecast()
     }
     private fun showMoodDialog(userId: String) {
         val dialog = Dialog(this)
@@ -232,10 +241,10 @@ class MainActivity : AppCompatActivity() {
     private fun fetchAudios(mood: String?) {
         val apiKey = "AIzaSyBi_Bg1FYzX9R6yIfREZZH0_yatJ5hkerw"
         val query = when (mood) {
-            "Angry" -> "relaxing sound"
-            "Very Sad", "Sad" -> "soothing sound"
-            "Fine", "Very Fine" -> "cheerful sound"
-            else -> "calmness sound"
+            "Angry" -> "relaxing music"
+            "Very Sad", "Sad" -> "soothing music"
+            "Fine", "Very Fine" -> "cheerful music"
+            else -> "calmness music"
         }
 
         RetrofitClient.youtubeInstance.getVideos(query = query, apiKey = apiKey)
@@ -312,5 +321,24 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    private fun fetchWeatherForecast() {
+        val chittagongLat = 22.3475
+        val chittagongLon = 91.8123
+        val apiKey = "80034495d58fc3db348f75354755f6e6"
 
+        RetrofitClient.weatherInstance.getWeatherForecast(lat = chittagongLat, lon = chittagongLon, apiKey = apiKey).enqueue(object : Callback<WeatherResponse> {
+            override fun onResponse(call: Call<WeatherResponse>, response: Response<WeatherResponse>) {
+                if (response.isSuccessful) {
+                    val weatherList = response.body()?.list ?: emptyList()
+                    weatherAdapter.updateWeather(weatherList)
+                    //Toast.makeText(this@MainActivity, "Weather data fetched successfully", Toast.LENGTH_SHORT).show()
+                } else {
+                    //Toast.makeText(this@MainActivity, "Failed to fetch weather data\nError: ${response.code()}", Toast.LENGTH_SHORT).show()
+                }
+            }
+            override fun onFailure(call: Call<WeatherResponse>, t: Throwable) {
+                Toast.makeText(this@MainActivity, "Failed to fetch weather data", Toast.LENGTH_SHORT).show()
+            }
+        })
+    }
 }

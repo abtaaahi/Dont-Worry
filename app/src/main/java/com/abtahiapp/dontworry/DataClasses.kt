@@ -73,3 +73,20 @@ data class Trailer(
     val key: String,
     val type: String
 )
+
+data class WeatherResponse(
+    val list: List<WeatherForecast>
+)
+data class WeatherForecast(
+    val dt: Long,
+    val main: Main,
+    val weather: List<WeatherDescription>,
+    val dt_txt: String
+)
+data class Main(
+    val temp: Double
+)
+data class WeatherDescription(
+    val description: String,
+    val icon: String
+)
