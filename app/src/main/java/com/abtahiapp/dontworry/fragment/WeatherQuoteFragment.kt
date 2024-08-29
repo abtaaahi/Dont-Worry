@@ -1,5 +1,6 @@
 package com.abtahiapp.dontworry.fragment
 
+import android.content.Intent
 import android.os.Bundle
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
@@ -7,22 +8,18 @@ import android.view.ViewGroup
 import android.view.View
 import android.widget.TextView
 import android.widget.Toast
-import androidx.recyclerview.widget.GridLayoutManager
-import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
+import androidx.cardview.widget.CardView
 import com.abtahiapp.dontworry.QuoteResponse
 import com.abtahiapp.dontworry.R
 import com.abtahiapp.dontworry.RetrofitClient
-import com.abtahiapp.dontworry.Secret
-import com.abtahiapp.dontworry.WeatherResponse
-import com.abtahiapp.dontworry.adapter.WeatherAdapter
+import com.abtahiapp.dontworry.activity.PlacesActivity
+import com.abtahiapp.dontworry.activity.WeatherActivity
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
 
 class WeatherQuoteFragment : Fragment() {
 
-    private lateinit var weatherAdapter: WeatherAdapter
     private lateinit var quoteTextView: TextView
     private lateinit var authorTextView: TextView
 
@@ -31,37 +28,30 @@ class WeatherQuoteFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View? {
         val view = inflater.inflate(R.layout.fragment_weather_quote, container, false)
-        val weatherRecyclerView: RecyclerView = view.findViewById(R.id.weather_recycler_view)
         quoteTextView = view.findViewById(R.id.quoteTextView)
         authorTextView = view.findViewById(R.id.authorTextView)
 
-        weatherRecyclerView.layoutManager = GridLayoutManager(requireContext(), 2)
-        weatherAdapter = WeatherAdapter(requireContext(), mutableListOf())
-        weatherRecyclerView.adapter = weatherAdapter
+        val cardView1 = view.findViewById<CardView>(R.id.cardView1)
+        val cardView2 = view.findViewById<CardView>(R.id.cardView2)
+        val cardView3 = view.findViewById<CardView>(R.id.cardView3)
 
-        fetchWeatherForecast()
+        cardView1.setOnClickListener {
+            fetchAndDisplayQuote()
+        }
+
+        cardView2.setOnClickListener {
+            val intent = Intent(activity, PlacesActivity::class.java)
+            startActivity(intent)
+        }
+
+        cardView3.setOnClickListener {
+            val intent = Intent(activity, WeatherActivity::class.java)
+            startActivity(intent)
+        }
+
         fetchAndDisplayQuote()
 
         return view
-    }
-
-        private fun fetchWeatherForecast() {
-        val chittagongLat = 22.3475
-        val chittagongLon = 91.8123
-        val apiKey = Secret.OPEN_WEATHER_API_KEY
-
-        RetrofitClient.weatherInstance.getWeatherForecast(lat = chittagongLat, lon = chittagongLon, apiKey = apiKey).enqueue(object : Callback<WeatherResponse> {
-            override fun onResponse(call: Call<WeatherResponse>, response: Response<WeatherResponse>) {
-                if (response.isSuccessful) {
-                    val weatherList = response.body()?.list ?: emptyList()
-                    weatherAdapter.updateWeather(weatherList)
-                } else {
-                }
-            }
-            override fun onFailure(call: Call<WeatherResponse>, t: Throwable) {
-                Toast.makeText(requireContext(), "Failed to fetch weather data", Toast.LENGTH_SHORT).show()
-            }
-        })
     }
 
     private fun fetchAndDisplayQuote() {

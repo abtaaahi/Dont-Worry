@@ -2,6 +2,7 @@ package com.abtahiapp.dontworry
 
 import com.abtahiapp.dontworry.apiservice.GoogleCustomSearchApiService
 import com.abtahiapp.dontworry.apiservice.MovieApiService
+import com.abtahiapp.dontworry.apiservice.PlacesApiService
 import com.abtahiapp.dontworry.apiservice.QuotesApiService
 import com.abtahiapp.dontworry.apiservice.WeatherApiService
 import com.abtahiapp.dontworry.apiservice.YouTubeApiService
@@ -13,7 +14,7 @@ import retrofit2.converter.gson.GsonConverterFactory
 object RetrofitClient {
 //    private const val BASE_URL_NEWS = "https://newsapi.org/"
     private const val BASE_URL_GOOGLE_CUSTOM_SEARCH = "https://www.googleapis.com/customsearch/"
-    private const val BASE_URL_YOUTUBE = "https://www.googleapis.com/"
+    private const val BASE_URL_GOOGLE = "https://www.googleapis.com/"
     private const val BASE_URL_MOVIE = "https://api.themoviedb.org/3/"
     private const val BASE_URL_WEATHER = "https://api.openweathermap.org/data/2.5/"
     private const val BASE_URL_QUOTES = "https://api.api-ninjas.com/v1/"
@@ -49,7 +50,7 @@ object RetrofitClient {
 
     val youtubeInstance: YouTubeApiService by lazy {
         val retrofit = Retrofit.Builder()
-            .baseUrl(BASE_URL_YOUTUBE)
+            .baseUrl(BASE_URL_GOOGLE)
             .client(client)
             .addConverterFactory(GsonConverterFactory.create())
             .build()
@@ -79,6 +80,15 @@ object RetrofitClient {
             .addConverterFactory(GsonConverterFactory.create())
             .build()
         retrofit.create(QuotesApiService::class.java)
+    }
+
+    val placesInstance: PlacesApiService by lazy {
+        val retrofit = Retrofit.Builder()
+            .baseUrl(BASE_URL_GOOGLE)
+            .addConverterFactory(GsonConverterFactory.create())
+            .build()
+
+        retrofit.create(PlacesApiService::class.java)
     }
 
 

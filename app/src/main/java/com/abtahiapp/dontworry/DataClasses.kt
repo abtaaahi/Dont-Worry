@@ -129,3 +129,33 @@ enum class HomeItemType {
     ARTICLE,
     AUDIO
 }
+
+data class Place(
+    val name: String,
+    val imageUrl: String,
+    val latitude: Double,
+    val longitude: Double
+)
+
+data class PlacesResponse(
+    val results: List<PlaceResult>
+)
+
+data class PlaceResult(
+    val name: String,
+    val geometry: Geometry,
+    val photos: List<Photo>?
+)
+
+data class Geometry(
+    val location: Location
+)
+
+data class Location(
+    val lat: Double,
+    val lng: Double
+)
+
+data class Photo(
+    val photo_reference: String
+)
