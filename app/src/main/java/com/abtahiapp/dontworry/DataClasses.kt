@@ -95,3 +95,17 @@ data class QuoteResponse(
     val quote: String,
     val author: String
 )
+
+data class HomeItem(
+    val id: String,
+    val title: String,
+    val description: String?,
+    val imageUrl: String,
+    val type: HomeItemType
+)
+
+enum class HomeItemType {
+    VIDEO,
+    ARTICLE,
+    AUDIO
+}
