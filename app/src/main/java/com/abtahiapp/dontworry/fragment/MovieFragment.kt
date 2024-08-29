@@ -12,6 +12,7 @@ import com.abtahiapp.dontworry.Movie
 import com.abtahiapp.dontworry.MovieResponse
 import com.abtahiapp.dontworry.R
 import com.abtahiapp.dontworry.RetrofitClient
+import com.abtahiapp.dontworry.Secret
 import com.abtahiapp.dontworry.TrailerResponse
 import com.abtahiapp.dontworry.adapter.MovieAdapter
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount
@@ -76,7 +77,7 @@ class MovieFragment : Fragment() {
     }
 
     private fun fetchMovies(mood: String?) {
-        val apiKey = "1d3c78106341dfe37711be964e190207"
+        val apiKey = Secret.TMDB_API_KEY
         val genreId = when (mood) {
             "Angry" -> 35 // Comedy
             "Very Sad", "Sad" -> 18 // Drama
@@ -112,7 +113,7 @@ class MovieFragment : Fragment() {
     }
 
     private fun fetchTrailersForMovies(movies: List<Movie>) {
-        val apiKey = "1d3c78106341dfe37711be964e190207"
+        val apiKey = Secret.TMDB_API_KEY
 
         movies.forEach { movie ->
             RetrofitClient.movieInstance.getMovieTrailers(movie.id, apiKey)

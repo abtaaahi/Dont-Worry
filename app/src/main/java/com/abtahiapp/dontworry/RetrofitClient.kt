@@ -11,7 +11,7 @@ import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 
 object RetrofitClient {
-    private const val BASE_URL_NEWS = "https://newsapi.org/"
+//    private const val BASE_URL_NEWS = "https://newsapi.org/"
     private const val BASE_URL_GOOGLE_CUSTOM_SEARCH = "https://www.googleapis.com/customsearch/"
     private const val BASE_URL_YOUTUBE = "https://www.googleapis.com/"
     private const val BASE_URL_MOVIE = "https://api.themoviedb.org/3/"

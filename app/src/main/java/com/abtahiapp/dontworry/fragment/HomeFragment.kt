@@ -14,6 +14,7 @@ import com.abtahiapp.dontworry.HomeItem
 import com.abtahiapp.dontworry.HomeItemType
 import com.abtahiapp.dontworry.R
 import com.abtahiapp.dontworry.RetrofitClient
+import com.abtahiapp.dontworry.Secret
 import com.abtahiapp.dontworry.VideoResponse
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount
 import com.google.firebase.database.DataSnapshot
@@ -87,7 +88,7 @@ class HomeFragment : Fragment() {
                     }
 
 
-                    val apiKey = "AIzaSyBi_Bg1FYzX9R6yIfREZZH0_yatJ5hkerw"
+                    val apiKey = Secret.GOOGLE_API_KEY
                     val query = when (lastMood) {
                         "Angry" -> "stress management"
                         "Very Sad", "Sad" -> "mental health"
@@ -142,7 +143,7 @@ class HomeFragment : Fragment() {
                         null
                     }
 
-                    val apiKey = "AIzaSyBi_Bg1FYzX9R6yIfREZZH0_yatJ5hkerw"
+                    val apiKey = Secret.GOOGLE_API_KEY
                     val query = when (lastMood) {
                         "Angry" -> "relaxing music"
                         "Very Sad", "Sad" -> "soothing music"
@@ -184,7 +185,7 @@ class HomeFragment : Fragment() {
     }
 
     private fun fetchArticles(callback: (List<HomeItem>) -> Unit) {
-        val apiKey = "AIzaSyBi_Bg1FYzX9R6yIfREZZH0_yatJ5hkerw"
+        val apiKey = Secret.GOOGLE_API_KEY
         val customSearchEngineId = "f462f9035eadd418f"
         val currentDate = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Date())
         val moodHistoryRef = database.child(account.id!!).child("mood_history")

@@ -12,6 +12,7 @@ import com.abtahiapp.dontworry.GoogleCustomSearchResponse
 import com.abtahiapp.dontworry.Item
 import com.abtahiapp.dontworry.R
 import com.abtahiapp.dontworry.RetrofitClient
+import com.abtahiapp.dontworry.Secret
 import com.abtahiapp.dontworry.adapter.ArticleAdapter
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount
 import com.google.firebase.database.DataSnapshot
@@ -74,8 +75,10 @@ class ArticleFragment : Fragment() {
     }
 
     private fun fetchArticles(mood: String?) {
-        val apiKey = "AIzaSyBi_Bg1FYzX9R6yIfREZZH0_yatJ5hkerw"
-        val customSearchEngineId = "f462f9035eadd418f"
+        val apiKey = Secret.GOOGLE_API_KEY
+        val customSearchEngineId = Secret.CUSTOM_SEARCH_ENGINE_ID
+        //https://programmablesearchengine.google.com/controlpanel/all
+
         val query = when (mood) {
             "Angry" -> "stress management"
             "Very Sad", "Sad" -> "mental health"

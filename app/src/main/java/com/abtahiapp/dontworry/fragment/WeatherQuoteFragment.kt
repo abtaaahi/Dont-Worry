@@ -13,6 +13,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.abtahiapp.dontworry.QuoteResponse
 import com.abtahiapp.dontworry.R
 import com.abtahiapp.dontworry.RetrofitClient
+import com.abtahiapp.dontworry.Secret
 import com.abtahiapp.dontworry.WeatherResponse
 import com.abtahiapp.dontworry.adapter.WeatherAdapter
 import retrofit2.Call
@@ -47,7 +48,7 @@ class WeatherQuoteFragment : Fragment() {
         private fun fetchWeatherForecast() {
         val chittagongLat = 22.3475
         val chittagongLon = 91.8123
-        val apiKey = "80034495d58fc3db348f75354755f6e6"
+        val apiKey = Secret.OPEN_WEATHER_API_KEY
 
         RetrofitClient.weatherInstance.getWeatherForecast(lat = chittagongLat, lon = chittagongLon, apiKey = apiKey).enqueue(object : Callback<WeatherResponse> {
             override fun onResponse(call: Call<WeatherResponse>, response: Response<WeatherResponse>) {

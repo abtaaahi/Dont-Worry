@@ -10,6 +10,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.abtahiapp.dontworry.R
 import com.abtahiapp.dontworry.RetrofitClient
+import com.abtahiapp.dontworry.Secret
 import com.abtahiapp.dontworry.VideoResponse
 import com.abtahiapp.dontworry.adapter.AudioAdapter
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount
@@ -73,7 +74,7 @@ class MusicFragment : Fragment() {
     }
 
     private fun fetchAudios(mood: String?) {
-        val apiKey = "AIzaSyBi_Bg1FYzX9R6yIfREZZH0_yatJ5hkerw"
+        val apiKey = Secret.GOOGLE_API_KEY
         val query = when (mood) {
             "Angry" -> "relaxing music"
             "Very Sad", "Sad" -> "soothing music"
