@@ -8,7 +8,8 @@ import android.view.View
 import android.widget.Toast
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.abtahiapp.dontworry.NewsResponse
+import com.abtahiapp.dontworry.GoogleCustomSearchResponse
+import com.abtahiapp.dontworry.Item
 import com.abtahiapp.dontworry.R
 import com.abtahiapp.dontworry.RetrofitClient
 import com.abtahiapp.dontworry.adapter.ArticleAdapter
@@ -71,8 +72,10 @@ class ArticleFragment : Fragment() {
                 }
             })
     }
-        private fun fetchArticles(mood: String?) {
-        val apiKey = "d2bdc009335842078a30d4ba304212a0"
+
+    private fun fetchArticles(mood: String?) {
+        val apiKey = "AIzaSyBi_Bg1FYzX9R6yIfREZZH0_yatJ5hkerw"
+        val customSearchEngineId = "f462f9035eadd418f"
         val query = when (mood) {
             "Angry" -> "stress management"
             "Very Sad", "Sad" -> "mental health"
@@ -80,18 +83,44 @@ class ArticleFragment : Fragment() {
             else -> "mindfulness"
         }
 
-        RetrofitClient.instance.getTopHeadlines(query, apiKey)
-            .enqueue(object : Callback<NewsResponse> {
-                override fun onResponse(call: Call<NewsResponse>, response: Response<NewsResponse>) {
+        RetrofitClient.instance.getSearchResults(query, customSearchEngineId, apiKey)
+            .enqueue(object : Callback<GoogleCustomSearchResponse> {
+                override fun onResponse(call: Call<GoogleCustomSearchResponse>, response: Response<GoogleCustomSearchResponse>) {
                     if (response.isSuccessful) {
-                        val articles = response.body()?.articles ?: emptyList()
-                        articleAdapter.updateArticles(articles)
+                        val items = response.body()?.items ?: emptyList()
+                        articleAdapter.updateArticles(items)
                     }
                 }
 
-                override fun onFailure(call: Call<NewsResponse>, t: Throwable) {
+                override fun onFailure(call: Call<GoogleCustomSearchResponse>, t: Throwable) {
                     Toast.makeText(requireContext(), "Failed to fetch articles", Toast.LENGTH_SHORT).show()
                 }
             })
     }
 }
+
+// NewsAPI
+
+//        private fun fetchArticles(mood: String?) {
+//        val apiKey = "d2bdc009335842078a30d4ba304212a0"
+//        val query = when (mood) {
+//            "Angry" -> "stress management"
+//            "Very Sad", "Sad" -> "mental health"
+//            "Fine", "Very Fine" -> "positive thinking"
+//            else -> "mindfulness"
+//        }
+//
+//        RetrofitClient.instance.getTopHeadlines(query, apiKey)
+//            .enqueue(object : Callback<NewsResponse> {
+//                override fun onResponse(call: Call<NewsResponse>, response: Response<NewsResponse>) {
+//                    if (response.isSuccessful) {
+//                        val articles = response.body()?.articles ?: emptyList()
+//                        articleAdapter.updateArticles(articles)
+//                    }
+//                }
+//
+//                override fun onFailure(call: Call<NewsResponse>, t: Throwable) {
+//                    Toast.makeText(requireContext(), "Failed to fetch articles", Toast.LENGTH_SHORT).show()
+//                }
+//            })
+//    }

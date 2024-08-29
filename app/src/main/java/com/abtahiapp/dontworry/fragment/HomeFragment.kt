@@ -7,15 +7,11 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.abtahiapp.dontworry.Article
-import com.abtahiapp.dontworry.Movie
-import com.abtahiapp.dontworry.MovieResponse
-import com.abtahiapp.dontworry.VideoItem
 import com.abtahiapp.dontworry.adapter.HomeAdapter
 import android.widget.Toast
+import com.abtahiapp.dontworry.GoogleCustomSearchResponse
 import com.abtahiapp.dontworry.HomeItem
 import com.abtahiapp.dontworry.HomeItemType
-import com.abtahiapp.dontworry.NewsResponse
 import com.abtahiapp.dontworry.R
 import com.abtahiapp.dontworry.RetrofitClient
 import com.abtahiapp.dontworry.VideoResponse
@@ -188,7 +184,8 @@ class HomeFragment : Fragment() {
     }
 
     private fun fetchArticles(callback: (List<HomeItem>) -> Unit) {
-        val apiKey = "d2bdc009335842078a30d4ba304212a0"
+        val apiKey = "AIzaSyBi_Bg1FYzX9R6yIfREZZH0_yatJ5hkerw"
+        val customSearchEngineId = "f462f9035eadd418f"
         val currentDate = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Date())
         val moodHistoryRef = database.child(account.id!!).child("mood_history")
 
@@ -208,17 +205,17 @@ class HomeFragment : Fragment() {
                         else -> "mindfulness"
                     }
 
-                    RetrofitClient.instance.getTopHeadlines(query, apiKey)
-                        .enqueue(object : Callback<NewsResponse> {
-                            override fun onResponse(call: Call<NewsResponse>, response: Response<NewsResponse>) {
+                    RetrofitClient.instance.getSearchResults(query, customSearchEngineId, apiKey)
+                        .enqueue(object : Callback<GoogleCustomSearchResponse> {
+                            override fun onResponse(call: Call<GoogleCustomSearchResponse>, response: Response<GoogleCustomSearchResponse>) {
                                 if (response.isSuccessful) {
-                                    val articleItems = response.body()?.articles ?: emptyList()
-                                    val articleList = articleItems.map { article ->
+                                    val articleItems = response.body()?.items ?: emptyList()
+                                    val articleList = articleItems.map { item ->
                                         HomeItem(
-                                            id = article.url,
-                                            title = article.title,
-                                            description = article.description,
-                                            imageUrl = article.urlToImage ?: "",
+                                            id = item.link,
+                                            title = item.title,
+                                            description = item.snippet,
+                                            imageUrl = item.pagemap?.cse_image?.firstOrNull()?.src ?: "",
                                             type = HomeItemType.ARTICLE
                                         )
                                     }
@@ -228,7 +225,7 @@ class HomeFragment : Fragment() {
                                 }
                             }
 
-                            override fun onFailure(call: Call<NewsResponse>, t: Throwable) {
+                            override fun onFailure(call: Call<GoogleCustomSearchResponse>, t: Throwable) {
                                 callback(emptyList())
                                 Toast.makeText(requireContext(), "Failed to fetch articles", Toast.LENGTH_SHORT).show()
                             }

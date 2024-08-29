@@ -1,7 +1,7 @@
 package com.abtahiapp.dontworry
 
+import com.abtahiapp.dontworry.apiservice.GoogleCustomSearchApiService
 import com.abtahiapp.dontworry.apiservice.MovieApiService
-import com.abtahiapp.dontworry.apiservice.NewsApiService
 import com.abtahiapp.dontworry.apiservice.QuotesApiService
 import com.abtahiapp.dontworry.apiservice.WeatherApiService
 import com.abtahiapp.dontworry.apiservice.YouTubeApiService
@@ -12,6 +12,7 @@ import retrofit2.converter.gson.GsonConverterFactory
 
 object RetrofitClient {
     private const val BASE_URL_NEWS = "https://newsapi.org/"
+    private const val BASE_URL_GOOGLE_CUSTOM_SEARCH = "https://www.googleapis.com/customsearch/"
     private const val BASE_URL_YOUTUBE = "https://www.googleapis.com/"
     private const val BASE_URL_MOVIE = "https://api.themoviedb.org/3/"
     private const val BASE_URL_WEATHER = "https://api.openweathermap.org/data/2.5/"
@@ -28,14 +29,23 @@ object RetrofitClient {
         .addInterceptor(logging)
         .build()
 
-    val instance: NewsApiService by lazy {
+    val instance: GoogleCustomSearchApiService by lazy {
         val retrofit = Retrofit.Builder()
-            .baseUrl(BASE_URL_NEWS)
+            .baseUrl(BASE_URL_GOOGLE_CUSTOM_SEARCH)
             .client(client)
             .addConverterFactory(GsonConverterFactory.create())
             .build()
-        retrofit.create(NewsApiService::class.java)
+        retrofit.create(GoogleCustomSearchApiService::class.java)
     }
+
+//    val instance: NewsApiService by lazy {
+//        val retrofit = Retrofit.Builder()
+//            .baseUrl(BASE_URL_NEWS)
+//            .client(client)
+//            .addConverterFactory(GsonConverterFactory.create())
+//            .build()
+//        retrofit.create(NewsApiService::class.java)
+//    }
 
     val youtubeInstance: YouTubeApiService by lazy {
         val retrofit = Retrofit.Builder()

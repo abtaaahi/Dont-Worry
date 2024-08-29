@@ -8,21 +8,41 @@ data class Mood(
     val details: String
 )
 
-data class NewsResponse(
-    val status: String,
-    val totalResults: Int,
-    val articles: List<Article>
+//data class NewsResponse(
+//    val status: String,
+//    val totalResults: Int,
+//    val articles: List<Article>
+//)
+//
+//data class Article(
+//    val author: String?,
+//    val title: String,
+//    val description: String?,
+//    val url: String,
+//    val urlToImage: String?,
+//    val publishedAt: String,
+//    val content: String?
+//)
+
+data class GoogleCustomSearchResponse(
+    val items: List<Item>
 )
 
-data class Article(
-    val author: String?,
+data class Item(
     val title: String,
-    val description: String?,
-    val url: String,
-    val urlToImage: String?,
-    val publishedAt: String,
-    val content: String?
+    val snippet: String,
+    val link: String,
+    val pagemap: Pagemap?
 )
+
+data class Pagemap(
+    val cse_image: List<CseImage>?
+)
+
+data class CseImage(
+    val src: String?
+)
+
 
 data class VideoResponse(
     val items: List<VideoItem>

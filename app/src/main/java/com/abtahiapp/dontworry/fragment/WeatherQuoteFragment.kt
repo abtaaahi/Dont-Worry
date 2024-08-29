@@ -7,6 +7,7 @@ import android.view.ViewGroup
 import android.view.View
 import android.widget.TextView
 import android.widget.Toast
+import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.abtahiapp.dontworry.QuoteResponse
@@ -33,7 +34,7 @@ class WeatherQuoteFragment : Fragment() {
         quoteTextView = view.findViewById(R.id.quoteTextView)
         authorTextView = view.findViewById(R.id.authorTextView)
 
-        weatherRecyclerView.layoutManager = LinearLayoutManager(requireContext(), LinearLayoutManager.VERTICAL, false)
+        weatherRecyclerView.layoutManager = GridLayoutManager(requireContext(), 2)
         weatherAdapter = WeatherAdapter(requireContext(), mutableListOf())
         weatherRecyclerView.adapter = weatherAdapter
 

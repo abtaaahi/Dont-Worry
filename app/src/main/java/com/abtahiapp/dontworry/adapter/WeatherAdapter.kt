@@ -10,6 +10,9 @@ import androidx.recyclerview.widget.RecyclerView
 import com.abtahiapp.dontworry.R
 import com.abtahiapp.dontworry.WeatherForecast
 import com.bumptech.glide.Glide
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 class WeatherAdapter(private val context: Context, private var weatherList: List<WeatherForecast>) :
     RecyclerView.Adapter<WeatherAdapter.WeatherViewHolder>() {
@@ -21,7 +24,15 @@ class WeatherAdapter(private val context: Context, private var weatherList: List
         val icon: ImageView = view.findViewById(R.id.weather_icon)
 
         fun bind(weather: WeatherForecast) {
-            date.text = weather.dt_txt
+            val originalDateStr = weather.dt_txt
+
+            val originalFormat = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault())
+            val date: Date? = originalFormat.parse(originalDateStr)
+
+            val targetFormat = SimpleDateFormat("hh:mm a dd-MM", Locale.getDefault())
+            val formattedDate = date?.let { targetFormat.format(it) }
+
+            this.date.text = formattedDate
             temp.text = "${weather.main.temp}°C"
             description.text = weather.weather[0].description
             val iconUrl = "https://openweathermap.org/img/wn/${weather.weather[0].icon}.png"
