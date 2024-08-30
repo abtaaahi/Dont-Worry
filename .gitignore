@@ -13,6 +13,4 @@
 .externalNativeBuild
 .cxx
 local.properties
-com/abtahiapp/dontworry/Secret.kt
-app\src\main\java\com\abtahiapp\dontworry\Secret.kt
 /app/src/main/java/com/abtahiapp/dontworry/Secret.kt
