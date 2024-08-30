@@ -8,11 +8,10 @@ import android.view.View
 import android.widget.Toast
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.abtahiapp.dontworry.BuildConfig
 import com.abtahiapp.dontworry.GoogleCustomSearchResponse
-import com.abtahiapp.dontworry.Item
 import com.abtahiapp.dontworry.R
 import com.abtahiapp.dontworry.RetrofitClient
-import com.abtahiapp.dontworry.Secret
 import com.abtahiapp.dontworry.adapter.ArticleAdapter
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount
 import com.google.firebase.database.DataSnapshot
@@ -75,8 +74,8 @@ class ArticleFragment : Fragment() {
     }
 
     private fun fetchArticles(mood: String?) {
-        val apiKey = Secret.GOOGLE_API_KEY
-        val customSearchEngineId = Secret.CUSTOM_SEARCH_ENGINE_ID
+        val apiKey = BuildConfig.GOOGLE_API_KEY
+        val customSearchEngineId = BuildConfig.CUSTOM_SEARCH_ENGINE_ID
         //https://programmablesearchengine.google.com/controlpanel/all
 
         val query = when (mood) {

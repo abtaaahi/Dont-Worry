@@ -16,6 +16,16 @@ android {
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+        buildConfigField("String", "GOOGLE_API_KEY", "\"${project.properties["GOOGLE_API_KEY"]}\"")
+        buildConfigField("String", "CUSTOM_SEARCH_ENGINE_ID", "\"${project.properties["CUSTOM_SEARCH_ENGINE_ID"]}\"")
+        buildConfigField("String", "NEWS_API_KEY", "\"${project.properties["NEWS_API_KEY"]}\"")
+        buildConfigField("String", "TMDB_API_KEY", "\"${project.properties["TMDB_API_KEY"]}\"")
+        buildConfigField("String", "QUOTE_API_NINJA_KEY", "\"${project.properties["QUOTE_API_NINJA_KEY"]}\"")
+        buildConfigField("String", "OPEN_WEATHER_API_KEY", "\"${project.properties["OPEN_WEATHER_API_KEY"]}\"")
+    }
+
+    buildFeatures {
+        buildConfig = true
     }
 
     buildTypes {

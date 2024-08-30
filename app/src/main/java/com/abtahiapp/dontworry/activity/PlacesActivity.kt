@@ -6,12 +6,12 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.abtahiapp.dontworry.BuildConfig
 import com.abtahiapp.dontworry.CustomSearchResponse
 import com.abtahiapp.dontworry.Place
 //import com.abtahiapp.dontworry.PlacesResponse
 import com.abtahiapp.dontworry.R
 import com.abtahiapp.dontworry.RetrofitClient
-import com.abtahiapp.dontworry.Secret
 import com.abtahiapp.dontworry.adapter.PlacesAdapter
 import retrofit2.Call
 import retrofit2.Response
@@ -67,8 +67,8 @@ class PlacesActivity : AppCompatActivity() {
 //    }
 
     private fun fetchNearbyPlaces() {
-        val apiKey = Secret.GOOGLE_API_KEY
-        val cx = Secret.CUSTOM_SEARCH_ENGINE_ID
+        val apiKey = BuildConfig.GOOGLE_API_KEY
+        val cx = BuildConfig.CUSTOM_SEARCH_ENGINE_ID
         val query = "tourist attractions near Chittagong"
 
         RetrofitClient.customSearchInstance.getPlaces(query, cx, apiKey)

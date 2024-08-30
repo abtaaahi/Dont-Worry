@@ -9,7 +9,6 @@ import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.abtahiapp.dontworry.R
 import com.abtahiapp.dontworry.RetrofitClient
-import com.abtahiapp.dontworry.Secret
 import com.abtahiapp.dontworry.WeatherResponse
 import com.abtahiapp.dontworry.adapter.WeatherAdapter
 import retrofit2.Call
@@ -19,6 +18,7 @@ import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
 import android.content.pm.PackageManager
 import android.Manifest
+import com.abtahiapp.dontworry.BuildConfig
 
 class WeatherActivity : AppCompatActivity() {
 
@@ -71,7 +71,7 @@ class WeatherActivity : AppCompatActivity() {
     }
 
     private fun fetchWeatherForecast(lat: Double, lon: Double) {
-        val apiKey = Secret.OPEN_WEATHER_API_KEY
+        val apiKey = BuildConfig.OPEN_WEATHER_API_KEY
 
         RetrofitClient.weatherInstance.getWeatherForecast(lat = lat, lon = lon, apiKey = apiKey)
             .enqueue(object : Callback<WeatherResponse> {

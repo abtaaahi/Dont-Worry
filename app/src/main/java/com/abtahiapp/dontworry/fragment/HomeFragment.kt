@@ -7,13 +7,13 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.abtahiapp.dontworry.BuildConfig
 import com.abtahiapp.dontworry.adapter.HomeAdapter
 import com.abtahiapp.dontworry.GoogleCustomSearchResponse
 import com.abtahiapp.dontworry.HomeItem
 import com.abtahiapp.dontworry.HomeItemType
 import com.abtahiapp.dontworry.R
 import com.abtahiapp.dontworry.RetrofitClient
-import com.abtahiapp.dontworry.Secret
 import com.abtahiapp.dontworry.VideoResponse
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount
 import com.google.firebase.database.DataSnapshot
@@ -94,17 +94,17 @@ class HomeFragment : Fragment() {
     }
 
     private fun fetchVideos(query: String, callback: (List<HomeItem>) -> Unit) {
-        RetrofitClient.youtubeInstance.getVideos(query = query, apiKey = Secret.GOOGLE_API_KEY)
+        RetrofitClient.youtubeInstance.getVideos(query = query, apiKey = BuildConfig.GOOGLE_API_KEY)
             .enqueue(createResponseCallback(HomeItemType.VIDEO, callback))
     }
 
     private fun fetchAudios(query: String, callback: (List<HomeItem>) -> Unit) {
-        RetrofitClient.youtubeInstance.getVideos(query = query, apiKey = Secret.GOOGLE_API_KEY)
+        RetrofitClient.youtubeInstance.getVideos(query = query, apiKey = BuildConfig.GOOGLE_API_KEY)
             .enqueue(createResponseCallback(HomeItemType.AUDIO, callback))
     }
 
     private fun fetchArticles(query: String, callback: (List<HomeItem>) -> Unit) {
-        RetrofitClient.instance.getSearchResults(query, Secret.CUSTOM_SEARCH_ENGINE_ID, Secret.GOOGLE_API_KEY)
+        RetrofitClient.instance.getSearchResults(query, BuildConfig.CUSTOM_SEARCH_ENGINE_ID, BuildConfig.GOOGLE_API_KEY)
             .enqueue(object : Callback<GoogleCustomSearchResponse> {
                 override fun onResponse(call: Call<GoogleCustomSearchResponse>, response: Response<GoogleCustomSearchResponse>) {
                     if (response.isSuccessful) {
