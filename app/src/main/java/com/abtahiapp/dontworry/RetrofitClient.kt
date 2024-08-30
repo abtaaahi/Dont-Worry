@@ -82,14 +82,24 @@ object RetrofitClient {
         retrofit.create(QuotesApiService::class.java)
     }
 
-    val placesInstance: PlacesApiService by lazy {
+    val customSearchInstance: PlacesApiService by lazy {
         val retrofit = Retrofit.Builder()
-            .baseUrl(BASE_URL_GOOGLE)
+        .baseUrl(BASE_URL_GOOGLE)
+            .client(client)
             .addConverterFactory(GsonConverterFactory.create())
             .build()
-
         retrofit.create(PlacesApiService::class.java)
     }
+
+
+//    val placesInstance: PlacesApiService by lazy {
+//        val retrofit = Retrofit.Builder()
+//            .baseUrl(BASE_URL_GOOGLE)
+//            .addConverterFactory(GsonConverterFactory.create())
+//            .build()
+//
+//        retrofit.create(PlacesApiService::class.java)
+//    }
 
 
 //    val audioInstance: AudioApiService by lazy {

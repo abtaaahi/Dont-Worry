@@ -6,8 +6,9 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.abtahiapp.dontworry.CustomSearchResponse
 import com.abtahiapp.dontworry.Place
-import com.abtahiapp.dontworry.PlacesResponse
+//import com.abtahiapp.dontworry.PlacesResponse
 import com.abtahiapp.dontworry.R
 import com.abtahiapp.dontworry.RetrofitClient
 import com.abtahiapp.dontworry.Secret
@@ -33,21 +34,51 @@ class PlacesActivity : AppCompatActivity() {
 
     }
 
+//    private fun fetchNearbyPlaces() {
+//        val apiKey = Secret.GOOGLE_API_KEY
+//        val location = "22.3475, 91.8123"
+//        val radius = 1500
+//
+//        RetrofitClient.placesInstance.getNearbyPlaces(location, radius, apiKey = apiKey)
+//            .enqueue(object : retrofit2.Callback<PlacesResponse> {
+//                override fun onResponse(call: Call<PlacesResponse>, response: Response<PlacesResponse>) {
+//                    if (response.isSuccessful) {
+//                        val placesList = response.body()?.results?.map { placeResult ->
+//                            Place(
+//                                name = placeResult.name,
+//                                imageUrl = placeResult.photos?.get(0)?.photo_reference ?: "",
+//                                latitude = placeResult.geometry.location.lat,
+//                                longitude = placeResult.geometry.location.lng
+//                            )
+//                        } ?: emptyList()
+//
+//                        placesAdapter.updatePlaces(placesList)
+//                    } else {
+//                        Log.e("PlacesActivity", "Failed to fetch places: ${response.message()}")
+//                        Toast.makeText(this@PlacesActivity, "Failed to fetch places: ${response.message()}", Toast.LENGTH_SHORT).show()
+//                    }
+//                }
+//
+//                override fun onFailure(call: Call<PlacesResponse>, t: Throwable) {
+//                    Log.e("PlacesActivity", "Failed to fetch places", t)
+//                    Toast.makeText(this@PlacesActivity, "Failed to fetch places: ${t.message}", Toast.LENGTH_SHORT).show()
+//                }
+//            })
+//    }
+
     private fun fetchNearbyPlaces() {
         val apiKey = Secret.GOOGLE_API_KEY
-        val location = "22.3475, 91.8123"
-        val radius = 1500
+        val cx = Secret.CUSTOM_SEARCH_ENGINE_ID
+        val query = "tourist attractions near Chittagong"
 
-        RetrofitClient.placesInstance.getNearbyPlaces(location, radius, apiKey = apiKey)
-            .enqueue(object : retrofit2.Callback<PlacesResponse> {
-                override fun onResponse(call: Call<PlacesResponse>, response: Response<PlacesResponse>) {
+        RetrofitClient.customSearchInstance.getPlaces(query, cx, apiKey)
+            .enqueue(object : retrofit2.Callback<CustomSearchResponse> {
+                override fun onResponse(call: Call<CustomSearchResponse>, response: Response<CustomSearchResponse>) {
                     if (response.isSuccessful) {
-                        val placesList = response.body()?.results?.map { placeResult ->
+                        val placesList = response.body()?.items?.map { searchItem ->
                             Place(
-                                name = placeResult.name,
-                                imageUrl = placeResult.photos?.get(0)?.photo_reference ?: "",
-                                latitude = placeResult.geometry.location.lat,
-                                longitude = placeResult.geometry.location.lng
+                                name = searchItem.title,
+                                imageUrl = searchItem.pagemap?.cse_thumbnail?.get(0)?.src ?: ""
                             )
                         } ?: emptyList()
 
@@ -58,11 +89,12 @@ class PlacesActivity : AppCompatActivity() {
                     }
                 }
 
-                override fun onFailure(call: Call<PlacesResponse>, t: Throwable) {
+                override fun onFailure(call: Call<CustomSearchResponse>, t: Throwable) {
                     Log.e("PlacesActivity", "Failed to fetch places", t)
                     Toast.makeText(this@PlacesActivity, "Failed to fetch places: ${t.message}", Toast.LENGTH_SHORT).show()
                 }
             })
     }
+
 
 }

@@ -18,8 +18,8 @@
         android:id="@+id/place_name"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:paddingTop="8dp"
-        android:textSize="16sp"
+        android:padding="8dp"
+        android:textSize="20sp"
         android:textStyle="bold"
-        android:textColor="@android:color/black" />
+        android:textColor="@color/textColor" />
 </androidx.cardview.widget.CardView>
