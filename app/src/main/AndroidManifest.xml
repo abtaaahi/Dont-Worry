@@ -70,13 +70,6 @@
             android:name="preloaded_fonts"
             android:resource="@array/preloaded_fonts" />
 
-        <meta-data
-            android:name="com.google.android.geo.API_KEY"
-            android:value="AIzaSyBi_Bg1FYzX9R6yIfREZZH0_yatJ5hkerw" />
-
-        <meta-data
-            android:name="com.gomaps.pro.API_KEY"
-            android:value="AlzaSy2RZEEMZpdcQ_PmPgsQbJzAY3HalOaGI6Q" />
     </application>
 
 </manifest>
