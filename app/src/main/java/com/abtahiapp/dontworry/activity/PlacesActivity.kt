@@ -2,6 +2,8 @@ package com.abtahiapp.dontworry.activity
 
 import android.os.Bundle
 import android.util.Log
+import android.view.View
+import android.widget.ProgressBar
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -20,18 +22,30 @@ class PlacesActivity : AppCompatActivity() {
 
     private lateinit var placesAdapter: PlacesAdapter
     private lateinit var placesRecyclerView: RecyclerView
+    private lateinit var progressBar: ProgressBar
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_places)
 
+        progressBar = findViewById(R.id.progress_bar)
         placesRecyclerView = findViewById(R.id.places_recycler_view)
         placesRecyclerView.layoutManager = LinearLayoutManager(this)
         placesAdapter = PlacesAdapter(this, mutableListOf())
         placesRecyclerView.adapter = placesAdapter
 
+        showLoading(true)
         fetchNearbyPlaces()
+    }
 
+    private fun showLoading(isLoading: Boolean) {
+        if (isLoading) {
+            progressBar.visibility = View.VISIBLE
+            placesRecyclerView.visibility = View.GONE
+        } else {
+            progressBar.visibility = View.GONE
+            placesRecyclerView.visibility = View.VISIBLE
+        }
     }
 
 //    private fun fetchNearbyPlaces() {
@@ -67,6 +81,7 @@ class PlacesActivity : AppCompatActivity() {
 //    }
 
     private fun fetchNearbyPlaces() {
+        showLoading(true)
         val apiKey = BuildConfig.GOOGLE_API_KEY
         val cx = BuildConfig.CUSTOM_SEARCH_ENGINE_ID
         val query = "tourist attractions near Chittagong"
@@ -83,18 +98,17 @@ class PlacesActivity : AppCompatActivity() {
                         } ?: emptyList()
 
                         placesAdapter.updatePlaces(placesList)
+                        showLoading(false)
                     } else {
-                        Log.e("PlacesActivity", "Failed to fetch places: ${response.message()}")
+                        showLoading(false)
                         Toast.makeText(this@PlacesActivity, "Failed to fetch places: ${response.message()}", Toast.LENGTH_SHORT).show()
                     }
                 }
 
                 override fun onFailure(call: Call<CustomSearchResponse>, t: Throwable) {
-                    Log.e("PlacesActivity", "Failed to fetch places", t)
+                    showLoading(false)
                     Toast.makeText(this@PlacesActivity, "Failed to fetch places: ${t.message}", Toast.LENGTH_SHORT).show()
                 }
             })
     }
-
-
 }

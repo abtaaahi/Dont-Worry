@@ -5,6 +5,7 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import android.view.View
+import android.widget.ProgressBar
 import android.widget.Toast
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -31,13 +32,16 @@ class ArticleFragment : Fragment() {
     private lateinit var articleAdapter: ArticleAdapter
     private lateinit var account: GoogleSignInAccount
     private lateinit var database: DatabaseReference
+    private lateinit var articleRecyclerView: RecyclerView
+    private lateinit var progressBar: ProgressBar
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
         val view = inflater.inflate(R.layout.fragment_article, container, false)
-        val articleRecyclerView: RecyclerView = view.findViewById(R.id.article_recycler_view)
+        articleRecyclerView= view.findViewById(R.id.article_recycler_view)
+        progressBar = view.findViewById(R.id.progress_bar)
 
         articleRecyclerView.layoutManager = LinearLayoutManager(requireContext(), LinearLayoutManager.VERTICAL, false)
         articleAdapter = ArticleAdapter(requireContext(), mutableListOf())
@@ -47,12 +51,24 @@ class ArticleFragment : Fragment() {
 
         database = FirebaseDatabase.getInstance().getReference("user_information")
 
+        showLoading(true)
         fetchLastMoodAndArticles()
 
         return view
     }
 
+    private fun showLoading(isLoading: Boolean) {
+        if (isLoading) {
+            progressBar.visibility = View.VISIBLE
+            articleRecyclerView.visibility = View.GONE
+        } else {
+            progressBar.visibility = View.GONE
+            articleRecyclerView.visibility = View.VISIBLE
+        }
+    }
+
     private fun fetchLastMoodAndArticles() {
+        showLoading(true)
         val currentDate = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Date())
         val moodHistoryRef = database.child(account.id!!).child("mood_history")
 
@@ -68,6 +84,7 @@ class ArticleFragment : Fragment() {
                 }
 
                 override fun onCancelled(databaseError: DatabaseError) {
+                    showLoading(false)
                     Toast.makeText(requireContext(), "Failed to check mood history", Toast.LENGTH_SHORT).show()
                 }
             })
@@ -91,10 +108,12 @@ class ArticleFragment : Fragment() {
                     if (response.isSuccessful) {
                         val items = response.body()?.items ?: emptyList()
                         articleAdapter.updateArticles(items)
+                        showLoading(false)
                     }
                 }
 
                 override fun onFailure(call: Call<GoogleCustomSearchResponse>, t: Throwable) {
+                    showLoading(false)
                     Toast.makeText(requireContext(), "Failed to fetch articles", Toast.LENGTH_SHORT).show()
                 }
             })

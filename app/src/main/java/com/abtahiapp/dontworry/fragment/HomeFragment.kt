@@ -5,6 +5,7 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ProgressBar
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.abtahiapp.dontworry.BuildConfig
@@ -33,24 +34,38 @@ class HomeFragment : Fragment() {
     private lateinit var homeAdapter: HomeAdapter
     private lateinit var database: DatabaseReference
     private lateinit var account: GoogleSignInAccount
+    private lateinit var progressBar: ProgressBar
+    private lateinit var recyclerView: RecyclerView
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
         val view = inflater.inflate(R.layout.fragment_home, container, false)
-        setupRecyclerView(view)
+
+        progressBar = view.findViewById(R.id.progress_bar)
+        recyclerView = view.findViewById(R.id.home_recycler_view)
+
+        recyclerView.layoutManager = LinearLayoutManager(requireContext(), LinearLayoutManager.VERTICAL, false)
+        homeAdapter = HomeAdapter(requireContext(), mutableListOf())
+        recyclerView.adapter = homeAdapter
+
         account = activity?.intent?.getParcelableExtra("account") ?: return view
         database = FirebaseDatabase.getInstance().getReference("user_information")
+
+        showLoading(true)
         fetchItems()
         return view
     }
 
-    private fun setupRecyclerView(view: View) {
-        val homeRecyclerView: RecyclerView = view.findViewById(R.id.home_recycler_view)
-        homeRecyclerView.layoutManager = LinearLayoutManager(requireContext(), LinearLayoutManager.VERTICAL, false)
-        homeAdapter = HomeAdapter(requireContext(), mutableListOf())
-        homeRecyclerView.adapter = homeAdapter
+    private fun showLoading(isLoading: Boolean) {
+        if (isLoading) {
+            progressBar.visibility = View.VISIBLE
+            recyclerView.visibility = View.GONE
+        } else {
+            progressBar.visibility = View.GONE
+            recyclerView.visibility = View.VISIBLE
+        }
     }
 
     private fun fetchItems() {
@@ -71,6 +86,7 @@ class HomeFragment : Fragment() {
 
                 override fun onCancelled(databaseError: DatabaseError) {
                     updateUI(emptyList())
+                    showLoading(false)
                 }
             })
     }
@@ -88,6 +104,7 @@ class HomeFragment : Fragment() {
                         shuffle()
                     }
                     updateUI(allItems)
+                    showLoading(false)
                 }
             }
         }

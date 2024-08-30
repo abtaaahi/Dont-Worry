@@ -5,6 +5,7 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import android.view.View
+import android.widget.ProgressBar
 import android.widget.Toast
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -31,13 +32,16 @@ class MusicFragment : Fragment() {
     private lateinit var audioAdapter: AudioAdapter
     private lateinit var account: GoogleSignInAccount
     private lateinit var database: DatabaseReference
+    private lateinit var audioRecyclerView: RecyclerView
+    private lateinit var progressBar: ProgressBar
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
         val view = inflater.inflate(R.layout.fragment_music, container, false)
-        val audioRecyclerView: RecyclerView = view.findViewById(R.id.audio_recycler_view)
+        audioRecyclerView = view.findViewById(R.id.audio_recycler_view)
+        progressBar = view.findViewById(R.id.progress_bar)
 
         audioRecyclerView.layoutManager = LinearLayoutManager(requireContext(), LinearLayoutManager.VERTICAL, false)
         audioAdapter = AudioAdapter(requireContext(), mutableListOf())
@@ -47,12 +51,24 @@ class MusicFragment : Fragment() {
 
         database = FirebaseDatabase.getInstance().getReference("user_information")
 
+        showLoading(true)
         fetchLastMoodAndAudios()
 
         return view
     }
 
+    private fun showLoading(isLoading: Boolean) {
+        if (isLoading) {
+            progressBar.visibility = View.VISIBLE
+            audioRecyclerView.visibility = View.GONE
+        } else {
+            progressBar.visibility = View.GONE
+            audioRecyclerView.visibility = View.VISIBLE
+        }
+    }
+
     private fun fetchLastMoodAndAudios() {
+        showLoading(true)
         val currentDate = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Date())
         val moodHistoryRef = database.child(account.id!!).child("mood_history")
 
@@ -68,6 +84,7 @@ class MusicFragment : Fragment() {
                 }
 
                 override fun onCancelled(databaseError: DatabaseError) {
+                    showLoading(false)
                     Toast.makeText(requireContext(), "Failed to check mood history", Toast.LENGTH_SHORT).show()
                 }
             })
@@ -88,10 +105,12 @@ class MusicFragment : Fragment() {
                     if (response.isSuccessful) {
                         val videos = response.body()?.items ?: emptyList()
                         audioAdapter.updateAudios(videos)
+                        showLoading(false)
                     }
                 }
 
                 override fun onFailure(call: Call<VideoResponse>, t: Throwable) {
+                    showLoading(false)
                     Toast.makeText(requireContext(), "Failed to fetch musics", Toast.LENGTH_SHORT).show()
                 }
             })

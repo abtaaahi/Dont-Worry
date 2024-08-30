@@ -134,6 +134,13 @@ data class WeatherDescription(
     val icon: String
 )
 
+data class CurrentWeatherResponse(
+    val weather: List<CurrentWeatherDescription>
+)
+data class CurrentWeatherDescription(
+    val main: String
+)
+
 data class QuoteResponse(
     val quote: String,
     val author: String

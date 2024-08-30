@@ -5,6 +5,7 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import android.view.View
+import android.widget.ProgressBar
 import android.widget.Toast
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -31,7 +32,8 @@ import java.util.Locale
 class MovieFragment : Fragment() {
 
     private lateinit var movieAdapter: MovieAdapter
-
+    private lateinit var progressBar: ProgressBar
+    private lateinit var movieRecyclerView: RecyclerView
     private lateinit var account: GoogleSignInAccount
     private lateinit var database: DatabaseReference
 
@@ -40,7 +42,8 @@ class MovieFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View? {
         val view = inflater.inflate(R.layout.fragment_movie, container, false)
-        val movieRecyclerView: RecyclerView = view.findViewById(R.id.movie_recycler_view)
+        movieRecyclerView = view.findViewById(R.id.movie_recycler_view)
+        progressBar = view.findViewById(R.id.progress_bar)
 
         movieRecyclerView.layoutManager = GridLayoutManager(requireContext(), 2)
         movieAdapter = MovieAdapter(requireContext(), mutableListOf())
@@ -50,12 +53,24 @@ class MovieFragment : Fragment() {
 
         database = FirebaseDatabase.getInstance().getReference("user_information")
 
+        showLoading(true)
         fetchLastMoodAndMovies()
 
         return view
     }
 
+    private fun showLoading(isLoading: Boolean) {
+        if (isLoading) {
+            progressBar.visibility = View.VISIBLE
+            movieRecyclerView.visibility = View.GONE
+        } else {
+            progressBar.visibility = View.GONE
+            movieRecyclerView.visibility = View.VISIBLE
+        }
+    }
+
     private fun fetchLastMoodAndMovies() {
+        showLoading(true)
         val currentDate = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Date())
         val moodHistoryRef = database.child(account.id!!).child("mood_history")
 
@@ -71,6 +86,7 @@ class MovieFragment : Fragment() {
                 }
 
                 override fun onCancelled(databaseError: DatabaseError) {
+                    showLoading(false)
                     Toast.makeText(requireContext(), "Failed to check mood history", Toast.LENGTH_SHORT).show()
                 }
             })
@@ -98,6 +114,7 @@ class MovieFragment : Fragment() {
                     if (movieResponse != null) {
                         val movies = movieResponse.results
                         fetchTrailersForMovies(movies)
+                        showLoading(false)
                     } else {
                         Toast.makeText(requireContext(), "No movies found", Toast.LENGTH_SHORT).show()
                     }
@@ -107,6 +124,7 @@ class MovieFragment : Fragment() {
             }
 
             override fun onFailure(call: Call<MovieResponse>, t: Throwable) {
+                showLoading(false)
                 Toast.makeText(requireContext(), "Failed to fetch movies", Toast.LENGTH_SHORT).show()
             }
         })

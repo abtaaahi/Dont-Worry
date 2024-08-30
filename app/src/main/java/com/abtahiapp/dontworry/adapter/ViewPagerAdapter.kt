@@ -8,7 +8,7 @@ import com.abtahiapp.dontworry.fragment.MovieFragment
 import com.abtahiapp.dontworry.fragment.MusicFragment
 import com.abtahiapp.dontworry.fragment.VideoFragment
 import com.abtahiapp.dontworry.fragment.ArticleFragment
-import com.abtahiapp.dontworry.fragment.WeatherQuoteFragment
+import com.abtahiapp.dontworry.fragment.OthersFragment
 
 class ViewPagerAdapter(activity: FragmentActivity) : FragmentStateAdapter(activity) {
 
@@ -18,7 +18,7 @@ class ViewPagerAdapter(activity: FragmentActivity) : FragmentStateAdapter(activi
         MusicFragment(),
         VideoFragment(),
         ArticleFragment(),
-        WeatherQuoteFragment()
+        OthersFragment()
     )
 
     override fun getItemCount(): Int = fragmentList.size
