@@ -13,6 +13,7 @@ import com.abtahiapp.dontworry.QuoteResponse
 import com.abtahiapp.dontworry.R
 import com.abtahiapp.dontworry.RetrofitClient
 import com.abtahiapp.dontworry.activity.PlacesActivity
+import com.abtahiapp.dontworry.activity.SocialSpaceActivity
 import com.abtahiapp.dontworry.activity.WeatherActivity
 import retrofit2.Call
 import retrofit2.Callback
@@ -27,13 +28,14 @@ class OthersFragment : Fragment() {
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        val view = inflater.inflate(R.layout.fragment_weather_quote, container, false)
+        val view = inflater.inflate(R.layout.fragment_others, container, false)
         quoteTextView = view.findViewById(R.id.quoteTextView)
         authorTextView = view.findViewById(R.id.authorTextView)
 
         val cardView1 = view.findViewById<CardView>(R.id.cardView1)
         val cardView2 = view.findViewById<CardView>(R.id.cardView2)
         val cardView3 = view.findViewById<CardView>(R.id.cardView3)
+        val cardView4 = view.findViewById<CardView>(R.id.cardView4)
 
         cardView1.setOnClickListener {
             fetchAndDisplayQuote()
@@ -46,6 +48,11 @@ class OthersFragment : Fragment() {
 
         cardView3.setOnClickListener {
             val intent = Intent(activity, WeatherActivity::class.java)
+            startActivity(intent)
+        }
+
+        cardView4.setOnClickListener {
+            val intent = Intent(activity, SocialSpaceActivity::class.java)
             startActivity(intent)
         }
 
