@@ -18,6 +18,9 @@
         android:theme="@style/Theme.DontWorryYourPersonalTherapist"
         tools:targetApi="31">
         <activity
+            android:name=".activity.MyPostActivity"
+            android:exported="false" />
+        <activity
             android:name=".activity.SocialSpaceActivity"
             android:exported="false" />
         <activity

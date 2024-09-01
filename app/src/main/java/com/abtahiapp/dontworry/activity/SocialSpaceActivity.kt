@@ -88,8 +88,9 @@ class SocialSpaceActivity : AppCompatActivity() {
             val currentTime = System.currentTimeMillis()
             val postTime = SimpleDateFormat("dd MMM yyyy HH:mm:ss", Locale.getDefault()).format(Date(currentTime))
 
-            val post = Post(userName ?: "Anonymous", userPhotoUrl ?: "", postContent, postTime)
             val postId = databaseReference.push().key ?: return
+            val userId = GoogleSignIn.getLastSignedInAccount(this)?.id ?: "unknown"
+            val post = Post(userName ?: "Anonymous", userPhotoUrl ?: "", postContent, postTime, userId, postId)
 
             databaseReference.child(postId).setValue(post).addOnCompleteListener { task ->
                 if (task.isSuccessful) {

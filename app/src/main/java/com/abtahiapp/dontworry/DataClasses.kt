@@ -148,7 +148,9 @@ data class Post(
     val userName: String = "",
     val userPhotoUrl: String = "",
     val content: String = "",
-    val postTime: String = ""
+    val postTime: String = "",
+    val userId: String = "",
+    var id: String = ""
 )
 
 //data class NewsResponse(

@@ -34,6 +34,7 @@ class MyProfile : AppCompatActivity() {
         val logoutButton: Button = findViewById(R.id.logout_button)
         val editDetailsButton: ImageButton = findViewById(R.id.editDetails)
         val activityButton: Button = findViewById(R.id.activity_button)
+        val mypostButton: Button = findViewById(R.id.my_post_button)
 
         userId = intent.getStringExtra("userId") ?: ""
         val name = intent.getStringExtra("name")
@@ -43,6 +44,11 @@ class MyProfile : AppCompatActivity() {
         activityButton.setOnClickListener {
             val intent = Intent(this, MyActivity::class.java)
             intent.putExtra("userId", userId)
+            startActivity(intent)
+        }
+
+        mypostButton.setOnClickListener {
+            val intent = Intent(this, MyPostActivity::class.java)
             startActivity(intent)
         }
 

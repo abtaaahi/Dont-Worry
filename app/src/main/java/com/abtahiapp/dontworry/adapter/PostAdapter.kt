@@ -16,6 +16,8 @@ import java.util.concurrent.TimeUnit
 
 class PostAdapter(private var posts: MutableList<Post>) : RecyclerView.Adapter<PostAdapter.PostViewHolder>() {
 
+    private var onItemClickListener: ((Post) -> Unit)? = null
+
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): PostViewHolder {
         val view = LayoutInflater.from(parent.context).inflate(R.layout.item_post, parent, false)
         return PostViewHolder(view)
@@ -24,6 +26,9 @@ class PostAdapter(private var posts: MutableList<Post>) : RecyclerView.Adapter<P
     override fun onBindViewHolder(holder: PostViewHolder, position: Int) {
         val post = posts[position]
         holder.bind(post)
+        holder.itemView.setOnClickListener {
+            onItemClickListener?.invoke(post)
+        }
     }
 
     override fun getItemCount(): Int = posts.size
@@ -32,6 +37,10 @@ class PostAdapter(private var posts: MutableList<Post>) : RecyclerView.Adapter<P
         posts.clear()
         posts.addAll(newPosts)
         notifyDataSetChanged()
+    }
+
+    fun setOnItemClickListener(listener: (Post) -> Unit) {
+        onItemClickListener = listener
     }
 
     class PostViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
@@ -52,7 +61,6 @@ class PostAdapter(private var posts: MutableList<Post>) : RecyclerView.Adapter<P
             userNameTextView.text = firstName
 
             postTimeTextView.text = getRelativeTime(post.postTime)
-            //postTimeTextView.text = post.postTime
 
             postContentTextView.text = post.content
 

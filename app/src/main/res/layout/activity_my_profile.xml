@@ -51,7 +51,7 @@
         android:layout_marginTop="16dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/activity_button">
+        app:layout_constraintTop_toBottomOf="@+id/my_post_button">
 
         <TextView
             android:layout_width="0dp"
@@ -192,6 +192,18 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/user_email" />
+
+    <Button
+        android:id="@+id/my_post_button"
+        android:layout_width="match_parent"
+        android:layout_height="40dp"
+        android:textColor="@color/buttonTextColor"
+        android:layout_marginTop="8dp"
+        android:backgroundTint="@color/textColor"
+        android:text="My Post"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/activity_button" />
 
     <Button
         android:id="@+id/logout_button"
