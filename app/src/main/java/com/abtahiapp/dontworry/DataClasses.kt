@@ -8,22 +8,6 @@ data class Mood(
     val details: String
 )
 
-//data class NewsResponse(
-//    val status: String,
-//    val totalResults: Int,
-//    val articles: List<Article>
-//)
-//
-//data class Article(
-//    val author: String?,
-//    val title: String,
-//    val description: String?,
-//    val url: String,
-//    val urlToImage: String?,
-//    val publishedAt: String,
-//    val content: String?
-//)
-
 data class GoogleCustomSearchResponse(
     val items: List<Item>
 )
@@ -159,6 +143,29 @@ enum class HomeItemType {
     ARTICLE,
     AUDIO
 }
+
+data class Post(
+    val userName: String = "",
+    val userPhotoUrl: String = "",
+    val content: String = "",
+    val postTime: String = ""
+)
+
+//data class NewsResponse(
+//    val status: String,
+//    val totalResults: Int,
+//    val articles: List<Article>
+//)
+//
+//data class Article(
+//    val author: String?,
+//    val title: String,
+//    val description: String?,
+//    val url: String,
+//    val urlToImage: String?,
+//    val publishedAt: String,
+//    val content: String?
+//)
 
 //data class Place(
 //    val name: String,
