@@ -8,6 +8,9 @@ import com.abtahiapp.dontworry.Mood
 import com.abtahiapp.dontworry.adapter.MoodAdapter
 import com.abtahiapp.dontworry.R
 import com.google.firebase.database.FirebaseDatabase
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 class MyActivity : AppCompatActivity() {
 
@@ -36,6 +39,7 @@ class MyActivity : AppCompatActivity() {
 
                 val mood = Mood(moodImage, dateTime, details)
                 moodList.add(mood)
+                moodList.sortByDescending { parseDateTime(it.dateTime) }
             }
             moodAdapter.notifyDataSetChanged()
         }
@@ -50,5 +54,10 @@ class MyActivity : AppCompatActivity() {
             "Very Fine" -> R.drawable.very_fine
             else -> R.drawable.fine
         }
+    }
+
+    private fun parseDateTime(dateTime: String): Date? {
+        val sdf = SimpleDateFormat("hh:mm a dd MMM", Locale.getDefault())
+        return sdf.parse(dateTime)
     }
 }

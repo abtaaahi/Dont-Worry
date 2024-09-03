@@ -18,17 +18,10 @@ import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
 import android.content.pm.PackageManager
 import android.Manifest
-import android.util.Log
 import android.view.View
 import android.widget.ProgressBar
 import com.abtahiapp.dontworry.BuildConfig
 import com.abtahiapp.dontworry.CurrentWeatherResponse
-import java.text.SimpleDateFormat
-import java.util.Calendar
-import java.util.Date
-import java.util.Locale
-import java.util.TimeZone
-import java.util.concurrent.TimeUnit
 
 class WeatherActivity : AppCompatActivity() {
 
