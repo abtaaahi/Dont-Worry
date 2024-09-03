@@ -7,9 +7,9 @@ import retrofit2.http.Query
 
 interface GoogleCustomSearchApiService {
     @GET("v1")
-    fun getSearchResults(
+    suspend fun getSearchResults(
         @Query("q") query: String,
         @Query("cx") customSearchEngineId: String,
         @Query("key") apiKey: String
-    ): Call<GoogleCustomSearchResponse>
+    ): GoogleCustomSearchResponse
 }

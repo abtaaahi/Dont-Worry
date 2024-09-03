@@ -9,11 +9,7 @@ import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.abtahiapp.dontworry.R
 import com.abtahiapp.dontworry.RetrofitClient
-import com.abtahiapp.dontworry.WeatherResponse
 import com.abtahiapp.dontworry.adapter.WeatherAdapter
-import retrofit2.Call
-import retrofit2.Callback
-import retrofit2.Response
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
 import android.content.pm.PackageManager
@@ -21,7 +17,10 @@ import android.Manifest
 import android.view.View
 import android.widget.ProgressBar
 import com.abtahiapp.dontworry.BuildConfig
-import com.abtahiapp.dontworry.CurrentWeatherResponse
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class WeatherActivity : AppCompatActivity() {
 
@@ -35,7 +34,7 @@ class WeatherActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_weather)
 
-        weatherRecyclerView= findViewById(R.id.weather_recycler_view)
+        weatherRecyclerView = findViewById(R.id.weather_recycler_view)
         suggestionTextView = findViewById(R.id.weather_suggestion)
         progressBar = findViewById(R.id.progress_bar)
 
@@ -79,64 +78,36 @@ class WeatherActivity : AppCompatActivity() {
 
         fusedLocationClient.lastLocation.addOnSuccessListener { location ->
             if (location != null) {
-                fetchCurrentWeather(location.latitude, location.longitude)
-                fetchWeatherForecast(location.latitude, location.longitude)
+                fetchWeatherData(location.latitude, location.longitude)
             } else {
-                fetchWeatherForecast(22.3475, 91.8123) //Chittagong
-                fetchCurrentWeather(22.3475, 91.8123)
+                fetchWeatherData(22.3475, 91.8123) //Chittagong
             }
         }.addOnFailureListener {
-            fetchWeatherForecast(22.3475, 91.8123) //Chittagong
-            fetchCurrentWeather(22.3475, 91.8123)
+            fetchWeatherData(22.3475, 91.8123) //Chittagong
         }
     }
 
-    private fun fetchWeatherForecast(lat: Double, lon: Double) {
+    private fun fetchWeatherData(lat: Double, lon: Double) {
         val apiKey = BuildConfig.OPEN_WEATHER_API_KEY
 
-        RetrofitClient.weatherInstance.getWeatherForecast(lat = lat, lon = lon, apiKey = apiKey)
-            .enqueue(object : Callback<WeatherResponse> {
-                override fun onResponse(call: Call<WeatherResponse>, response: Response<WeatherResponse>) {
-                    if (response.isSuccessful) {
-                        val weatherList = response.body()?.list ?: emptyList()
-                        weatherAdapter.updateWeather(weatherList)
-                        showLoading(false)
-                    } else {
-                        showLoading(false)
-                        Toast.makeText(this@WeatherActivity, "Failed to fetch weather data", Toast.LENGTH_SHORT).show()
-                    }
-                }
+        CoroutineScope(Dispatchers.IO).launch {
+            try {
+                val weatherForecast = RetrofitClient.weatherInstance.getWeatherForecast(lat, lon, apiKey = apiKey)
+                val currentWeather = RetrofitClient.currentWeatherInstance.getCurrentWeather(lat, lon, apiKey = apiKey)
 
-                override fun onFailure(call: Call<WeatherResponse>, t: Throwable) {
+                withContext(Dispatchers.Main) {
+                    weatherAdapter.updateWeather(weatherForecast.list)
+                    showWeatherSuggestion(currentWeather.weather.firstOrNull()?.main.orEmpty())
+                    showLoading(false)
+                }
+            } catch (e: Exception) {
+                withContext(Dispatchers.Main) {
                     showLoading(false)
                     Toast.makeText(this@WeatherActivity, "Failed to fetch weather data", Toast.LENGTH_SHORT).show()
                 }
-            })
+            }
+        }
     }
-
-    private fun fetchCurrentWeather(lat: Double, lon: Double) {
-        val apiKey = BuildConfig.OPEN_WEATHER_API_KEY
-
-        RetrofitClient.currentWeatherInstance.getCurrentWeather(lat = lat, lon = lon, apiKey = apiKey)
-            .enqueue(object : Callback<CurrentWeatherResponse> {
-                override fun onResponse(call: Call<CurrentWeatherResponse>, response: Response<CurrentWeatherResponse>) {
-                    if (response.isSuccessful) {
-                        val currentWeather = response.body()?.weather?.firstOrNull()
-                        currentWeather?.let {
-                            showWeatherSuggestion(it.main)
-                            Toast.makeText(this@WeatherActivity, "Current Weather: ${it.main}", Toast.LENGTH_SHORT).show()
-                        }
-                    } else {
-                        Toast.makeText(this@WeatherActivity, "Failed to fetch current weather data", Toast.LENGTH_SHORT).show()
-                    }
-                }
-
-                override fun onFailure(call: Call<CurrentWeatherResponse>, t: Throwable) {
-                    Toast.makeText(this@WeatherActivity, "Failed to fetch current weather data", Toast.LENGTH_SHORT).show()
-                }
-            })
-    }
-
 
     private fun showWeatherSuggestion(description: String) {
         val suggestion = when {
@@ -160,7 +131,7 @@ class WeatherActivity : AppCompatActivity() {
         } else {
             showLoading(false)
             Toast.makeText(this, "Location permission denied", Toast.LENGTH_SHORT).show()
-            fetchWeatherForecast(22.3475, 91.8123) //Chittagong
+            fetchWeatherData(22.3475, 91.8123) //Chittagong
         }
     }
 }

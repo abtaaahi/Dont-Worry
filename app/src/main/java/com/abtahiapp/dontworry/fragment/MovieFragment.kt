@@ -11,10 +11,8 @@ import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.abtahiapp.dontworry.BuildConfig
 import com.abtahiapp.dontworry.Movie
-import com.abtahiapp.dontworry.MovieResponse
 import com.abtahiapp.dontworry.R
 import com.abtahiapp.dontworry.RetrofitClient
-import com.abtahiapp.dontworry.TrailerResponse
 import com.abtahiapp.dontworry.adapter.MovieAdapter
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount
 import com.google.firebase.database.DataSnapshot
@@ -22,12 +20,13 @@ import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
-import retrofit2.Call
-import retrofit2.Callback
-import retrofit2.Response
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class MovieFragment : Fragment() {
 
@@ -93,63 +92,50 @@ class MovieFragment : Fragment() {
     }
 
     private fun fetchMovies(mood: String?) {
-        val apiKey = BuildConfig.TMDB_API_KEY
-        val genreId = when (mood) {
-            "Angry" -> 35 // Comedy
-            "Very Sad", "Sad" -> 18 // Drama
-            "Fine", "Very Fine" -> 28 // Action
-            else -> null // If no mood, fetch popular movies
-        }
-
-        val call = if (genreId != null) {
-            RetrofitClient.movieInstance.getMoviesByGenre(apiKey, genreId)
-        } else {
-            RetrofitClient.movieInstance.getMovies(apiKey)
-        }
-
-        call.enqueue(object : Callback<MovieResponse> {
-            override fun onResponse(call: Call<MovieResponse>, response: Response<MovieResponse>) {
-                if (response.isSuccessful) {
-                    val movieResponse = response.body()
-                    if (movieResponse != null) {
-                        val movies = movieResponse.results
-                        fetchTrailersForMovies(movies)
-                        showLoading(false)
-                    } else {
-                        Toast.makeText(requireContext(), "No movies found", Toast.LENGTH_SHORT).show()
-                    }
-                } else {
-                    Toast.makeText(requireContext(), "Failed to fetch movies", Toast.LENGTH_SHORT).show()
-                }
+        CoroutineScope(Dispatchers.Main).launch {
+            showLoading(true)
+            val apiKey = BuildConfig.TMDB_API_KEY
+            val genreId = when (mood) {
+                "Angry" -> 35 // Comedy
+                "Very Sad", "Sad" -> 18 // Drama
+                "Fine", "Very Fine" -> 28 // Action
+                else -> null // If no mood, fetch popular movies
             }
 
-            override fun onFailure(call: Call<MovieResponse>, t: Throwable) {
+            try {
+                val movieResponse = withContext(Dispatchers.IO) {
+                    if (genreId != null) {
+                        RetrofitClient.movieInstance.getMoviesByGenre(apiKey, genreId)
+                    } else {
+                        RetrofitClient.movieInstance.getMovies(apiKey)
+                    }
+                }
+                fetchTrailersForMovies(movieResponse.results)
+                showLoading(false)
+            } catch (e: Exception) {
                 showLoading(false)
                 Toast.makeText(requireContext(), "Failed to fetch movies", Toast.LENGTH_SHORT).show()
             }
-        })
+        }
     }
 
     private fun fetchTrailersForMovies(movies: List<Movie>) {
-        val apiKey = BuildConfig.TMDB_API_KEY
+        CoroutineScope(Dispatchers.Main).launch {
+            val apiKey = BuildConfig.TMDB_API_KEY
 
-        movies.forEach { movie ->
-            RetrofitClient.movieInstance.getMovieTrailers(movie.id, apiKey)
-                .enqueue(object : Callback<TrailerResponse> {
-                    override fun onResponse(call: Call<TrailerResponse>, response: Response<TrailerResponse>) {
-                        if (response.isSuccessful) {
-                            val trailers = response.body()?.results ?: emptyList()
-                            val trailer = trailers.find { it.type == "Trailer" }
-                            trailer?.let {
-                                movie.trailerUrl = it.key
-                            }
-                        }
-                        movieAdapter.updateMovies(movies.toMutableList())
+            movies.forEach { movie ->
+                try {
+                    val trailerResponse = withContext(Dispatchers.IO) {
+                        RetrofitClient.movieInstance.getMovieTrailers(movie.id, apiKey)
                     }
-
-                    override fun onFailure(call: Call<TrailerResponse>, t: Throwable) {
+                    val trailer = trailerResponse.results.find { it.type == "Trailer" }
+                    trailer?.let {
+                        movie.trailerUrl = it.key
                     }
-                })
+                } catch (e: Exception) {
+                }
+            }
+            movieAdapter.updateMovies(movies.toMutableList())
         }
     }
 }

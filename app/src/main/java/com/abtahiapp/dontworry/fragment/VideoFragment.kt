@@ -12,7 +12,6 @@ import androidx.recyclerview.widget.RecyclerView
 import com.abtahiapp.dontworry.BuildConfig
 import com.abtahiapp.dontworry.R
 import com.abtahiapp.dontworry.RetrofitClient
-import com.abtahiapp.dontworry.VideoResponse
 import com.abtahiapp.dontworry.adapter.VideoAdapter
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount
 import com.google.firebase.database.DataSnapshot
@@ -20,12 +19,13 @@ import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
-import retrofit2.Call
-import retrofit2.Callback
-import retrofit2.Response
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
+import kotlinx.coroutines.launch
+import androidx.lifecycle.lifecycleScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 
 class VideoFragment : Fragment() {
 
@@ -99,20 +99,17 @@ class VideoFragment : Fragment() {
             else -> "mindfulness"
         }
 
-        RetrofitClient.youtubeInstance.getVideos(query = query, apiKey = apiKey)
-            .enqueue(object : Callback<VideoResponse> {
-                override fun onResponse(call: Call<VideoResponse>, response: Response<VideoResponse>) {
-                    if (response.isSuccessful) {
-                        val videos = response.body()?.items ?: emptyList()
-                        videoAdapter.updateVideos(videos)
-                        showLoading(false)
-                    }
+        lifecycleScope.launch {
+            try {
+                val response = withContext(Dispatchers.IO) {
+                    RetrofitClient.youtubeInstance.getVideos(query = query, apiKey = apiKey)
                 }
-
-                override fun onFailure(call: Call<VideoResponse>, t: Throwable) {
-                    showLoading(false)
-                    Toast.makeText(requireContext(), "Failed to fetch videos", Toast.LENGTH_SHORT).show()
-                }
-            })
+                videoAdapter.updateVideos(response.items)
+            } catch (e: Exception) {
+                Toast.makeText(requireContext(), "Failed to fetch videos", Toast.LENGTH_SHORT).show()
+            } finally {
+                showLoading(false)
+            }
+        }
     }
 }

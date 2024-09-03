@@ -10,7 +10,6 @@ import android.widget.Toast
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.abtahiapp.dontworry.BuildConfig
-import com.abtahiapp.dontworry.GoogleCustomSearchResponse
 import com.abtahiapp.dontworry.R
 import com.abtahiapp.dontworry.RetrofitClient
 import com.abtahiapp.dontworry.adapter.ArticleAdapter
@@ -20,9 +19,10 @@ import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
-import retrofit2.Call
-import retrofit2.Callback
-import retrofit2.Response
+import kotlinx.coroutines.launch
+import androidx.lifecycle.lifecycleScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -40,7 +40,7 @@ class ArticleFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View? {
         val view = inflater.inflate(R.layout.fragment_article, container, false)
-        articleRecyclerView= view.findViewById(R.id.article_recycler_view)
+        articleRecyclerView = view.findViewById(R.id.article_recycler_view)
         progressBar = view.findViewById(R.id.progress_bar)
 
         articleRecyclerView.layoutManager = LinearLayoutManager(requireContext(), LinearLayoutManager.VERTICAL, false)
@@ -93,7 +93,7 @@ class ArticleFragment : Fragment() {
     private fun fetchArticles(mood: String?) {
         val apiKey = BuildConfig.GOOGLE_API_KEY
         val customSearchEngineId = BuildConfig.CUSTOM_SEARCH_ENGINE_ID
-        //https://programmablesearchengine.google.com/controlpanel/all
+        // https://programmablesearchengine.google.com/controlpanel/all
 
         val query = when (mood) {
             "Angry" -> "stress management"
@@ -102,21 +102,18 @@ class ArticleFragment : Fragment() {
             else -> "mindfulness"
         }
 
-        RetrofitClient.instance.getSearchResults(query, customSearchEngineId, apiKey)
-            .enqueue(object : Callback<GoogleCustomSearchResponse> {
-                override fun onResponse(call: Call<GoogleCustomSearchResponse>, response: Response<GoogleCustomSearchResponse>) {
-                    if (response.isSuccessful) {
-                        val items = response.body()?.items ?: emptyList()
-                        articleAdapter.updateArticles(items)
-                        showLoading(false)
-                    }
+        lifecycleScope.launch {
+            try {
+                val response = withContext(Dispatchers.IO) {
+                    RetrofitClient.instance.getSearchResults(query, customSearchEngineId, apiKey)
                 }
-
-                override fun onFailure(call: Call<GoogleCustomSearchResponse>, t: Throwable) {
-                    showLoading(false)
-                    Toast.makeText(requireContext(), "Failed to fetch articles", Toast.LENGTH_SHORT).show()
-                }
-            })
+                articleAdapter.updateArticles(response.items)
+            } catch (e: Exception) {
+                Toast.makeText(requireContext(), "Failed to fetch articles", Toast.LENGTH_SHORT).show()
+            } finally {
+                showLoading(false)
+            }
+        }
     }
 }
 
