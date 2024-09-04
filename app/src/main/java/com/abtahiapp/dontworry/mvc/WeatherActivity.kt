@@ -1,28 +1,31 @@
-package com.abtahiapp.dontworry.activity
+package com.abtahiapp.dontworry.mvc
 
-import android.Manifest
-import android.content.pm.PackageManager
 import android.os.Bundle
-import android.view.View
-import android.widget.ProgressBar
+import androidx.appcompat.app.AppCompatActivity
 import android.widget.TextView
 import android.widget.Toast
-import androidx.activity.viewModels
-import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
-import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.abtahiapp.dontworry.BuildConfig
 import com.abtahiapp.dontworry.R
+import com.abtahiapp.dontworry.RetrofitClient
 import com.abtahiapp.dontworry.adapter.WeatherAdapter
-import com.abtahiapp.dontworry.viewmodel.WeatherViewModel
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
+import android.content.pm.PackageManager
+import android.Manifest
+import android.view.View
+import android.widget.ProgressBar
+import com.abtahiapp.dontworry.BuildConfig
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
+
+/// MVC Design Pattern
 class WeatherActivity : AppCompatActivity() {
 
-    private val weatherViewModel: WeatherViewModel by viewModels()
     private lateinit var weatherAdapter: WeatherAdapter
     private lateinit var fusedLocationClient: FusedLocationProviderClient
     private lateinit var suggestionTextView: TextView
@@ -43,22 +46,8 @@ class WeatherActivity : AppCompatActivity() {
 
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
 
-        setupObservers()
+        showLoading(true)
         getCurrentLocationAndFetchWeather()
-    }
-
-    private fun setupObservers() {
-        weatherViewModel.weatherForecast.observe(this, Observer { weatherList ->
-            weatherAdapter.updateWeather(weatherList)
-        })
-
-        weatherViewModel.currentWeather.observe(this, Observer { description ->
-            showWeatherSuggestion(description)
-        })
-
-        weatherViewModel.isLoading.observe(this, Observer { isLoading ->
-            showLoading(isLoading)
-        })
     }
 
     private fun showLoading(isLoading: Boolean) {
@@ -91,12 +80,34 @@ class WeatherActivity : AppCompatActivity() {
 
         fusedLocationClient.lastLocation.addOnSuccessListener { location ->
             if (location != null) {
-                weatherViewModel.fetchWeatherData(location.latitude, location.longitude, BuildConfig.OPEN_WEATHER_API_KEY)
+                fetchWeatherData(location.latitude, location.longitude)
             } else {
-                weatherViewModel.fetchWeatherData(22.3475, 91.8123, BuildConfig.OPEN_WEATHER_API_KEY) //Chittagong
+                fetchWeatherData(22.3475, 91.8123) //Chittagong
             }
         }.addOnFailureListener {
-            weatherViewModel.fetchWeatherData(22.3475, 91.8123, BuildConfig.OPEN_WEATHER_API_KEY) //Chittagong
+            fetchWeatherData(22.3475, 91.8123) //Chittagong
+        }
+    }
+
+    private fun fetchWeatherData(lat: Double, lon: Double) {
+        val apiKey = BuildConfig.OPEN_WEATHER_API_KEY
+
+        CoroutineScope(Dispatchers.IO).launch {
+            try {
+                val weatherForecast = RetrofitClient.weatherInstance.getWeatherForecast(lat, lon, apiKey = apiKey)
+                val currentWeather = RetrofitClient.currentWeatherInstance.getCurrentWeather(lat, lon, apiKey = apiKey)
+
+                withContext(Dispatchers.Main) {
+                    weatherAdapter.updateWeather(weatherForecast.list)
+                    showWeatherSuggestion(currentWeather.weather.firstOrNull()?.main.orEmpty())
+                    showLoading(false)
+                }
+            } catch (e: Exception) {
+                withContext(Dispatchers.Main) {
+                    showLoading(false)
+                    Toast.makeText(this@WeatherActivity, "Failed to fetch weather data", Toast.LENGTH_SHORT).show()
+                }
+            }
         }
     }
 
@@ -122,7 +133,7 @@ class WeatherActivity : AppCompatActivity() {
         } else {
             showLoading(false)
             Toast.makeText(this, "Location permission denied", Toast.LENGTH_SHORT).show()
-            weatherViewModel.fetchWeatherData(22.3475, 91.8123, BuildConfig.OPEN_WEATHER_API_KEY) //Chittagong
+            fetchWeatherData(22.3475, 91.8123) //Chittagong
         }
     }
 }

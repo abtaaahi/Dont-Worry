@@ -1,28 +1,26 @@
 package com.abtahiapp.dontworry.activity
 
 import android.os.Bundle
-import android.util.Log
 import android.view.View
 import android.widget.ProgressBar
 import android.widget.Toast
+import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.abtahiapp.dontworry.BuildConfig
-import com.abtahiapp.dontworry.CustomSearchResponse
-import com.abtahiapp.dontworry.Place
-//import com.abtahiapp.dontworry.PlacesResponse
 import com.abtahiapp.dontworry.R
-import com.abtahiapp.dontworry.RetrofitClient
 import com.abtahiapp.dontworry.adapter.PlacesAdapter
-import retrofit2.Call
-import retrofit2.Response
+import com.abtahiapp.dontworry.viewmodel.PlacesViewModel
 
 class PlacesActivity : AppCompatActivity() {
 
     private lateinit var placesAdapter: PlacesAdapter
-    private lateinit var placesRecyclerView: RecyclerView
     private lateinit var progressBar: ProgressBar
+    private lateinit var placesRecyclerView: RecyclerView
+
+    private val placesViewModel: PlacesViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -34,8 +32,29 @@ class PlacesActivity : AppCompatActivity() {
         placesAdapter = PlacesAdapter(this, mutableListOf())
         placesRecyclerView.adapter = placesAdapter
 
-        showLoading(true)
-        fetchNearbyPlaces()
+        observeViewModel()
+        fetchPlaces()
+    }
+
+    private fun observeViewModel() {
+        placesViewModel.places.observe(this, Observer { placesList ->
+            placesAdapter.updatePlaces(placesList)
+        })
+
+        placesViewModel.isLoading.observe(this, Observer { isLoading ->
+            showLoading(isLoading)
+        })
+
+        placesViewModel.errorMessage.observe(this, Observer { message ->
+            Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
+        })
+    }
+
+    private fun fetchPlaces() {
+        val apiKey = BuildConfig.GOOGLE_API_KEY
+        val cx = BuildConfig.CUSTOM_SEARCH_ENGINE_ID
+        val query = "tourist places in bangladesh"
+        placesViewModel.fetchNearbyPlaces(apiKey, cx, query)
     }
 
     private fun showLoading(isLoading: Boolean) {
@@ -46,69 +65,5 @@ class PlacesActivity : AppCompatActivity() {
             progressBar.visibility = View.GONE
             placesRecyclerView.visibility = View.VISIBLE
         }
-    }
-
-//    private fun fetchNearbyPlaces() {
-//        val apiKey = Secret.GOOGLE_API_KEY
-//        val location = "22.3475, 91.8123"
-//        val radius = 1500
-//
-//        RetrofitClient.placesInstance.getNearbyPlaces(location, radius, apiKey = apiKey)
-//            .enqueue(object : retrofit2.Callback<PlacesResponse> {
-//                override fun onResponse(call: Call<PlacesResponse>, response: Response<PlacesResponse>) {
-//                    if (response.isSuccessful) {
-//                        val placesList = response.body()?.results?.map { placeResult ->
-//                            Place(
-//                                name = placeResult.name,
-//                                imageUrl = placeResult.photos?.get(0)?.photo_reference ?: "",
-//                                latitude = placeResult.geometry.location.lat,
-//                                longitude = placeResult.geometry.location.lng
-//                            )
-//                        } ?: emptyList()
-//
-//                        placesAdapter.updatePlaces(placesList)
-//                    } else {
-//                        Log.e("PlacesActivity", "Failed to fetch places: ${response.message()}")
-//                        Toast.makeText(this@PlacesActivity, "Failed to fetch places: ${response.message()}", Toast.LENGTH_SHORT).show()
-//                    }
-//                }
-//
-//                override fun onFailure(call: Call<PlacesResponse>, t: Throwable) {
-//                    Log.e("PlacesActivity", "Failed to fetch places", t)
-//                    Toast.makeText(this@PlacesActivity, "Failed to fetch places: ${t.message}", Toast.LENGTH_SHORT).show()
-//                }
-//            })
-//    }
-
-    private fun fetchNearbyPlaces() {
-        showLoading(true)
-        val apiKey = BuildConfig.GOOGLE_API_KEY
-        val cx = BuildConfig.CUSTOM_SEARCH_ENGINE_ID
-        val query = "tourist attractions near Chittagong"
-
-        RetrofitClient.customSearchInstance.getPlaces(query, cx, apiKey)
-            .enqueue(object : retrofit2.Callback<CustomSearchResponse> {
-                override fun onResponse(call: Call<CustomSearchResponse>, response: Response<CustomSearchResponse>) {
-                    if (response.isSuccessful) {
-                        val placesList = response.body()?.items?.map { searchItem ->
-                            Place(
-                                name = searchItem.title,
-                                imageUrl = searchItem.pagemap?.cse_thumbnail?.get(0)?.src ?: ""
-                            )
-                        } ?: emptyList()
-
-                        placesAdapter.updatePlaces(placesList)
-                        showLoading(false)
-                    } else {
-                        showLoading(false)
-                        Toast.makeText(this@PlacesActivity, "Failed to fetch places: ${response.message()}", Toast.LENGTH_SHORT).show()
-                    }
-                }
-
-                override fun onFailure(call: Call<CustomSearchResponse>, t: Throwable) {
-                    showLoading(false)
-                    Toast.makeText(this@PlacesActivity, "Failed to fetch places: ${t.message}", Toast.LENGTH_SHORT).show()
-                }
-            })
     }
 }
