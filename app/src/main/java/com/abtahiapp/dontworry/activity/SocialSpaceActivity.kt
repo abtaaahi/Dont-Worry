@@ -1,11 +1,14 @@
 package com.abtahiapp.dontworry.activity
 
+import android.content.Intent
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
+import android.view.View
 import android.widget.Button
 import android.widget.EditText
 import android.widget.ImageView
+import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -14,6 +17,7 @@ import com.abtahiapp.dontworry.R
 import com.abtahiapp.dontworry.adapter.PostAdapter
 import com.bumptech.glide.Glide
 import com.google.android.gms.auth.api.signin.GoogleSignIn
+import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.firebase.database.*
 import java.text.SimpleDateFormat
 import java.util.*
@@ -77,6 +81,24 @@ class SocialSpaceActivity : AppCompatActivity() {
 
         loadPostsFromDatabase()
 
+        if (account != null) {
+
+            postAdapter.setOnProfileImageClickListener { post ->
+                val currentUser = GoogleSignIn.getLastSignedInAccount(this)?.id
+                if (post.userId == currentUser) {
+                    val intent = Intent(this, MyProfile::class.java)
+                    intent.putExtra("userId", account.id)
+                    intent.putExtra("name", account.displayName)
+                    intent.putExtra("email", account.email)
+                    intent.putExtra("photoUrl", account.photoUrl.toString())
+
+                    startActivity(intent)
+                } else {
+                    showUserProfileBottomSheet(post)
+                }
+            }
+        }
+
         postButton.setOnClickListener {
             postContentToDatabase(account?.displayName, account?.photoUrl.toString())
         }
@@ -118,5 +140,44 @@ class SocialSpaceActivity : AppCompatActivity() {
             override fun onCancelled(error: DatabaseError) {
             }
         })
+    }
+
+    private fun showUserProfileBottomSheet(post: Post) {
+        val bottomSheetDialog = BottomSheetDialog(this)
+        val bottomSheetView = layoutInflater.inflate(R.layout.bottom_sheet_user_profile, null)
+
+        val profileImage = bottomSheetView.findViewById<ImageView>(R.id.profile_image_view)
+        val userName = bottomSheetView.findViewById<TextView>(R.id.user_name_text_view)
+        val sendMessageButton = bottomSheetView.findViewById<Button>(R.id.send_message_button)
+        val statusIndicator = bottomSheetView.findViewById<View>(R.id.status_indicator)
+
+
+        Glide.with(this).load(post.userPhotoUrl).placeholder(R.drawable.person).into(profileImage)
+        userName.text = post.userName
+
+        val userStatusRef = FirebaseDatabase.getInstance().getReference("users").child(post.userId).child("status")
+        userStatusRef.addListenerForSingleValueEvent(object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                val status = snapshot.getValue(String::class.java)
+                if (status == "online") {
+                    statusIndicator.setBackgroundResource(R.color.color_one)
+                    statusIndicator.visibility = View.VISIBLE
+                } else {
+                    statusIndicator.setBackgroundResource(R.color.subtitlecolor)
+                    statusIndicator.visibility = View.VISIBLE
+                }
+            }
+
+            override fun onCancelled(error: DatabaseError) {
+            }
+        })
+
+        sendMessageButton.setOnClickListener {
+            val intent = Intent(this, ChatActivity::class.java)
+            startActivity(intent)
+        }
+
+        bottomSheetDialog.setContentView(bottomSheetView)
+        bottomSheetDialog.show()
     }
 }

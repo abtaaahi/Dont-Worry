@@ -44,6 +44,10 @@ class MyPostActivity : AppCompatActivity() {
         postAdapter.setOnItemClickListener { post ->
             showOptionsDialog(post)
         }
+
+        postAdapter.setOnPostLongClickListener { post ->
+            showOptionsDialog(post)
+        }
     }
 
     private fun loadPostsFromDatabase() {

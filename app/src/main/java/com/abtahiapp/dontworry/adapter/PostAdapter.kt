@@ -17,6 +17,8 @@ import java.util.concurrent.TimeUnit
 class PostAdapter(private var posts: MutableList<Post>) : RecyclerView.Adapter<PostAdapter.PostViewHolder>() {
 
     private var onItemClickListener: ((Post) -> Unit)? = null
+    private var onProfileImageClickListener: ((Post) -> Unit)? = null
+    private var onPostLongClickListener: ((Post) -> Unit)? = null
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): PostViewHolder {
         val view = LayoutInflater.from(parent.context).inflate(R.layout.item_post, parent, false)
@@ -28,6 +30,13 @@ class PostAdapter(private var posts: MutableList<Post>) : RecyclerView.Adapter<P
         holder.bind(post)
         holder.itemView.setOnClickListener {
             onItemClickListener?.invoke(post)
+        }
+        holder.profileImageView.setOnClickListener {
+            onProfileImageClickListener?.invoke(post)
+        }
+        holder.postContentTextView.setOnLongClickListener {
+            onPostLongClickListener?.invoke(post)
+            true
         }
     }
 
@@ -43,11 +52,19 @@ class PostAdapter(private var posts: MutableList<Post>) : RecyclerView.Adapter<P
         onItemClickListener = listener
     }
 
+    fun setOnProfileImageClickListener(listener: (Post) -> Unit) {
+        onProfileImageClickListener = listener
+    }
+
+    fun setOnPostLongClickListener(listener: (Post) -> Unit) {
+        onPostLongClickListener = listener
+    }
+
     class PostViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-        private val profileImageView: ImageView = itemView.findViewById(R.id.item_profile_image)
+        val profileImageView: ImageView = itemView.findViewById(R.id.item_profile_image)
         private val userNameTextView: TextView = itemView.findViewById(R.id.user_name)
         private val postTimeTextView: TextView = itemView.findViewById(R.id.post_time)
-        private val postContentTextView: TextView = itemView.findViewById(R.id.post_text)
+        val postContentTextView: TextView = itemView.findViewById(R.id.post_text)
 
         private var isTextExpanded = false
 
