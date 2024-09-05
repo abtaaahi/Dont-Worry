@@ -27,6 +27,8 @@ const app = express();
 const server = http.createServer(app);
 const io = socketIo(server);
 
+app.use(express.static('public'));
+
 let usersOnline = {};
 
 io.on('connection', (socket) => {
@@ -35,12 +37,14 @@ io.on('connection', (socket) => {
   if (userId) {
     usersOnline[userId] = true;
     admin.database().ref(`users/${userId}/status`).set('online');
+    io.emit('userStatus', { userId, status: 'online' });
   }
 
   socket.on('disconnect', () => {
     if (userId) {
       usersOnline[userId] = false;
       admin.database().ref(`users/${userId}/status`).set('offline');
+      io.emit('userStatus', { userId, status: 'offline' });
     }
   });
 });

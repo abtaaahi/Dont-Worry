@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Server Status</title>
+    <style>
+        body {
+          font-family: Arial, sans-serif;
+          margin: 20px;
+        }
+        #status {
+          font-size: 20px;
+          margin-bottom: 20px;
+        }
+        #events {
+          border: 1px solid #ddd;
+          padding: 10px;
+          max-height: 300px;
+          overflow-y: auto;
+        }
+    </style>
+</head>
+<body>
+<div id="status">Server is running...</div>
+<div id="events"></div>
+
+<script src="/socket.io/socket.io.js"></script>
+<script>
+    const socket = io();
+
+    const eventsDiv = document.getElementById('events');
+
+    socket.on('connect', () => {
+      eventsDiv.innerHTML += '<p>Connected to server</p>';
+    });
+
+    socket.on('disconnect', () => {
+      eventsDiv.innerHTML += '<p>Disconnected from server</p>';
+    });
+
+    socket.on('userStatus', (status) => {
+      eventsDiv.innerHTML += `<p>User ${status.userId} is ${status.status}</p>`;
+    });
+</script>
+</body>
+</html>

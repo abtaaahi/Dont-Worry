@@ -108,7 +108,7 @@ class SocialSpaceActivity : AppCompatActivity() {
         }
 
         try {
-            socket = IO.socket("https://chat-app.herokuapp.com")
+            socket = IO.socket("https://dont-worry.onrender.com")
             socket.connect()
 
             val userId = GoogleSignIn.getLastSignedInAccount(this)?.id
