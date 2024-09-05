@@ -17,3 +17,5 @@ gradle.properties
 /gradle.properties
 /app/client_secret_421194947787-esd4uqfhfmg6rbkoere0q07rd94rk310.apps.googleusercontent.com.json
 /app/google-services.json
+/app/src/main/javascript/chat-app/.env
+/app/javascriptquiz01-firebase-adminsdk-7zfdf-2843bcb0b1.json
