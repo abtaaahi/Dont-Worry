@@ -27,7 +27,7 @@ const app = express();
 const server = http.createServer(app);
 const io = socketIo(server);
 
-app.use(express.static('public'));
+app.use(express.static('app/src/main/javascript/chat-app/public'));
 
 let usersOnline = {};
 
