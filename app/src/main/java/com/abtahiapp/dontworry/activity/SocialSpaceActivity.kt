@@ -21,6 +21,9 @@ import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.firebase.database.*
 import java.text.SimpleDateFormat
 import java.util.*
+import io.socket.client.IO
+import io.socket.client.Socket
+import java.net.URISyntaxException
 
 class SocialSpaceActivity : AppCompatActivity() {
 
@@ -30,6 +33,7 @@ class SocialSpaceActivity : AppCompatActivity() {
     private lateinit var recyclerViewPosts: RecyclerView
     private lateinit var postAdapter: PostAdapter
     private lateinit var databaseReference: DatabaseReference
+    private lateinit var socket: Socket
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -102,6 +106,24 @@ class SocialSpaceActivity : AppCompatActivity() {
         postButton.setOnClickListener {
             postContentToDatabase(account?.displayName, account?.photoUrl.toString())
         }
+
+        try {
+            socket = IO.socket("https://chat-app.herokuapp.com")
+            socket.connect()
+
+            val userId = GoogleSignIn.getLastSignedInAccount(this)?.id
+            if (userId != null) {
+                socket.emit("user_connected", userId)
+            }
+
+        } catch (e: URISyntaxException) {
+            e.printStackTrace()
+        }
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        socket.disconnect()
     }
 
     private fun postContentToDatabase(userName: String?, userPhotoUrl: String?) {
