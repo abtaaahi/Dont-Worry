@@ -1,6 +1,7 @@
 package com.abtahiapp.dontworry.activity
 
 import android.content.Intent
+import android.graphics.drawable.GradientDrawable
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
@@ -12,6 +13,7 @@ import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.abtahiapp.dontworry.Post
@@ -37,9 +39,12 @@ class SocialSpaceActivity : AppCompatActivity() {
     private lateinit var postAdapter: PostAdapter
     private lateinit var databaseReference: DatabaseReference
     private lateinit var socket: Socket
-    private lateinit var statusIndicator: View
+    private lateinit var statusIndicator: ImageView
     private lateinit var bottomSheetDialog: BottomSheetDialog
     private lateinit var bottomSheetView: View
+    private lateinit var statusTextView: TextView
+
+    private val onlineStatusMap = mutableMapOf<String, Boolean>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -51,7 +56,8 @@ class SocialSpaceActivity : AppCompatActivity() {
         recyclerViewPosts = findViewById(R.id.recycler_view_posts)
         bottomSheetDialog = BottomSheetDialog(this)
         bottomSheetView = layoutInflater.inflate(R.layout.bottom_sheet_user_profile, null)
-        statusIndicator = bottomSheetView.findViewById<View>(R.id.status_indicator)
+        statusIndicator = bottomSheetView.findViewById(R.id.status_indicator)
+        statusTextView = bottomSheetView.findViewById(R.id.status_text)
 
         val account = GoogleSignIn.getLastSignedInAccount(this)
         var userId: String? = null
@@ -149,11 +155,12 @@ class SocialSpaceActivity : AppCompatActivity() {
                     val statusUserId = data.getString("userId")
                     val status = data.getString("status")
 
-                    if (statusUserId == userId) {
-                        if (status == "online") {
-                            statusIndicator.setBackgroundColor(resources.getColor(R.color.color_one))
-                        } else {
-                            statusIndicator.setBackgroundColor(resources.getColor(R.color.subtitlecolor))
+                    onlineStatusMap[statusUserId] = status == "online"
+
+                    if (bottomSheetDialog.isShowing) {
+                        val displayedUserId = bottomSheetView.findViewById<TextView>(R.id.user_name_text_view).tag as? String
+                        if (statusUserId == displayedUserId) {
+                            updateStatusIndicator(status)
                         }
                     }
                 }
@@ -169,6 +176,17 @@ class SocialSpaceActivity : AppCompatActivity() {
     override fun onDestroy() {
         super.onDestroy()
         socket.disconnect()
+    }
+
+    private fun updateStatusIndicator(status: String) {
+        val color = if (status == "online") resources.getColor(R.color.green) else resources.getColor(R.color.grey)
+        val drawable = ContextCompat.getDrawable(this, R.drawable.circle) as GradientDrawable
+        drawable.setColor(color)
+        statusIndicator.setImageDrawable(drawable)
+
+        val statusText = if (status == "online") "Active now" else "Offline"
+        statusTextView.text = statusText
+        statusTextView.setTextColor(color)
     }
 
     private fun postContentToDatabase(userName: String?, userPhotoUrl: String?) {
@@ -216,7 +234,7 @@ class SocialSpaceActivity : AppCompatActivity() {
 
         Glide.with(this).load(post.userPhotoUrl).placeholder(R.drawable.person).into(profileImage)
         userName.text = post.userName
-
+        userName.tag = post.userId
 
         sendMessageButton.setOnClickListener {
             val intent = Intent(this, ChatActivity::class.java)
@@ -225,5 +243,7 @@ class SocialSpaceActivity : AppCompatActivity() {
 
         bottomSheetDialog.setContentView(bottomSheetView)
         bottomSheetDialog.show()
+
+        updateStatusIndicator(onlineStatusMap[post.userId]?.let { if (it) "online" else "offline" } ?: "offline")
     }
 }
