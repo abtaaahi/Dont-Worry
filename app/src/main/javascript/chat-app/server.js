@@ -7,7 +7,7 @@ const io = socketIo(server);
 
 let usersOnline = {};
 
-app.use(express.static('app/src/main/javascript/chat-app/public');
+app.use(express.static('app/src/main/javascript/chat-app/public'));
 
 io.on('connection', (socket) => {
     const userId = socket.handshake.query.userId;
