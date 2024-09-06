@@ -1,14 +1,21 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:orientation="vertical"
     android:padding="8dp">
 
+    <com.google.android.material.card.MaterialCardView
+        android:layout_width="match_parent"
+        android:layout_height="150dp"
+        app:strokeWidth="0dp"
+        app:cardCornerRadius="16dp">
     <ImageView
         android:id="@+id/article_image"
         android:layout_width="match_parent"
         android:layout_height="150dp"
         android:scaleType="centerCrop" />
+    </com.google.android.material.card.MaterialCardView>
 
     <TextView
         android:id="@+id/article_title"

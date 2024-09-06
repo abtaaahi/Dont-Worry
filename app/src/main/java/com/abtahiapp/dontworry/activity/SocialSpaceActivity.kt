@@ -4,11 +4,13 @@ import android.content.Intent
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
+import android.util.Log
 import android.view.View
 import android.widget.Button
 import android.widget.EditText
 import android.widget.ImageView
 import android.widget.TextView
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -23,6 +25,7 @@ import java.text.SimpleDateFormat
 import java.util.*
 import io.socket.client.IO
 import io.socket.client.Socket
+import org.json.JSONObject
 import java.net.URISyntaxException
 
 class SocialSpaceActivity : AppCompatActivity() {
@@ -34,6 +37,9 @@ class SocialSpaceActivity : AppCompatActivity() {
     private lateinit var postAdapter: PostAdapter
     private lateinit var databaseReference: DatabaseReference
     private lateinit var socket: Socket
+    private lateinit var statusIndicator: View
+    private lateinit var bottomSheetDialog: BottomSheetDialog
+    private lateinit var bottomSheetView: View
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -43,13 +49,18 @@ class SocialSpaceActivity : AppCompatActivity() {
         editTextPost = findViewById(R.id.edit_text_post)
         postButton = findViewById(R.id.post_button)
         recyclerViewPosts = findViewById(R.id.recycler_view_posts)
+        bottomSheetDialog = BottomSheetDialog(this)
+        bottomSheetView = layoutInflater.inflate(R.layout.bottom_sheet_user_profile, null)
+        statusIndicator = bottomSheetView.findViewById<View>(R.id.status_indicator)
 
         val account = GoogleSignIn.getLastSignedInAccount(this)
+        var userId: String? = null
         if (account != null) {
             Glide.with(this)
                 .load(account.photoUrl)
                 .placeholder(R.drawable.person)
                 .into(profileImageView)
+            userId = account.id
         }
 
         postButton.visibility = Button.GONE
@@ -108,17 +119,51 @@ class SocialSpaceActivity : AppCompatActivity() {
         }
 
         try {
-            socket = IO.socket("https://dont-worry.onrender.com")
+            socket = IO.socket("https://dont-worry.onrender.com", IO.Options().apply {
+                query = "userId=$userId"
+            })
+
             socket.connect()
 
-            val userId = GoogleSignIn.getLastSignedInAccount(this)?.id
-            if (userId != null) {
-                socket.emit("user_connected", userId)
+            socket.on(Socket.EVENT_CONNECT) {
+                runOnUiThread {
+                    Toast.makeText(this, "Connected to server", Toast.LENGTH_SHORT).show()
+                }
+            }
+
+            socket.on(Socket.EVENT_CONNECT_ERROR) { args ->
+                runOnUiThread {
+                    Toast.makeText(this, "Error connecting to server: ${args[0]}", Toast.LENGTH_SHORT).show()
+                }
+            }
+
+            socket.on(Socket.EVENT_DISCONNECT) {
+                runOnUiThread {
+                    Toast.makeText(this, "Disconnected from server", Toast.LENGTH_SHORT).show()
+                }
+            }
+
+            socket.on("user-status-change") { args ->
+                runOnUiThread {
+                    val data = args[0] as JSONObject
+                    val statusUserId = data.getString("userId")
+                    val status = data.getString("status")
+
+                    if (statusUserId == userId) {
+                        if (status == "online") {
+                            statusIndicator.setBackgroundColor(resources.getColor(R.color.color_one))
+                        } else {
+                            statusIndicator.setBackgroundColor(resources.getColor(R.color.subtitlecolor))
+                        }
+                    }
+                }
             }
 
         } catch (e: URISyntaxException) {
             e.printStackTrace()
+            Toast.makeText(this, "Connection URI error: ${e.message}", Toast.LENGTH_SHORT).show()
         }
+
     }
 
     override fun onDestroy() {
@@ -165,34 +210,13 @@ class SocialSpaceActivity : AppCompatActivity() {
     }
 
     private fun showUserProfileBottomSheet(post: Post) {
-        val bottomSheetDialog = BottomSheetDialog(this)
-        val bottomSheetView = layoutInflater.inflate(R.layout.bottom_sheet_user_profile, null)
-
         val profileImage = bottomSheetView.findViewById<ImageView>(R.id.profile_image_view)
         val userName = bottomSheetView.findViewById<TextView>(R.id.user_name_text_view)
         val sendMessageButton = bottomSheetView.findViewById<Button>(R.id.send_message_button)
-        val statusIndicator = bottomSheetView.findViewById<View>(R.id.status_indicator)
-
 
         Glide.with(this).load(post.userPhotoUrl).placeholder(R.drawable.person).into(profileImage)
         userName.text = post.userName
 
-        val userStatusRef = FirebaseDatabase.getInstance().getReference("users").child(post.userId).child("status")
-        userStatusRef.addListenerForSingleValueEvent(object : ValueEventListener {
-            override fun onDataChange(snapshot: DataSnapshot) {
-                val status = snapshot.getValue(String::class.java)
-                if (status == "online") {
-                    statusIndicator.setBackgroundResource(R.color.color_one)
-                    statusIndicator.visibility = View.VISIBLE
-                } else {
-                    statusIndicator.setBackgroundResource(R.color.subtitlecolor)
-                    statusIndicator.visibility = View.VISIBLE
-                }
-            }
-
-            override fun onCancelled(error: DatabaseError) {
-            }
-        })
 
         sendMessageButton.setOnClickListener {
             val intent = Intent(this, ChatActivity::class.java)

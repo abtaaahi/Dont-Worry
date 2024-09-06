@@ -3,44 +3,55 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Server Status</title>
+    <title>Online Users</title>
     <style>
         body {
-          font-family: Arial, sans-serif;
-          margin: 20px;
+            font-family: Arial, sans-serif;
         }
-        #status {
-          font-size: 20px;
-          margin-bottom: 20px;
+        #users-list {
+            list-style-type: none;
+            padding: 0;
         }
-        #events {
-          border: 1px solid #ddd;
-          padding: 10px;
-          max-height: 300px;
-          overflow-y: auto;
+        .user-status {
+            padding: 10px;
+            margin-bottom: 5px;
+            border-radius: 5px;
+        }
+        .online {
+            background-color: #4CAF50; /* Green for online */
+            color: white;
+        }
+        .offline {
+            background-color: #f44336; /* Red for offline */
+            color: white;
         }
     </style>
 </head>
 <body>
-<div id="status">Server is running...</div>
-<div id="events"></div>
+<h1>Online Users</h1>
+<ul id="users-list">
+</ul>
 
 <script src="/socket.io/socket.io.js"></script>
 <script>
     const socket = io();
 
-    const eventsDiv = document.getElementById('events');
+    // Listen for changes in user status
+    socket.on('user-status-change', (data) => {
+        const { userId, status } = data;
+        let userElement = document.getElementById(userId);
 
-    socket.on('connect', () => {
-      eventsDiv.innerHTML += '<p>Connected to server</p>';
-    });
+        if (!userElement) {
+            // Create a new list item if user doesn't exist in the list
+            userElement = document.createElement('li');
+            userElement.id = userId;
+            userElement.textContent = `User ID: ${userId}`;
+            document.getElementById('users-list').appendChild(userElement);
+        }
 
-    socket.on('disconnect', () => {
-      eventsDiv.innerHTML += '<p>Disconnected from server</p>';
-    });
-
-    socket.on('userStatus', (status) => {
-      eventsDiv.innerHTML += `<p>User ${status.userId} is ${status.status}</p>`;
+        // Update the status color
+        userElement.className = `user-status ${status}`;
+        userElement.textContent = `User ID: ${userId} - ${status}`;
     });
 </script>
 </body>
