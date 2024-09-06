@@ -2,6 +2,7 @@ package com.abtahiapp.dontworry.fragment
 
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.ViewGroup
@@ -24,10 +25,13 @@ class OthersFragment : Fragment() {
     private lateinit var quoteTextView: TextView
     private lateinit var authorTextView: TextView
 
+    private val TAG = "OthersFragment"
+
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
+        Log.d(TAG, "onCreateView called")
         val view = inflater.inflate(R.layout.fragment_others, container, false)
         quoteTextView = view.findViewById(R.id.quoteTextView)
         authorTextView = view.findViewById(R.id.authorTextView)
@@ -61,9 +65,21 @@ class OthersFragment : Fragment() {
         return view
     }
 
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        Log.d(TAG, "onViewCreated called")
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        Log.d(TAG, "onDestroyView called")
+    }
+
     private fun fetchAndDisplayQuote() {
+        Log.d(TAG, "Fetching random quote")
         RetrofitClient.quotesInstance.getRandomQuote().enqueue(object : Callback<List<QuoteResponse>> {
             override fun onResponse(call: Call<List<QuoteResponse>>, response: Response<List<QuoteResponse>>) {
+                Log.d(TAG, "Quote fetched successfully, response: ${response.code()}")
                 if (response.isSuccessful && response.body()?.isNotEmpty() == true) {
                     val quoteResponse = response.body()?.get(0)
                     if (quoteResponse != null) {
@@ -71,11 +87,13 @@ class OthersFragment : Fragment() {
                         authorTextView.text = "- ${quoteResponse.author}"
                     }
                 } else {
+                    Log.e(TAG, "Failed to fetch quote, response code: ${response.code()}")
                     Toast.makeText(requireContext(), "Failed to fetch quote\nError: ${response.code()}", Toast.LENGTH_SHORT).show()
                 }
             }
 
             override fun onFailure(call: Call<List<QuoteResponse>>, t: Throwable) {
+                Log.e(TAG, "Failed to fetch quote, error: ${t.message}")
                 Toast.makeText(requireContext(), "Failed to fetch quote", Toast.LENGTH_SHORT).show()
             }
         })

@@ -12,14 +12,18 @@ import androidx.recyclerview.widget.RecyclerView
 import com.abtahiapp.dontworry.BuildConfig
 import com.abtahiapp.dontworry.R
 import com.abtahiapp.dontworry.adapter.MovieAdapter
-import com.abtahiapp.dontworry.viewmodel.MovieViewModel
-import androidx.fragment.app.viewModels
+import com.abtahiapp.dontworry.Movie
+import com.abtahiapp.dontworry.RetrofitClient
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -31,8 +35,6 @@ class MovieFragment : Fragment() {
     private lateinit var movieRecyclerView: RecyclerView
     private lateinit var account: GoogleSignInAccount
     private lateinit var database: DatabaseReference
-
-    private val movieViewModel: MovieViewModel by viewModels()
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -50,23 +52,19 @@ class MovieFragment : Fragment() {
 
         database = FirebaseDatabase.getInstance().getReference("user_information")
 
-        observeViewModel()
+        showLoading(true)
         fetchLastMoodAndMovies()
 
         return view
     }
 
-    private fun observeViewModel() {
-        movieViewModel.movies.observe(viewLifecycleOwner) { movies ->
-            movieAdapter.updateMovies(movies.toMutableList())
-        }
-
-        movieViewModel.isLoading.observe(viewLifecycleOwner) { isLoading ->
-            showLoading(isLoading)
-        }
-
-        movieViewModel.errorMessage.observe(viewLifecycleOwner) { message ->
-            Toast.makeText(requireContext(), message, Toast.LENGTH_SHORT).show()
+    private fun showLoading(isLoading: Boolean) {
+        if (isLoading) {
+            progressBar.visibility = View.VISIBLE
+            movieRecyclerView.visibility = View.GONE
+        } else {
+            progressBar.visibility = View.GONE
+            movieRecyclerView.visibility = View.VISIBLE
         }
     }
 
@@ -83,7 +81,7 @@ class MovieFragment : Fragment() {
                     } else {
                         null
                     }
-                    movieViewModel.fetchMoviesByMood(lastMood, BuildConfig.TMDB_API_KEY)
+                    fetchMovies(lastMood)
                 }
 
                 override fun onCancelled(databaseError: DatabaseError) {
@@ -93,13 +91,51 @@ class MovieFragment : Fragment() {
             })
     }
 
-    private fun showLoading(isLoading: Boolean) {
-        if (isLoading) {
-            progressBar.visibility = View.VISIBLE
-            movieRecyclerView.visibility = View.GONE
-        } else {
-            progressBar.visibility = View.GONE
-            movieRecyclerView.visibility = View.VISIBLE
+    private fun fetchMovies(mood: String?) {
+        CoroutineScope(Dispatchers.Main).launch {
+            showLoading(true)
+            val apiKey = BuildConfig.TMDB_API_KEY
+            val genreId = when (mood) {
+                "Angry" -> 35 // Comedy
+                "Very Sad", "Sad" -> 18 // Drama
+                "Fine", "Very Fine" -> 28 // Action
+                else -> null // If no mood, fetch popular movies
+            }
+
+            try {
+                val movieResponse = withContext(Dispatchers.IO) {
+                    if (genreId != null) {
+                        RetrofitClient.movieInstance.getMoviesByGenre(apiKey, genreId)
+                    } else {
+                        RetrofitClient.movieInstance.getMovies(apiKey)
+                    }
+                }
+                fetchTrailersForMovies(movieResponse.results)
+                showLoading(false)
+            } catch (e: Exception) {
+                showLoading(false)
+                Toast.makeText(requireContext(), "Failed to fetch movies", Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
+
+    private fun fetchTrailersForMovies(movies: List<Movie>) {
+        CoroutineScope(Dispatchers.Main).launch {
+            val apiKey = BuildConfig.TMDB_API_KEY
+
+            movies.forEach { movie ->
+                try {
+                    val trailerResponse = withContext(Dispatchers.IO) {
+                        RetrofitClient.movieInstance.getMovieTrailers(movie.id, apiKey)
+                    }
+                    val trailer = trailerResponse.results.find { it.type == "Trailer" }
+                    trailer?.let {
+                        movie.trailerUrl = it.key
+                    }
+                } catch (e: Exception) {
+                }
+            }
+            movieAdapter.updateMovies(movies.toMutableList())
         }
     }
 }

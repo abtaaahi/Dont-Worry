@@ -106,9 +106,15 @@ class MusicFragment : Fragment() {
                 }
                 audioAdapter.updateAudios(response.items)
             } catch (e: Exception) {
-                Toast.makeText(requireContext(), "Failed to fetch music", Toast.LENGTH_SHORT).show()
+                if (isAdded) {
+                    Toast.makeText(requireContext(), "Failed to fetch music", Toast.LENGTH_SHORT).show()
+                } else {
+
+                }
             } finally {
-                showLoading(false)
+                if (isAdded) {
+                    showLoading(false)
+                }
             }
         }
     }
