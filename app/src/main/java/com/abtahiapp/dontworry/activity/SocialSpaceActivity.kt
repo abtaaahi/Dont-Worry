@@ -18,6 +18,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.abtahiapp.dontworry.Post
 import com.abtahiapp.dontworry.R
+import com.abtahiapp.dontworry.SocketManager
 import com.abtahiapp.dontworry.adapter.PostAdapter
 import com.bumptech.glide.Glide
 import com.google.android.gms.auth.api.signin.GoogleSignIn
@@ -124,58 +125,26 @@ class SocialSpaceActivity : AppCompatActivity() {
             postContentToDatabase(account?.displayName, account?.photoUrl.toString())
         }
 
-        try {
-            socket = IO.socket("https://dont-worry.onrender.com", IO.Options().apply {
-                query = "userId=$userId"
-            })
+        val socketManager = SocketManager.getInstance(this)
+        val socket = socketManager.getSocket()
 
-            socket.connect()
+        socket.on("user-status-change") { args ->
+            runOnUiThread {
+                val data = args[0] as JSONObject
+                val statusUserId = data.getString("userId")
+                val status = data.getString("status")
 
-            socket.on(Socket.EVENT_CONNECT) {
-                runOnUiThread {
-                    Toast.makeText(this, "Connected to server", Toast.LENGTH_SHORT).show()
-                }
-            }
+                onlineStatusMap[statusUserId] = status == "online"
 
-            socket.on(Socket.EVENT_CONNECT_ERROR) { args ->
-                runOnUiThread {
-                    Toast.makeText(this, "Error connecting to server: ${args[0]}", Toast.LENGTH_SHORT).show()
-                }
-            }
-
-            socket.on(Socket.EVENT_DISCONNECT) {
-                runOnUiThread {
-                    Toast.makeText(this, "Disconnected from server", Toast.LENGTH_SHORT).show()
-                }
-            }
-
-            socket.on("user-status-change") { args ->
-                runOnUiThread {
-                    val data = args[0] as JSONObject
-                    val statusUserId = data.getString("userId")
-                    val status = data.getString("status")
-
-                    onlineStatusMap[statusUserId] = status == "online"
-
-                    if (bottomSheetDialog.isShowing) {
-                        val displayedUserId = bottomSheetView.findViewById<TextView>(R.id.user_name_text_view).tag as? String
-                        if (statusUserId == displayedUserId) {
-                            updateStatusIndicator(status)
-                        }
+                if (bottomSheetDialog.isShowing) {
+                    val displayedUserId = bottomSheetView.findViewById<TextView>(R.id.user_name_text_view).tag as? String
+                    if (statusUserId == displayedUserId) {
+                        updateStatusIndicator(status)
                     }
                 }
             }
-
-        } catch (e: URISyntaxException) {
-            e.printStackTrace()
-            Toast.makeText(this, "Connection URI error: ${e.message}", Toast.LENGTH_SHORT).show()
         }
 
-    }
-
-    override fun onDestroy() {
-        super.onDestroy()
-        socket.disconnect()
     }
 
     private fun updateStatusIndicator(status: String) {
