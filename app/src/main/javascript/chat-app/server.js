@@ -8,7 +8,7 @@ const app = express();
 const server = http.createServer(app);
 const io = socketIo(server);
 
-const statusFilePath = path.join('app/src/main/javascript/chat-app/user_status.json');
+const statusFilePath = 'app/src/main/javascript/chat-app/user_status.json';
 
 let usersOnline = {};
 
