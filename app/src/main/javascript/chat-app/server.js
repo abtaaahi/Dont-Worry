@@ -13,7 +13,13 @@ const statusFilePath = 'app/src/main/javascript/chat-app/user_status.json';
 let usersOnline = {};
 
 if (fs.existsSync(statusFilePath)) {
-    usersOnline = JSON.parse(fs.readFileSync(statusFilePath, 'utf8'));
+    try {
+        const fileContent = fs.readFileSync(statusFilePath, 'utf8');
+        usersOnline = fileContent ? JSON.parse(fileContent) : {};
+    } catch (error) {
+        console.error('Error reading or parsing the JSON file:', error);
+        usersOnline = {};
+    }
 }
 
 app.use(express.static('app/src/main/javascript/chat-app/public'));
