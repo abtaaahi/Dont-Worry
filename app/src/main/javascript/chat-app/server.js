@@ -19,7 +19,7 @@ io.on('connection', (socket) => {
         console.log(`${userId} connected`);
 
         socket.on('disconnect', () => {
-            delete usersOnline[userId] = false;
+            delete usersOnline[userId];
             io.emit('user-status-change', { userId, status: 'offline' });
             console.log(`${userId} disconnected`);
         });
