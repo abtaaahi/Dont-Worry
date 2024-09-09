@@ -1,49 +1,54 @@
-const fs = require('fs');
-const path = require('path');
-
 const express = require('express');
 const http = require('http');
 const socketIo = require('socket.io');
+const { MongoClient } = require('mongodb');
 const app = express();
 const server = http.createServer(app);
 const io = socketIo(server);
 
-const statusFilePath = 'app/src/main/javascript/chat-app/user_status.json';
+const mongoURI = 'mongodb+srv://abtaaahi_dontworry:8d3fmnkz3JuZdii9@cluster0.jg6nk.mongodb.net/abtaaahi_dontworry?retryWrites=true&w=majority';
 
-let usersOnline = {};
+const client = new MongoClient(mongoURI, { useNewUrlParser: true, useUnifiedTopology: true });
 
-if (fs.existsSync(statusFilePath)) {
-    try {
-        const fileContent = fs.readFileSync(statusFilePath, 'utf8');
-        usersOnline = fileContent ? JSON.parse(fileContent) : {};
-    } catch (error) {
-        console.error('Error reading or parsing the JSON file:', error);
-        usersOnline = {};
-    }
+let collection;
+
+async function connectToMongoDB() {
+    await client.connect();
+    console.log("Connected to MongoDB Atlas!");
+    const db = client.db('abtaaahi_dontworry');
+    collection = db.collection('user_status');
 }
 
 app.use(express.static('app/src/main/javascript/chat-app/public'));
 
-io.on('connection', (socket) => {
+io.on('connection', async (socket) => {
     const userId = socket.handshake.query.userId;
 
     if (userId) {
-        usersOnline[userId] = 'online';
-        io.emit('user-status-change', { userId, status: 'online' });
-        fs.writeFileSync(statusFilePath, JSON.stringify(usersOnline), 'utf8');
+        try {
+            await collection.updateOne({ user_id: userId }, { $set: { status: 'online' } }, { upsert: true });
 
-        console.log(`${userId} connected`);
+            io.emit('user-status-change', { userId, status: 'online' });
+            console.log(`${userId} connected`);
 
-        socket.on('disconnect', () => {
-            delete usersOnline[userId];
-            io.emit('user-status-change', { userId, status: 'offline' });
-            fs.writeFileSync(statusFilePath, JSON.stringify(usersOnline), 'utf8');
-            console.log(`${userId} disconnected`);
-        });
+            socket.on('disconnect', async () => {
+                await collection.updateOne({ user_id: userId }, { $set: { status: 'offline' } });
+
+                io.emit('user-status-change', { userId, status: 'offline' });
+                console.log(`${userId} disconnected`);
+            });
+        } catch (error) {
+            console.error('Error with database operation', error);
+        }
     }
 });
 
 const PORT = process.env.PORT || 3000;
-server.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`);
+
+connectToMongoDB().then(() => {
+    server.listen(PORT, () => {
+        console.log(`Server running on port ${PORT}`);
+    });
+}).catch(err => {
+    console.error('Error connecting to MongoDB:', err);
 });

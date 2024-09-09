@@ -11,6 +11,8 @@
   "description": "",
   "dependencies": {
     "express": "^4.19.2",
+    "firebase-admin": "^12.4.0",
+    "mongodb": "^6.8.1",
     "socket.io": "^4.7.5"
   }
 }
