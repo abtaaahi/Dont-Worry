@@ -29,6 +29,10 @@ io.on('connection', async (socket) => {
             await collection.updateOne({ user_id: userId }, { $set: { status: 'online' } }, { upsert: true });
 
             io.emit('user-status-change', { userId, status: 'online' });
+
+            const allStatuses = await collection.find({}).toArray();
+            socket.emit('all-user-status', allStatuses);
+
             console.log(`${userId} connected`);
 
             socket.on('disconnect', async () => {

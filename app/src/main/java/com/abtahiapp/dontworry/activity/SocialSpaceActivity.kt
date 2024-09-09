@@ -28,6 +28,7 @@ import java.text.SimpleDateFormat
 import java.util.*
 import io.socket.client.IO
 import io.socket.client.Socket
+import org.json.JSONArray
 import org.json.JSONObject
 import java.net.URISyntaxException
 
@@ -39,7 +40,6 @@ class SocialSpaceActivity : AppCompatActivity() {
     private lateinit var recyclerViewPosts: RecyclerView
     private lateinit var postAdapter: PostAdapter
     private lateinit var databaseReference: DatabaseReference
-    private lateinit var socket: Socket
     private lateinit var statusIndicator: ImageView
     private lateinit var bottomSheetDialog: BottomSheetDialog
     private lateinit var bottomSheetView: View
@@ -61,13 +61,11 @@ class SocialSpaceActivity : AppCompatActivity() {
         statusTextView = bottomSheetView.findViewById(R.id.status_text)
 
         val account = GoogleSignIn.getLastSignedInAccount(this)
-        var userId: String? = null
         if (account != null) {
             Glide.with(this)
                 .load(account.photoUrl)
                 .placeholder(R.drawable.person)
                 .into(profileImageView)
-            userId = account.id
         }
 
         postButton.visibility = Button.GONE
@@ -128,23 +126,24 @@ class SocialSpaceActivity : AppCompatActivity() {
         val socketManager = SocketManager.getInstance(this)
         val socket = socketManager.getSocket()
 
-        socket.on("user-status-change") { args ->
+        socket.on("all-user-status") { args ->
             runOnUiThread {
-                val data = args[0] as JSONObject
-                val statusUserId = data.getString("userId")
-                val status = data.getString("status")
-
-                onlineStatusMap[statusUserId] = status == "online"
+                val statuses = args[0] as JSONArray
+                for (i in 0 until statuses.length()) {
+                    val statusObject = statuses.getJSONObject(i)
+                    val userId = statusObject.getString("user_id")
+                    val status = statusObject.getString("status")
+                    onlineStatusMap[userId] = status == "online"
+                }
 
                 if (bottomSheetDialog.isShowing) {
                     val displayedUserId = bottomSheetView.findViewById<TextView>(R.id.user_name_text_view).tag as? String
-                    if (statusUserId == displayedUserId) {
-                        updateStatusIndicator(status)
+                    if (displayedUserId != null) {
+                        updateStatusIndicator(onlineStatusMap[displayedUserId]?.let { if (it) "online" else "offline" } ?: "offline")
                     }
                 }
             }
         }
-
     }
 
     private fun updateStatusIndicator(status: String) {
