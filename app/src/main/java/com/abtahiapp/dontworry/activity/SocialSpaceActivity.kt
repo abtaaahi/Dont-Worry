@@ -126,21 +126,45 @@ class SocialSpaceActivity : AppCompatActivity() {
         val socketManager = SocketManager.getInstance(this)
         val socket = socketManager.getSocket()
 
+        socket.on("user-status-change") { args ->
+            runOnUiThread {
+                try {
+                    val data = args[0] as JSONObject
+                    val statusUserId = data.getString("userId")
+                    val status = data.getString("status")
+                    onlineStatusMap[statusUserId] = status == "online"
+
+                    if (bottomSheetDialog.isShowing) {
+                        val displayedUserId = bottomSheetView.findViewById<TextView>(R.id.user_name_text_view).tag as? String
+                        if (statusUserId == displayedUserId) {
+                            updateStatusIndicator(status)
+                        }
+                    }
+                } catch (e: Exception) {
+                    Log.e("SocialSpaceActivity", "Error processing user status: ${e.message}")
+                }
+            }
+        }
+
         socket.on("all-user-status") { args ->
             runOnUiThread {
-                val statuses = args[0] as JSONArray
-                for (i in 0 until statuses.length()) {
-                    val statusObject = statuses.getJSONObject(i)
-                    val userId = statusObject.getString("user_id")
-                    val status = statusObject.getString("status")
-                    onlineStatusMap[userId] = status == "online"
-                }
+                try {
+                    val dataArray = args[0] as JSONArray
+                    for (i in 0 until dataArray.length()) {
+                        val data = dataArray.getJSONObject(i)
+                        val statusUserId = data.getString("user_id")
+                        val status = data.getString("status")
+                        onlineStatusMap[statusUserId] = status == "online"
 
-                if (bottomSheetDialog.isShowing) {
-                    val displayedUserId = bottomSheetView.findViewById<TextView>(R.id.user_name_text_view).tag as? String
-                    if (displayedUserId != null) {
-                        updateStatusIndicator(onlineStatusMap[displayedUserId]?.let { if (it) "online" else "offline" } ?: "offline")
+                        if (bottomSheetDialog.isShowing) {
+                            val displayedUserId = bottomSheetView.findViewById<TextView>(R.id.user_name_text_view).tag as? String
+                            if (statusUserId == displayedUserId) {
+                                updateStatusIndicator(status)
+                            }
+                        }
                     }
+                } catch (e: Exception) {
+                    Log.e("SocialSpaceActivity", "Error processing all user statuses: ${e.message}")
                 }
             }
         }
