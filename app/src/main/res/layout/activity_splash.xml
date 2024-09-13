@@ -7,15 +7,17 @@
     android:layout_height="match_parent"
     tools:context=".activity.SplashActivity">
 
-    <ImageView
-        android:id="@+id/imageView"
+    <com.airbnb.lottie.LottieAnimationView
+        android:id="@+id/view"
         android:layout_width="200dp"
         android:layout_height="200dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:srcCompat="@drawable/therapy" />
+        app:lottie_fileName="yoga.json"
+        app:lottie_loop="true"
+        app:lottie_autoPlay="true"/>
 
     <TextView
         android:id="@+id/textView"
@@ -28,5 +30,5 @@
         android:text="@string/splash_screen_text"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/imageView" />
+        app:layout_constraintTop_toBottomOf="@+id/view" />
 </androidx.constraintlayout.widget.ConstraintLayout>

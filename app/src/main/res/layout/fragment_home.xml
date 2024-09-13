@@ -10,15 +10,13 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
 
-        <ProgressBar
+        <com.airbnb.lottie.LottieAnimationView
             android:id="@+id/progress_bar"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="16dp"
-            android:layout_marginTop="16dp"
-            android:layout_marginEnd="16dp"
-            android:layout_marginBottom="16dp"
-            android:indeterminateDrawable="@drawable/custom_progress_bar"
+            android:layout_width="100dp"
+            android:layout_height="100dp"
+            app:lottie_fileName="loading.json"
+            app:lottie_autoPlay="true"
+            app:lottie_loop="true"
             android:visibility="gone"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
@@ -39,3 +37,19 @@
     </androidx.constraintlayout.widget.ConstraintLayout>
 
 </ScrollView>
+
+<!--Custom Progress Bar-->
+<!--<ProgressBar-->
+<!--android:id="@+id/progress_bar"-->
+<!--android:layout_width="wrap_content"-->
+<!--android:layout_height="wrap_content"-->
+<!--android:layout_marginStart="16dp"-->
+<!--android:layout_marginTop="16dp"-->
+<!--android:layout_marginEnd="16dp"-->
+<!--android:layout_marginBottom="16dp"-->
+<!--android:indeterminateDrawable="@drawable/custom_progress_bar"-->
+<!--android:visibility="gone"-->
+<!--app:layout_constraintBottom_toBottomOf="parent"-->
+<!--app:layout_constraintEnd_toEndOf="parent"-->
+<!--app:layout_constraintStart_toStartOf="parent"-->
+<!--app:layout_constraintTop_toTopOf="parent" />-->

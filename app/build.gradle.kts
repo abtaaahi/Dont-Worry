@@ -69,4 +69,5 @@ dependencies {
     implementation(libs.androidx.lifecycle.viewmodel.ktx)
     implementation (libs.androidx.fragment.ktx)
     implementation (libs.socket.io.client)
+    implementation(libs.lottie)
 }
