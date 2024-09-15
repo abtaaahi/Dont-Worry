@@ -141,7 +141,8 @@ data class HomeItem(
 enum class HomeItemType {
     VIDEO,
     ARTICLE,
-    AUDIO
+    AUDIO,
+    POST
 }
 
 data class Post(
@@ -152,6 +153,11 @@ data class Post(
     val userId: String = "",
     var id: String = ""
 )
+
+sealed class HomeFeedItem {
+    data class PostItem(val post: Post) : HomeFeedItem()
+    data class HomeItemItem(val homeItem: HomeItem) : HomeFeedItem()
+}
 
 //data class NewsResponse(
 //    val status: String,

@@ -9,9 +9,11 @@ import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.abtahiapp.dontworry.BuildConfig
+import com.abtahiapp.dontworry.HomeFeedItem
 import com.abtahiapp.dontworry.adapter.HomeAdapter
 import com.abtahiapp.dontworry.HomeItem
 import com.abtahiapp.dontworry.HomeItemType
+import com.abtahiapp.dontworry.Post
 import com.abtahiapp.dontworry.R
 import com.abtahiapp.dontworry.RetrofitClient
 import com.airbnb.lottie.LottieAnimationView
@@ -34,6 +36,9 @@ class HomeFragment : Fragment() {
     //private lateinit var progressBar: ProgressBar
     private lateinit var progressBar: LottieAnimationView
     private lateinit var recyclerView: RecyclerView
+    private lateinit var postList: MutableList<Post>
+    private lateinit var homeItemList: MutableList<HomeItem>
+
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -44,14 +49,19 @@ class HomeFragment : Fragment() {
         progressBar = view.findViewById(R.id.progress_bar)
         recyclerView = view.findViewById(R.id.home_recycler_view)
 
+        postList = mutableListOf()
+        homeItemList = mutableListOf()
+
         recyclerView.layoutManager = LinearLayoutManager(requireContext(), LinearLayoutManager.VERTICAL, false)
-        homeAdapter = HomeAdapter(requireContext(), mutableListOf())
+        homeAdapter = HomeAdapter(requireContext(), emptyList())
+
         recyclerView.adapter = homeAdapter
 
         account = activity?.intent?.getParcelableExtra("account") ?: return view
         database = FirebaseDatabase.getInstance().getReference("user_information")
 
         showLoading(true)
+        loadPostsFromDatabase()
         fetchItems()
         return view
     }
@@ -64,6 +74,27 @@ class HomeFragment : Fragment() {
             progressBar.visibility = View.GONE
             recyclerView.visibility = View.VISIBLE
         }
+    }
+
+    private fun loadPostsFromDatabase() {
+        val databaseReference = FirebaseDatabase.getInstance().getReference("social_posts")
+        databaseReference.addValueEventListener(object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                val posts = mutableListOf<Post>()
+                for (postSnapshot in snapshot.children) {
+                    val post = postSnapshot.getValue(Post::class.java)
+                    if (post != null) {
+                        posts.add(post)
+                    }
+                }
+                posts.sortByDescending { it.postTime }
+                postList.clear()
+                postList.addAll(posts)
+                homeAdapter.notifyDataSetChanged()
+            }
+
+            override fun onCancelled(error: DatabaseError) {}
+        })
     }
 
     private fun fetchItems() {
@@ -97,10 +128,11 @@ class HomeFragment : Fragment() {
             val audios = fetchAudios(audioQuery)
             val articles = fetchArticles(articleQuery)
 
-            val allItems = mutableListOf<HomeItem>().apply {
-                addAll(videos)
-                addAll(audios)
-                addAll(articles)
+            val allItems= mutableListOf<HomeFeedItem>().apply {
+                postList.forEach { add(HomeFeedItem.PostItem(it)) }
+                addAll(videos.map { HomeFeedItem.HomeItemItem(it) })
+                addAll(audios.map { HomeFeedItem.HomeItemItem(it) })
+                addAll(articles.map { HomeFeedItem.HomeItemItem(it) })
                 shuffle()
             }
             updateUI(allItems)
@@ -159,7 +191,7 @@ class HomeFragment : Fragment() {
         }
     }
 
-    private fun updateUI(items: List<HomeItem>) {
+    private fun updateUI(items: List<HomeFeedItem>) {
         homeAdapter.updateItems(items)
     }
 }
