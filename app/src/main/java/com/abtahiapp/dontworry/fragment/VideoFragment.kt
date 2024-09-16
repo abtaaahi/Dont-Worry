@@ -104,11 +104,17 @@ class VideoFragment : Fragment() {
                 val response = withContext(Dispatchers.IO) {
                     RetrofitClient.youtubeInstance.getVideos(query = query, apiKey = apiKey)
                 }
-                videoAdapter.updateVideos(response.items)
+                if (isAdded) {
+                    videoAdapter.updateVideos(response.items)
+                }
             } catch (e: Exception) {
-                Toast.makeText(requireContext(), "Failed to fetch videos", Toast.LENGTH_SHORT).show()
+                if (isAdded) {
+                    Toast.makeText(requireContext(), "Failed to fetch videos", Toast.LENGTH_SHORT).show()
+                }
             } finally {
-                showLoading(false)
+                if (isAdded) {
+                    showLoading(false)
+                }
             }
         }
     }

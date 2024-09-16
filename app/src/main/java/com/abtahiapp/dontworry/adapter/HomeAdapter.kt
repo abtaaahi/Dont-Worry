@@ -114,7 +114,7 @@ class HomeAdapter(private val context: Context, private var items: List<HomeFeed
                 PostViewHolder(view)
             }
             VIEW_TYPE_HOME_ITEM -> {
-                val view = LayoutInflater.from(parent.context).inflate(R.layout.item_home, parent, false)
+                val view = LayoutInflater.from(parent.context).inflate(R.layout.item_home_redesigned, parent, false)
                 HomeViewHolder(view)}
             else -> throw IllegalArgumentException("Invalid view type")
         }
