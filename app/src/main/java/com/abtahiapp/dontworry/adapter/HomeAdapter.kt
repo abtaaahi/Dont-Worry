@@ -37,11 +37,23 @@ class HomeAdapter(private val context: Context, private var items: List<HomeFeed
         val image: ImageView = view.findViewById(R.id.image)
         val title: TextView = view.findViewById(R.id.title)
         val description: TextView = view.findViewById(R.id.description)
+        val itemProfileImage: ImageView = view.findViewById(R.id.item_profile_image)
+        val postType: TextView = view.findViewById(R.id.post_type)
 
         fun bind(item: HomeItem) {
             title.text = item.title
             description.text = item.description
-            Glide.with(context).load(item.imageUrl).into(image)
+            Glide.with(context).load(item.imageUrl).placeholder(R.drawable.defaultnews).into(image)
+            Glide.with(context).load(item.imageUrl).placeholder(R.drawable.person).into(itemProfileImage)
+            postType.text = item.type.toString().lowercase().replaceFirstChar { it.uppercase() }
+
+            //postType.text = item.type.toString()
+//            postType.text = when (item.type) {
+//                HomeItemType.VIDEO -> "Video"
+//                HomeItemType.ARTICLE -> "Article"
+//                HomeItemType.AUDIO -> "Music"
+//                else -> ""
+//            }
 
             itemView.setOnClickListener {
                 when (item.type) {
