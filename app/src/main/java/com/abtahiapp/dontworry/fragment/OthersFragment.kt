@@ -48,16 +48,19 @@ class OthersFragment : Fragment() {
         cardView2.setOnClickListener {
             val intent = Intent(activity, PlacesActivity::class.java)
             startActivity(intent)
+            activity?.overridePendingTransition(R.anim.enter_anim, R.anim.exit_anim)
         }
 
         cardView3.setOnClickListener {
             val intent = Intent(activity, WeatherActivity::class.java)
             startActivity(intent)
+            activity?.overridePendingTransition(R.anim.enter_anim, R.anim.exit_anim)
         }
 
         cardView4.setOnClickListener {
             val intent = Intent(activity, SocialSpaceActivity::class.java)
             startActivity(intent)
+            activity?.overridePendingTransition(R.anim.enter_anim, R.anim.exit_anim)
         }
 
         fetchAndDisplayQuote()

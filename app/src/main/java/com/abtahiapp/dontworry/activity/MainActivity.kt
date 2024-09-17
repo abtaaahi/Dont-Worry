@@ -51,6 +51,7 @@ class MainActivity : AppCompatActivity() {
                 intent.putExtra("photoUrl", account.photoUrl.toString())
 
                 startActivity(intent)
+                overridePendingTransition(R.anim.enter_anim, R.anim.exit_anim)
             }
 
             val currentDate = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Date())

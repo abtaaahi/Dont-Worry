@@ -105,7 +105,7 @@ class WeatherActivity : AppCompatActivity() {
             description.contains("rain", ignoreCase = true) -> "Don't go out, it's raining."
             description.contains("overcast", ignoreCase = true) || description.contains("clouds", ignoreCase = true) -> "Don't forget to take umbrella."
             description.contains("sunny", ignoreCase = true) -> "Don't forget to use sunscreen."
-            description.contains("haze", ignoreCase = true) || description.contains("mist", ignoreCase = true) -> "Wear some warm clothes."
+            description.contains("haze", ignoreCase = true) || description.contains("mist", ignoreCase = true) -> "Stay Refreshed."
             else -> "Stay safe and have a great day!"
         }
         suggestionTextView.text = suggestion

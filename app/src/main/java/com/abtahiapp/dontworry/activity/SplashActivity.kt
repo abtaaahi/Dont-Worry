@@ -22,9 +22,11 @@ class SplashActivity : AppCompatActivity() {
             val intent = Intent(this, MainActivity::class.java)
             intent.putExtra("account", account)
             startActivity(intent)
+            overridePendingTransition(R.anim.enter_anim, R.anim.exit_anim)
         } else {
             val intent = Intent(this, SignInActivity::class.java)
             startActivity(intent)
+            overridePendingTransition(R.anim.enter_anim, R.anim.exit_anim)
         }
         finish()
         }, SPLASH_TIME_OUT)

@@ -1,5 +1,7 @@
 package com.abtahiapp.dontworry.activity
 
+import android.content.Context
+import android.net.ConnectivityManager
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.widget.EditText
@@ -12,12 +14,20 @@ import androidx.recyclerview.widget.RecyclerView
 import com.abtahiapp.dontworry.Post
 import com.abtahiapp.dontworry.R
 import com.abtahiapp.dontworry.adapter.PostAdapter
+import com.abtahiapp.dontworry.room.PostDao
+import com.abtahiapp.dontworry.room.PostDatabase
+import com.abtahiapp.dontworry.room.PostEntity
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+
 
 class MyPostActivity : AppCompatActivity() {
 
@@ -25,10 +35,15 @@ class MyPostActivity : AppCompatActivity() {
     private lateinit var postAdapter: PostAdapter
     private lateinit var databaseReference: DatabaseReference
     private lateinit var currentUserId: String
+    private lateinit var postDao: PostDao
+    private var isOnline = true
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_my_post)
+
+        val postDatabase = PostDatabase.getDatabase(this)
+        postDao = postDatabase.postDao()
 
         recyclerViewPosts = findViewById(R.id.recycler_view_posts)
         recyclerViewPosts.layoutManager = LinearLayoutManager(this)
@@ -39,7 +54,14 @@ class MyPostActivity : AppCompatActivity() {
         currentUserId = account?.id ?: "unknown"
 
         databaseReference = FirebaseDatabase.getInstance().getReference("social_posts")
-        loadPostsFromDatabase()
+
+        checkNetworkStatus()
+
+        if (isOnline) {
+            loadPostsFromFirebase()
+        } else {
+            loadPostsFromRoom()
+        }
 
         postAdapter.setOnItemClickListener { post ->
             showOptionsDialog(post)
@@ -50,27 +72,67 @@ class MyPostActivity : AppCompatActivity() {
         }
     }
 
-    private fun loadPostsFromDatabase() {
+    private fun loadPostsFromFirebase() {
         databaseReference.addValueEventListener(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
                 val posts = mutableListOf<Post>()
+                val postEntities = mutableListOf<PostEntity>()
+
                 for (postSnapshot in snapshot.children) {
                     val post = postSnapshot.getValue(Post::class.java)
                     if (post != null && post.userId == currentUserId) {
                         post.id = postSnapshot.key ?: ""
                         posts.add(post)
+
+                        val postEntity = PostEntity(
+                            userName = post.userName,
+                            userPhotoUrl = post.userPhotoUrl,
+                            content = post.content,
+                            postTime = post.postTime,
+                            userId = post.userId
+                        )
+                        postEntities.add(postEntity)
                     }
                 }
                 posts.sortByDescending { it.postTime }
                 postAdapter.updatePosts(posts)
+
+                GlobalScope.launch(Dispatchers.IO) {
+                    postDao.clearUserPosts(currentUserId)
+                    postDao.insertPosts(postEntities)
+                }
             }
 
-            override fun onCancelled(error: DatabaseError) {
-            }
+            override fun onCancelled(error: DatabaseError) {}
         })
     }
 
+    private fun loadPostsFromRoom() {
+        GlobalScope.launch(Dispatchers.IO) {
+            val postEntities = postDao.getUserPosts(currentUserId)
+            val posts = postEntities.map { postEntity ->
+                Post(
+                    userName = postEntity.userName,
+                    userPhotoUrl = postEntity.userPhotoUrl,
+                    content = postEntity.content,
+                    postTime = postEntity.postTime,
+                    userId = postEntity.userId,
+                    id = postEntity.id.toString()
+                )
+            }
+
+            withContext(Dispatchers.Main) {
+                postAdapter.updatePosts(posts)
+            }
+        }
+    }
+
     private fun showOptionsDialog(post: Post) {
+        if (!isOnline) {
+            Toast.makeText(this, "You are offline. Update/Delete disabled.", Toast.LENGTH_SHORT).show()
+            return
+        }
+
         val dialogView = LayoutInflater.from(this).inflate(R.layout.dialog_post_options, null)
         val editTextPostContent = dialogView.findViewById<EditText>(R.id.edit_text_post_content)
 
@@ -126,5 +188,11 @@ class MyPostActivity : AppCompatActivity() {
                     Toast.makeText(this, "Failed to delete post", Toast.LENGTH_SHORT).show()
                 }
             }
+    }
+
+    private fun checkNetworkStatus() {
+        val connectivityManager = getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+        val networkInfo = connectivityManager.activeNetworkInfo
+        isOnline = networkInfo?.isConnected == true
     }
 }
