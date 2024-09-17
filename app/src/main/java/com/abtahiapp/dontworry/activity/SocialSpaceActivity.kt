@@ -11,7 +11,6 @@ import android.widget.Button
 import android.widget.EditText
 import android.widget.ImageView
 import android.widget.TextView
-import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -26,11 +25,8 @@ import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.firebase.database.*
 import java.text.SimpleDateFormat
 import java.util.*
-import io.socket.client.IO
-import io.socket.client.Socket
 import org.json.JSONArray
 import org.json.JSONObject
-import java.net.URISyntaxException
 
 class SocialSpaceActivity : AppCompatActivity() {
 
@@ -222,16 +218,10 @@ class SocialSpaceActivity : AppCompatActivity() {
     private fun showUserProfileBottomSheet(post: Post) {
         val profileImage = bottomSheetView.findViewById<ImageView>(R.id.profile_image_view)
         val userName = bottomSheetView.findViewById<TextView>(R.id.user_name_text_view)
-        val sendMessageButton = bottomSheetView.findViewById<Button>(R.id.send_message_button)
 
         Glide.with(this).load(post.userPhotoUrl).placeholder(R.drawable.person).into(profileImage)
         userName.text = post.userName
         userName.tag = post.userId
-
-        sendMessageButton.setOnClickListener {
-            val intent = Intent(this, ChatActivity::class.java)
-            startActivity(intent)
-        }
 
         bottomSheetDialog.setContentView(bottomSheetView)
         bottomSheetDialog.show()

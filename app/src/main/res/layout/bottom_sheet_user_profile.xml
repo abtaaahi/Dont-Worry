@@ -53,6 +53,7 @@
             android:backgroundTint="@color/color_one"
             android:textColor="@color/white"
             android:textStyle="bold"
+            android:visibility="invisible"
             android:text="Send Message"
             android:layout_marginTop="8dp"/>
     </LinearLayout>
