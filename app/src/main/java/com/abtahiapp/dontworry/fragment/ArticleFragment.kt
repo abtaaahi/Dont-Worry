@@ -20,12 +20,14 @@ import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
 import kotlinx.coroutines.launch
 import androidx.lifecycle.lifecycleScope
+import com.abtahiapp.dontworry.query.ArticleVideoQuery
 import com.airbnb.lottie.LottieAnimationView
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 
 class ArticleFragment : Fragment() {
 
@@ -34,6 +36,7 @@ class ArticleFragment : Fragment() {
     private lateinit var database: DatabaseReference
     private lateinit var articleRecyclerView: RecyclerView
     private lateinit var progressBar: LottieAnimationView
+    private lateinit var swipeRefreshLayout: SwipeRefreshLayout
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -42,6 +45,7 @@ class ArticleFragment : Fragment() {
         val view = inflater.inflate(R.layout.fragment_article, container, false)
         articleRecyclerView = view.findViewById(R.id.article_recycler_view)
         progressBar = view.findViewById(R.id.progress_bar)
+        swipeRefreshLayout = view.findViewById(R.id.swipe_refresh_layout)
 
         articleRecyclerView.layoutManager = LinearLayoutManager(requireContext(), LinearLayoutManager.VERTICAL, false)
         articleAdapter = ArticleAdapter(requireContext(), mutableListOf())
@@ -53,6 +57,10 @@ class ArticleFragment : Fragment() {
 
         showLoading(true)
         fetchLastMoodAndArticles()
+
+        swipeRefreshLayout.setOnRefreshListener {
+            fetchArticles(null)
+        }
 
         return view
     }
@@ -95,12 +103,8 @@ class ArticleFragment : Fragment() {
         val customSearchEngineId = BuildConfig.CUSTOM_SEARCH_ENGINE_ID
         // https://programmablesearchengine.google.com/controlpanel/all
 
-        val query = when (mood) {
-            "Angry" -> "stress management"
-            "Very Sad", "Sad" -> "mental health"
-            "Fine", "Very Fine" -> "positive thinking"
-            else -> "mindfulness"
-        }
+        val queries = ArticleVideoQuery.getQueries(mood)
+        val query = queries.random()
 
         lifecycleScope.launch {
             try {
@@ -112,6 +116,7 @@ class ArticleFragment : Fragment() {
                 Toast.makeText(requireContext(), "Failed to fetch articles", Toast.LENGTH_SHORT).show()
             } finally {
                 showLoading(false)
+                swipeRefreshLayout.isRefreshing = false
             }
         }
     }

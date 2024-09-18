@@ -8,6 +8,7 @@ import android.view.ViewGroup
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import com.abtahiapp.dontworry.BuildConfig
 import com.abtahiapp.dontworry.HomeFeedItem
 import com.abtahiapp.dontworry.adapter.HomeAdapter
@@ -16,6 +17,7 @@ import com.abtahiapp.dontworry.HomeItemType
 import com.abtahiapp.dontworry.Post
 import com.abtahiapp.dontworry.R
 import com.abtahiapp.dontworry.RetrofitClient
+import com.abtahiapp.dontworry.query.ArticleVideoQuery
 import com.airbnb.lottie.LottieAnimationView
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount
 import com.google.firebase.database.DataSnapshot
@@ -38,6 +40,7 @@ class HomeFragment : Fragment() {
     private lateinit var recyclerView: RecyclerView
     private lateinit var postList: MutableList<Post>
     private lateinit var homeItemList: MutableList<HomeItem>
+    private lateinit var swipeRefreshLayout: SwipeRefreshLayout
 
 
     override fun onCreateView(
@@ -48,12 +51,19 @@ class HomeFragment : Fragment() {
 
         progressBar = view.findViewById(R.id.progress_bar)
         recyclerView = view.findViewById(R.id.home_recycler_view)
+        swipeRefreshLayout = view.findViewById(R.id.swipe_refresh_layout)
 
         postList = mutableListOf()
         homeItemList = mutableListOf()
 
         recyclerView.layoutManager = LinearLayoutManager(requireContext(), LinearLayoutManager.VERTICAL, false)
         homeAdapter = HomeAdapter(requireContext(), emptyList())
+
+        recyclerView.addOnScrollListener(object : RecyclerView.OnScrollListener() {
+            override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
+                swipeRefreshLayout.isEnabled = !recyclerView.canScrollVertically(-1)
+            }
+        })
 
         recyclerView.adapter = homeAdapter
 
@@ -63,6 +73,12 @@ class HomeFragment : Fragment() {
         showLoading(true)
         loadPostsFromDatabase()
         fetchItems()
+
+        swipeRefreshLayout.setOnRefreshListener {
+            fetchItems()
+            loadPostsFromDatabase()
+        }
+
         return view
     }
 
@@ -93,29 +109,35 @@ class HomeFragment : Fragment() {
                 homeAdapter.notifyDataSetChanged()
             }
 
-            override fun onCancelled(error: DatabaseError) {}
+            override fun onCancelled(error: DatabaseError) {
+                swipeRefreshLayout.isRefreshing = false
+            }
         })
     }
 
     private fun fetchItems() {
+        swipeRefreshLayout.isRefreshing = false
         val currentDate = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Date())
         val moodHistoryRef = database.child(account.id!!).child("mood_history")
         moodHistoryRef.orderByChild("date").equalTo(currentDate)
             .addListenerForSingleValueEvent(object : ValueEventListener {
                 override fun onDataChange(dataSnapshot: DataSnapshot) {
                     val lastMood = dataSnapshot.children.lastOrNull()?.child("mood")?.getValue(String::class.java)
-                    val queryType = when (lastMood) {
-                        "Angry" -> Triple("stress management", "relaxing music", "stress management")
-                        "Very Sad", "Sad" -> Triple("mental health", "soothing music", "mental health")
-                        "Fine", "Very Fine" -> Triple("positive thinking", "cheerful music", "positive thinking")
-                        else -> Triple("mindfulness", "calmness music", "mindfulness")
-                    }
+
+                    val queries = ArticleVideoQuery.getQueries(lastMood)
+                    val query = queries.random()
+                    val musicQueries = queries.map { "$it music" }
+                    val musicQuery = musicQueries.random()
+
+                    val queryType = Triple(query, musicQuery, query)
+
                     fetchData(queryType)
                 }
 
                 override fun onCancelled(databaseError: DatabaseError) {
                     updateUI(emptyList())
                     showLoading(false)
+                    swipeRefreshLayout.isRefreshing = false
                 }
             })
     }

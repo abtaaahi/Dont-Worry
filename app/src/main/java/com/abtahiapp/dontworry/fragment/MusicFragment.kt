@@ -23,6 +23,8 @@ import java.util.Date
 import java.util.Locale
 import kotlinx.coroutines.launch
 import androidx.lifecycle.lifecycleScope
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+import com.abtahiapp.dontworry.query.ArticleVideoQuery
 import com.airbnb.lottie.LottieAnimationView
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -34,6 +36,7 @@ class MusicFragment : Fragment() {
     private lateinit var database: DatabaseReference
     private lateinit var audioRecyclerView: RecyclerView
     private lateinit var progressBar: LottieAnimationView
+    private lateinit var swipeRefreshLayout: SwipeRefreshLayout
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -42,6 +45,7 @@ class MusicFragment : Fragment() {
         val view = inflater.inflate(R.layout.fragment_music, container, false)
         audioRecyclerView = view.findViewById(R.id.audio_recycler_view)
         progressBar = view.findViewById(R.id.progress_bar)
+        swipeRefreshLayout = view.findViewById(R.id.swipe_refresh_layout)
 
         audioRecyclerView.layoutManager = LinearLayoutManager(requireContext(), LinearLayoutManager.VERTICAL, false)
         audioAdapter = AudioAdapter(requireContext(), mutableListOf())
@@ -53,6 +57,10 @@ class MusicFragment : Fragment() {
 
         showLoading(true)
         fetchLastMoodAndAudios()
+
+        swipeRefreshLayout.setOnRefreshListener {
+            fetchAudios(null)
+        }
 
         return view
     }
@@ -91,13 +99,11 @@ class MusicFragment : Fragment() {
     }
 
     private fun fetchAudios(mood: String?) {
+        showLoading(true)
+        swipeRefreshLayout.isRefreshing = false
         val apiKey = BuildConfig.GOOGLE_API_KEY
-        val query = when (mood) {
-            "Angry" -> "relaxing music"
-            "Very Sad", "Sad" -> "soothing music"
-            "Fine", "Very Fine" -> "cheerful music"
-            else -> "calmness music"
-        }
+        val queries = ArticleVideoQuery.getQueries(mood).map { "$it music" }
+        val query = queries.random()
 
         lifecycleScope.launch {
             try {

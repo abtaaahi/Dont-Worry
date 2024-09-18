@@ -23,9 +23,11 @@ import java.util.Date
 import java.util.Locale
 import kotlinx.coroutines.launch
 import androidx.lifecycle.lifecycleScope
+import com.abtahiapp.dontworry.query.ArticleVideoQuery
 import com.airbnb.lottie.LottieAnimationView
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 
 class VideoFragment : Fragment() {
 
@@ -34,6 +36,7 @@ class VideoFragment : Fragment() {
     private lateinit var database: DatabaseReference
     private lateinit var videoRecyclerView: RecyclerView
     private lateinit var progressBar: LottieAnimationView
+    private lateinit var swipeRefreshLayout: SwipeRefreshLayout
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -42,6 +45,7 @@ class VideoFragment : Fragment() {
         val view = inflater.inflate(R.layout.fragment_video, container, false)
         videoRecyclerView= view.findViewById(R.id.video_recycler_view)
         progressBar = view.findViewById(R.id.progress_bar)
+        swipeRefreshLayout = view.findViewById(R.id.swipe_refresh_layout)
 
         videoRecyclerView.layoutManager = LinearLayoutManager(requireContext(), LinearLayoutManager.VERTICAL, false)
         videoAdapter = VideoAdapter(requireContext(), mutableListOf())
@@ -53,6 +57,10 @@ class VideoFragment : Fragment() {
 
         showLoading(true)
         fetchLastMoodAndVideos()
+
+        swipeRefreshLayout.setOnRefreshListener {
+            fetchVideos(null)
+        }
 
         return view
     }
@@ -91,13 +99,13 @@ class VideoFragment : Fragment() {
     }
 
     private fun fetchVideos(mood: String?) {
+        showLoading(true)
+        swipeRefreshLayout.isRefreshing = false
+
         val apiKey = BuildConfig.GOOGLE_API_KEY
-        val query = when (mood) {
-            "Angry" -> "stress management"
-            "Very Sad", "Sad" -> "mental health"
-            "Fine", "Very Fine" -> "positive thinking"
-            else -> "mindfulness"
-        }
+
+        val queries = ArticleVideoQuery.getQueries(mood)
+        val query = queries.random()
 
         lifecycleScope.launch {
             try {

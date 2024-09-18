@@ -11,6 +11,7 @@ import com.abtahiapp.dontworry.R
 import com.abtahiapp.dontworry.RetrofitClient
 import com.abtahiapp.dontworry.VideoItem
 import com.abtahiapp.dontworry.adapter.MoreAudioAdapter
+import com.abtahiapp.dontworry.query.ArticleVideoQuery
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.YouTubePlayer
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.listeners.AbstractYouTubePlayerListener
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.views.YouTubePlayerView
@@ -60,16 +61,13 @@ class AudioActivity : AppCompatActivity() {
         }
 
         findViewById<TextView>(R.id.textView7).text = video.snippet.title
+        fetchAudios(video.snippet.title)
     }
 
     private fun fetchAudios(mood: String?) {
         val apiKey = BuildConfig.GOOGLE_API_KEY
-        val query = when (mood) {
-            "Angry" -> "relaxing music"
-            "Very Sad", "Sad" -> "soothing music"
-            "Fine", "Very Fine" -> "cheerful music"
-            else -> "calmness music"
-        }
+        val queries = ArticleVideoQuery.getQueries(mood).map { "$it music" }
+        val query = queries.random()
 
         lifecycleScope.launch {
             try {

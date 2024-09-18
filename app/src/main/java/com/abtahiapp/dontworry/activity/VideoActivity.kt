@@ -12,6 +12,7 @@ import com.abtahiapp.dontworry.R
 import com.abtahiapp.dontworry.RetrofitClient
 import com.abtahiapp.dontworry.VideoItem
 import com.abtahiapp.dontworry.adapter.MoreVideoAdapter
+import com.abtahiapp.dontworry.query.ArticleVideoQuery
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.YouTubePlayer
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.listeners.AbstractYouTubePlayerListener
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.views.YouTubePlayerView
@@ -62,16 +63,13 @@ class VideoActivity : AppCompatActivity() {
         }
 
         findViewById<TextView>(R.id.textView7).text = video.snippet.title
+        fetchVideos(video.snippet.title)
     }
 
     private fun fetchVideos(mood: String?) {
         val apiKey = BuildConfig.GOOGLE_API_KEY
-        val query = when (mood) {
-            "Angry" -> "stress management"
-            "Very Sad", "Sad" -> "mental health"
-            "Fine", "Very Fine" -> "positive thinking"
-            else -> "mindfulness"
-        }
+        val queries = ArticleVideoQuery.getQueries(mood)
+        val query = queries.random()
 
         lifecycleScope.launch {
             try {

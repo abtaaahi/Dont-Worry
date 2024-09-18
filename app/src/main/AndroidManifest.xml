@@ -25,9 +25,6 @@
             android:name=".activity.SocialSpaceActivity"
             android:exported="false" />
         <activity
-            android:name=".activity.MapActivity"
-            android:exported="false" />
-        <activity
             android:name=".activity.PlacesActivity"
             android:exported="false" />
         <activity

@@ -11,7 +11,6 @@ import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.abtahiapp.dontworry.Place
 import com.abtahiapp.dontworry.R
-import com.abtahiapp.dontworry.activity.MapActivity
 import com.bumptech.glide.Glide
 
 
