@@ -10,15 +10,15 @@ import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
 import androidx.recyclerview.widget.RecyclerView
-import com.abtahiapp.dontworry.HomeFeedItem
-import com.abtahiapp.dontworry.activity.MovieActivity
-import com.abtahiapp.dontworry.HomeItem
-import com.abtahiapp.dontworry.HomeItemType
-import com.abtahiapp.dontworry.Post
+import com.abtahiapp.dontworry.utils.HomeFeedItem
+import com.abtahiapp.dontworry.utils.HomeItem
+import com.abtahiapp.dontworry.utils.HomeItemType
+import com.abtahiapp.dontworry.utils.Post
 import com.abtahiapp.dontworry.R
 import com.abtahiapp.dontworry.activity.ArticleActivity
 import com.abtahiapp.dontworry.activity.AudioActivity
 import com.abtahiapp.dontworry.activity.VideoActivity
+import com.abtahiapp.dontworry.utils.NetworkUtil.isOnline
 import com.bumptech.glide.Glide
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -58,21 +58,33 @@ class HomeAdapter(private val context: Context, private var items: List<HomeFeed
             itemView.setOnClickListener {
                 when (item.type) {
                     HomeItemType.VIDEO -> {
-                        val intent = Intent(context, VideoActivity::class.java)
-                        intent.putExtra("videoUrl", item.id)
-                        intent.putExtra("title", item.title)
-                        context.startActivity(intent)
+                        if (isOnline(context)) {
+                            val intent = Intent(context, VideoActivity::class.java)
+                            intent.putExtra("videoUrl", item.id)
+                            intent.putExtra("title", item.title)
+                            context.startActivity(intent)
+                        } else {
+                            Toast.makeText(context, "You are offline.", Toast.LENGTH_SHORT).show()
+                        }
                     }
                     HomeItemType.ARTICLE -> {
-                        val intent = Intent(context, ArticleActivity::class.java)
-                        intent.putExtra("url", item.id)
-                        context.startActivity(intent)
+                        if (isOnline(context)) {
+                            val intent = Intent(context, ArticleActivity::class.java)
+                            intent.putExtra("url", item.id)
+                            context.startActivity(intent)
+                        } else {
+                            Toast.makeText(context, "You are offline.", Toast.LENGTH_SHORT).show()
+                        }
                     }
                     HomeItemType.AUDIO -> {
-                        val intent = Intent(context, AudioActivity::class.java)
-                        intent.putExtra("videoUrl", item.id)
-                        intent.putExtra("title", item.title)
-                        context.startActivity(intent)
+                        if (isOnline(context)) {
+                            val intent = Intent(context, AudioActivity::class.java)
+                            intent.putExtra("videoUrl", item.id)
+                            intent.putExtra("title", item.title)
+                            context.startActivity(intent)
+                        } else {
+                            Toast.makeText(context, "You are offline.", Toast.LENGTH_SHORT).show()
+                        }
                     }
                     else -> {}
                 }

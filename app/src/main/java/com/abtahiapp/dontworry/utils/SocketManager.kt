@@ -1,4 +1,4 @@
-package com.abtahiapp.dontworry
+package com.abtahiapp.dontworry.utils
 
 import android.content.Context
 import android.util.Log

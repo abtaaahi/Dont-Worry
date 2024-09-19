@@ -3,9 +3,9 @@ package com.abtahiapp.dontworry.viewmodel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import com.abtahiapp.dontworry.CustomSearchResponse
-import com.abtahiapp.dontworry.Place
-import com.abtahiapp.dontworry.RetrofitClient
+import com.abtahiapp.dontworry.utils.CustomSearchResponse
+import com.abtahiapp.dontworry.utils.Place
+import com.abtahiapp.dontworry.utils.RetrofitClient
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response

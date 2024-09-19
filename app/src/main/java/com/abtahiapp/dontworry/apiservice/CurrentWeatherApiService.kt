@@ -1,7 +1,6 @@
 package com.abtahiapp.dontworry.apiservice
 
-import com.abtahiapp.dontworry.CurrentWeatherResponse
-import retrofit2.Call
+import com.abtahiapp.dontworry.utils.CurrentWeatherResponse
 import retrofit2.http.GET
 import retrofit2.http.Query
 

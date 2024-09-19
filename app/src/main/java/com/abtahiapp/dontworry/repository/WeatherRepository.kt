@@ -1,8 +1,8 @@
 package com.abtahiapp.dontworry.repository
 
-import com.abtahiapp.dontworry.RetrofitClient
-import com.abtahiapp.dontworry.CurrentWeatherResponse
-import com.abtahiapp.dontworry.WeatherResponse
+import com.abtahiapp.dontworry.utils.RetrofitClient
+import com.abtahiapp.dontworry.utils.CurrentWeatherResponse
+import com.abtahiapp.dontworry.utils.WeatherResponse
 
 class WeatherRepository {
 

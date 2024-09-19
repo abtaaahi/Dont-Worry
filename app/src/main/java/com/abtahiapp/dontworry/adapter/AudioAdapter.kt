@@ -7,11 +7,12 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
+import android.widget.Toast
 import androidx.recyclerview.widget.RecyclerView
+import com.abtahiapp.dontworry.utils.NetworkUtil.isOnline
 import com.abtahiapp.dontworry.R
-import com.abtahiapp.dontworry.VideoItem
+import com.abtahiapp.dontworry.utils.VideoItem
 import com.abtahiapp.dontworry.activity.AudioActivity
-import com.abtahiapp.dontworry.activity.VideoActivity
 import com.bumptech.glide.Glide
 
 class AudioAdapter(private val context: Context, private var videos: MutableList<VideoItem>) :
@@ -25,10 +26,14 @@ class AudioAdapter(private val context: Context, private var videos: MutableList
             title.text = video.snippet.title
             Glide.with(context).load(video.snippet.thumbnails.high.url).into(thumbnail)
             itemView.setOnClickListener {
-                val intent = Intent(context, AudioActivity::class.java)
-                intent.putExtra("videoUrl", video.id.videoId)
-                intent.putExtra("title", video.snippet.title)
-                context.startActivity(intent)
+                if (isOnline(context)) {
+                    val intent = Intent(context, AudioActivity::class.java)
+                    intent.putExtra("videoUrl", video.id.videoId)
+                    intent.putExtra("title", video.snippet.title)
+                    context.startActivity(intent)
+                } else {
+                    Toast.makeText(context, "You are offline.", Toast.LENGTH_SHORT).show()
+                }
             }
         }
     }

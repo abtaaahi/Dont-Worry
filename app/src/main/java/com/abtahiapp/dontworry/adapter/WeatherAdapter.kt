@@ -8,7 +8,7 @@ import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.abtahiapp.dontworry.R
-import com.abtahiapp.dontworry.WeatherForecast
+import com.abtahiapp.dontworry.utils.WeatherForecast
 import com.bumptech.glide.Glide
 import java.text.SimpleDateFormat
 import java.util.Date

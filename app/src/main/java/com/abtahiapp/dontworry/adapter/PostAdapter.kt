@@ -7,7 +7,7 @@ import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
-import com.abtahiapp.dontworry.Post
+import com.abtahiapp.dontworry.utils.Post
 import com.abtahiapp.dontworry.R
 import com.bumptech.glide.Glide
 import java.text.SimpleDateFormat

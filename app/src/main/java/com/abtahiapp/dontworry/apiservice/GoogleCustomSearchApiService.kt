@@ -1,7 +1,6 @@
 package com.abtahiapp.dontworry.apiservice
 
-import com.abtahiapp.dontworry.GoogleCustomSearchResponse
-import retrofit2.Call
+import com.abtahiapp.dontworry.utils.GoogleCustomSearchResponse
 import retrofit2.http.GET
 import retrofit2.http.Query
 

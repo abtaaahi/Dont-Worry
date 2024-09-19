@@ -1,7 +1,9 @@
 package com.abtahiapp.dontworry.activity
 
+import android.content.Context
 import android.content.Intent
 import android.graphics.drawable.GradientDrawable
+import android.net.ConnectivityManager
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
@@ -11,18 +13,25 @@ import android.widget.Button
 import android.widget.EditText
 import android.widget.ImageView
 import android.widget.TextView
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.abtahiapp.dontworry.Post
+import com.abtahiapp.dontworry.utils.Post
 import com.abtahiapp.dontworry.R
-import com.abtahiapp.dontworry.SocketManager
+import com.abtahiapp.dontworry.utils.SocketManager
 import com.abtahiapp.dontworry.adapter.PostAdapter
+import com.abtahiapp.dontworry.room.SocialPostDao
+import com.abtahiapp.dontworry.room.SocialPostDatabase
+import com.abtahiapp.dontworry.room.SocialPostEntity
 import com.bumptech.glide.Glide
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.firebase.database.*
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.*
 import org.json.JSONArray
@@ -40,6 +49,7 @@ class SocialSpaceActivity : AppCompatActivity() {
     private lateinit var bottomSheetDialog: BottomSheetDialog
     private lateinit var bottomSheetView: View
     private lateinit var statusTextView: TextView
+    private lateinit var socialPostDao: SocialPostDao
 
     private val onlineStatusMap = mutableMapOf<String, Boolean>()
 
@@ -47,6 +57,8 @@ class SocialSpaceActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_social_space)
 
+        val socialPostDatabase = SocialPostDatabase.getDatabase(this)
+        socialPostDao = socialPostDatabase.socialPostDao()
         profileImageView = findViewById(R.id.profile_image)
         editTextPost = findViewById(R.id.edit_text_post)
         postButton = findViewById(R.id.post_button)
@@ -89,20 +101,19 @@ class SocialSpaceActivity : AppCompatActivity() {
             }
         })
 
-        databaseReference = FirebaseDatabase.getInstance().getReference("social_posts")
-
         recyclerViewPosts.layoutManager = LinearLayoutManager(this)
         postAdapter = PostAdapter(mutableListOf())
         recyclerViewPosts.adapter = postAdapter
 
-        loadPostsFromDatabase()
+        observePosts()
+        checkAndUpdatePosts(account?.displayName, account?.photoUrl.toString())
 
         if (account != null) {
 
             postAdapter.setOnProfileImageClickListener { post ->
                 val currentUser = GoogleSignIn.getLastSignedInAccount(this)?.id
                 if (post.userId == currentUser) {
-                    val intent = Intent(this, MyProfile::class.java)
+                    val intent = Intent(this, MyProfileActivity::class.java)
                     intent.putExtra("userId", account.id)
                     intent.putExtra("name", account.displayName)
                     intent.putExtra("email", account.email)
@@ -116,7 +127,11 @@ class SocialSpaceActivity : AppCompatActivity() {
         }
 
         postButton.setOnClickListener {
-            postContentToDatabase(account?.displayName, account?.photoUrl.toString())
+            if (isOnline()) {
+                postContentToDatabase(account?.displayName, account?.photoUrl.toString())
+            } else {
+                Toast.makeText(this, "You are offline. Cannot post at this time.", Toast.LENGTH_SHORT).show()
+            }
         }
 
         val socketManager = SocketManager.getInstance(this)
@@ -166,6 +181,35 @@ class SocialSpaceActivity : AppCompatActivity() {
         }
     }
 
+    private fun observePosts() {
+        socialPostDao.getAllPosts().observe(this) { posts ->
+            if (posts.isNotEmpty()) {
+                postAdapter.updatePosts(posts.map {
+                    Post(
+                        it.userName,
+                        it.userPhotoUrl.toString(), it.content, it.postTime, it.userId, it.id
+                    )
+                })
+            } else {
+                //Toast.makeText(this, "No posts available offline", Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
+
+    private fun checkAndUpdatePosts(userName: String?, userPhotoUrl: String?) {
+        if (isOnline()) {
+            fetchPostsFromFirebase()
+        } else {
+            //Toast.makeText(this, "Showing offline data", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    private fun isOnline(): Boolean {
+        val connectivityManager = getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+        val activeNetwork = connectivityManager.activeNetworkInfo
+        return activeNetwork != null && activeNetwork.isConnected
+    }
+
     private fun updateStatusIndicator(status: String) {
         val color = if (status == "online") resources.getColor(R.color.green) else resources.getColor(R.color.grey)
         val drawable = ContextCompat.getDrawable(this, R.drawable.circle) as GradientDrawable
@@ -196,21 +240,37 @@ class SocialSpaceActivity : AppCompatActivity() {
         }
     }
 
-    private fun loadPostsFromDatabase() {
+    private fun fetchPostsFromFirebase() {
+        databaseReference = FirebaseDatabase.getInstance().getReference("social_posts")
+
         databaseReference.addValueEventListener(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
-                val posts = mutableListOf<Post>()
+                val posts = mutableListOf<SocialPostEntity>()
                 for (postSnapshot in snapshot.children) {
                     val post = postSnapshot.getValue(Post::class.java)
                     if (post != null) {
-                        posts.add(post)
+                        posts.add(
+                            SocialPostEntity(
+                                id = post.id,
+                                userName = post.userName,
+                                userPhotoUrl = post.userPhotoUrl,
+                                content = post.content,
+                                postTime = post.postTime,
+                                userId = post.userId
+                            )
+                        )
                     }
                 }
-                posts.sortByDescending { it.postTime }
-                postAdapter.updatePosts(posts)
+
+                lifecycleScope.launch(Dispatchers.IO) {
+                    socialPostDao.deleteAllPosts()
+                    socialPostDao.insertPosts(posts)
+                }
             }
 
             override fun onCancelled(error: DatabaseError) {
+                observePosts()
+                Toast.makeText(this@SocialSpaceActivity, "Failed to fetch posts", Toast.LENGTH_SHORT).show()
             }
         })
     }

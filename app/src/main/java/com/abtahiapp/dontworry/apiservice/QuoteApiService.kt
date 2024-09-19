@@ -1,6 +1,6 @@
 package com.abtahiapp.dontworry.apiservice
 
-import com.abtahiapp.dontworry.QuoteResponse
+import com.abtahiapp.dontworry.utils.QuoteResponse
 import retrofit2.Call
 import retrofit2.http.GET
 import retrofit2.http.Headers

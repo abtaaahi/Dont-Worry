@@ -11,7 +11,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.abtahiapp.dontworry.Post
+import com.abtahiapp.dontworry.utils.Post
 import com.abtahiapp.dontworry.R
 import com.abtahiapp.dontworry.adapter.PostAdapter
 import com.abtahiapp.dontworry.room.PostDao

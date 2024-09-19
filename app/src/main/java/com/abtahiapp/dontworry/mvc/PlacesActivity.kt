@@ -1,7 +1,6 @@
 package com.abtahiapp.dontworry.mvc
 
 import android.os.Bundle
-import android.util.Log
 import android.view.View
 import android.widget.ProgressBar
 import android.widget.Toast
@@ -9,11 +8,11 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.abtahiapp.dontworry.BuildConfig
-import com.abtahiapp.dontworry.CustomSearchResponse
-import com.abtahiapp.dontworry.Place
+import com.abtahiapp.dontworry.utils.CustomSearchResponse
+import com.abtahiapp.dontworry.utils.Place
 //import com.abtahiapp.dontworry.PlacesResponse
 import com.abtahiapp.dontworry.R
-import com.abtahiapp.dontworry.RetrofitClient
+import com.abtahiapp.dontworry.utils.RetrofitClient
 import com.abtahiapp.dontworry.adapter.PlacesAdapter
 import retrofit2.Call
 import retrofit2.Response

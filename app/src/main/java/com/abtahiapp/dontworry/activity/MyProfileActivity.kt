@@ -27,7 +27,7 @@ import com.google.firebase.database.ValueEventListener
 import de.hdodenhof.circleimageview.CircleImageView
 import kotlinx.coroutines.launch
 
-class MyProfile : AppCompatActivity() {
+class MyProfileActivity : AppCompatActivity() {
     private lateinit var googleSignInClient: GoogleSignInClient
     private lateinit var userId: String
     private lateinit var userProfileDao: UserProfileDao
@@ -69,18 +69,26 @@ class MyProfile : AppCompatActivity() {
         googleSignInClient = GoogleSignIn.getClient(this, gso)
 
         logoutButton.setOnClickListener {
-            googleSignInClient.signOut().addOnCompleteListener {
-                val intent = Intent(this, SignInActivity::class.java)
-                startActivity(intent)
-                overridePendingTransition(R.anim.enter_anim, R.anim.exit_anim)
-                finish()
+            if(isNetworkAvailable()){
+                googleSignInClient.signOut().addOnCompleteListener {
+                    val intent = Intent(this, SignInActivity::class.java)
+                    startActivity(intent)
+                    overridePendingTransition(R.anim.enter_anim, R.anim.exit_anim)
+                    finish()
+                }
+            } else{
+                Toast.makeText(this, "You are offline!", Toast.LENGTH_SHORT).show()
             }
         }
 
         editDetailsButton.setOnClickListener {
-            val intent = Intent(this, InfoUpdateActivity::class.java)
-            intent.putExtra("userID", userId)
-            startActivity(intent)
+            if(isNetworkAvailable()){
+                val intent = Intent(this, InfoUpdateActivity::class.java)
+                intent.putExtra("userID", userId)
+                startActivity(intent)
+            } else{
+                Toast.makeText(this, "You are offline!", Toast.LENGTH_SHORT).show()
+            }
         }
 
         activityButton.setOnClickListener {
@@ -148,7 +156,7 @@ class MyProfile : AppCompatActivity() {
                     }
                 } else {
                     Log.d("MyProfile", "No data found in Firebase for user: $userId")
-                    Toast.makeText(this@MyProfile, "No data found for this user.", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(this@MyProfileActivity, "No data found for this user.", Toast.LENGTH_SHORT).show()
                 }
             }
 
@@ -199,7 +207,7 @@ class MyProfile : AppCompatActivity() {
                 updateUI(it.music, it.bookMovie, it.likes, it.dislikes, it.trust, it.water, it.choices, it.sleep)
             } ?: run {
                 Log.d("MyProfile", "No offline data found in local database.")
-                Toast.makeText(this@MyProfile, "No offline data found", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this@MyProfileActivity, "No offline data found", Toast.LENGTH_SHORT).show()
             }
         }
     }

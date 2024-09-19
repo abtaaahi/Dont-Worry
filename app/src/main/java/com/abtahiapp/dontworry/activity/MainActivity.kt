@@ -44,7 +44,7 @@ class MainActivity : AppCompatActivity() {
                 .into(profileImageView)
 
             profileImageView.setOnClickListener {
-                val intent = Intent(this, MyProfile::class.java)
+                val intent = Intent(this, MyProfileActivity::class.java)
                 intent.putExtra("userId", account.id)
                 intent.putExtra("name", account.displayName)
                 intent.putExtra("email", account.email)

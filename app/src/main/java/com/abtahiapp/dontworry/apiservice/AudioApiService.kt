@@ -1,9 +1,8 @@
 package com.abtahiapp.dontworry.apiservice
 
-import com.abtahiapp.dontworry.VideoResponse
+import com.abtahiapp.dontworry.utils.VideoResponse
 import retrofit2.Call
 import retrofit2.http.GET
-import retrofit2.http.Path
 import retrofit2.http.Query
 
 interface AudioApiService {

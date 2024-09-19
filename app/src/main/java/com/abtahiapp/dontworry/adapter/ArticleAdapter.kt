@@ -1,6 +1,6 @@
 package com.abtahiapp.dontworry.adapter
 
-import com.abtahiapp.dontworry.Item
+import com.abtahiapp.dontworry.utils.Item
 import android.content.Context
 import android.content.Intent
 import android.view.LayoutInflater
@@ -8,7 +8,9 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
+import android.widget.Toast
 import androidx.recyclerview.widget.RecyclerView
+import com.abtahiapp.dontworry.utils.NetworkUtil.isOnline
 import com.abtahiapp.dontworry.R
 import com.abtahiapp.dontworry.activity.ArticleActivity
 import com.bumptech.glide.Glide
@@ -36,10 +38,14 @@ class ArticleAdapter(
             .into(holder.imageView)
 
         holder.itemView.setOnClickListener {
-            val intent = Intent(context, ArticleActivity::class.java).apply {
-                putExtra("url", article.link)
+            if (isOnline(context)) {
+                val intent = Intent(context, ArticleActivity::class.java).apply {
+                    putExtra("url", article.link)
+                }
+                context.startActivity(intent)
+            } else {
+                Toast.makeText(context, "You are offline. Cannot open article.", Toast.LENGTH_SHORT).show()
             }
-            context.startActivity(intent)
         }
     }
 

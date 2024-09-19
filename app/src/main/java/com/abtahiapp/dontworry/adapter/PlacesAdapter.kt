@@ -9,7 +9,7 @@ import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
-import com.abtahiapp.dontworry.Place
+import com.abtahiapp.dontworry.utils.Place
 import com.abtahiapp.dontworry.R
 import com.bumptech.glide.Glide
 

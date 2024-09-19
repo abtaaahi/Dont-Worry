@@ -8,7 +8,7 @@ import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.abtahiapp.dontworry.R
-import com.abtahiapp.dontworry.VideoItem
+import com.abtahiapp.dontworry.utils.VideoItem
 import com.bumptech.glide.Glide
 
 class MoreVideoAdapter(private val context: Context, private var videos: MutableList<VideoItem>, private val onClick: (VideoItem) -> Unit) :

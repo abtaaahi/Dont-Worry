@@ -10,7 +10,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.abtahiapp.dontworry.BuildConfig
 import com.abtahiapp.dontworry.R
-import com.abtahiapp.dontworry.RetrofitClient
+import com.abtahiapp.dontworry.utils.RetrofitClient
 import com.abtahiapp.dontworry.adapter.AudioAdapter
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount
 import com.google.firebase.database.DataSnapshot
@@ -24,7 +24,15 @@ import java.util.Locale
 import kotlinx.coroutines.launch
 import androidx.lifecycle.lifecycleScope
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+import com.abtahiapp.dontworry.utils.NetworkUtil.isOnline
+import com.abtahiapp.dontworry.utils.Snippet
+import com.abtahiapp.dontworry.utils.Thumbnail
+import com.abtahiapp.dontworry.utils.Thumbnails
+import com.abtahiapp.dontworry.utils.VideoId
+import com.abtahiapp.dontworry.utils.VideoItem
 import com.abtahiapp.dontworry.query.ArticleVideoQuery
+import com.abtahiapp.dontworry.room.AudioDatabase
+import com.abtahiapp.dontworry.room.AudioEntity
 import com.airbnb.lottie.LottieAnimationView
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -37,6 +45,7 @@ class MusicFragment : Fragment() {
     private lateinit var audioRecyclerView: RecyclerView
     private lateinit var progressBar: LottieAnimationView
     private lateinit var swipeRefreshLayout: SwipeRefreshLayout
+    private lateinit var databaseRoom: AudioDatabase
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -54,12 +63,24 @@ class MusicFragment : Fragment() {
         account = activity?.intent?.getParcelableExtra("account") ?: return view
 
         database = FirebaseDatabase.getInstance().getReference("user_information")
+        databaseRoom = AudioDatabase.getDatabase(requireContext())
 
         showLoading(true)
         fetchLastMoodAndAudios()
 
+        if (isOnline(requireContext())) {
+            fetchLastMoodAndAudios()
+        } else {
+            loadVideosFromLocal()
+        }
+
         swipeRefreshLayout.setOnRefreshListener {
-            fetchAudios(null)
+            if (isOnline(requireContext())) {
+                fetchAudios(null)
+            } else {
+                swipeRefreshLayout.isRefreshing = false
+                Toast.makeText(requireContext(), "You are offline. Cannot refresh.", Toast.LENGTH_SHORT).show()
+            }
         }
 
         return view
@@ -110,18 +131,56 @@ class MusicFragment : Fragment() {
                 val response = withContext(Dispatchers.IO) {
                     RetrofitClient.youtubeInstance.getVideos(query = query, apiKey = apiKey)
                 }
+                saveVideosToLocal(response.items)
                 audioAdapter.updateAudios(response.items)
             } catch (e: Exception) {
                 if (isAdded) {
                     Toast.makeText(requireContext(), "Failed to fetch music", Toast.LENGTH_SHORT).show()
-                } else {
-
+                    loadVideosFromLocal()
                 }
             } finally {
                 if (isAdded) {
                     showLoading(false)
+                    swipeRefreshLayout.isRefreshing = false
                 }
             }
+        }
+    }
+
+    private suspend fun saveVideosToLocal(videos: List<VideoItem>) {
+        withContext(Dispatchers.IO) {
+            val videoEntities = videos.map {
+                AudioEntity(
+                    videoId = it.id.videoId,
+                    title = it.snippet.title,
+                    thumbnailUrl = it.snippet.thumbnails.high.url
+                )
+            }
+            databaseRoom.audioDao().clearVideos()
+            databaseRoom.audioDao().insertVideos(videoEntities)
+        }
+    }
+
+    private fun loadVideosFromLocal() {
+        lifecycleScope.launch {
+            val savedVideos = withContext(Dispatchers.IO) {
+                databaseRoom.audioDao().getAllVideos()
+            }
+
+            val videoItems = savedVideos.map {
+                VideoItem(
+                    id = VideoId(it.videoId),
+                    snippet = Snippet(
+                        title = it.title,
+                        thumbnails = Thumbnails(
+                            high = Thumbnail(it.thumbnailUrl)
+                        )
+                    )
+                )
+            }
+
+            audioAdapter.updateAudios(videoItems)
+            showLoading(false)
         }
     }
 }

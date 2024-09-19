@@ -11,8 +11,11 @@ import androidx.recyclerview.widget.RecyclerView
 import com.abtahiapp.dontworry.BuildConfig
 import com.abtahiapp.dontworry.R
 import com.abtahiapp.dontworry.adapter.MovieAdapter
-import com.abtahiapp.dontworry.Movie
-import com.abtahiapp.dontworry.RetrofitClient
+import com.abtahiapp.dontworry.room.MovieDao
+import com.abtahiapp.dontworry.room.MovieDatabase
+import com.abtahiapp.dontworry.room.MovieEntity
+import com.abtahiapp.dontworry.utils.Movie
+import com.abtahiapp.dontworry.utils.RetrofitClient
 import com.airbnb.lottie.LottieAnimationView
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount
 import com.google.firebase.database.DataSnapshot
@@ -23,8 +26,13 @@ import com.google.firebase.database.ValueEventListener
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
-import com.abtahiapp.dontworry.TrailerResponse
-import com.abtahiapp.dontworry.MovieResponse
+import com.abtahiapp.dontworry.utils.TrailerResponse
+import com.abtahiapp.dontworry.utils.MovieResponse
+import com.abtahiapp.dontworry.utils.NetworkUtil.isOnline
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -36,6 +44,8 @@ class MovieFragment : Fragment() {
     private lateinit var movieRecyclerView: RecyclerView
     private lateinit var account: GoogleSignInAccount
     private lateinit var database: DatabaseReference
+    private lateinit var movieDao: MovieDao
+    private lateinit var movieDatabase: MovieDatabase
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -49,12 +59,20 @@ class MovieFragment : Fragment() {
         movieAdapter = MovieAdapter(requireContext(), mutableListOf())
         movieRecyclerView.adapter = movieAdapter
 
+        movieDatabase = MovieDatabase.getDatabase(requireContext())
+        movieDao = movieDatabase.movieDao()
+
         account = activity?.intent?.getParcelableExtra("account") ?: return view
 
         database = FirebaseDatabase.getInstance().getReference("user_information")
 
         showLoading(true)
-        fetchLastMoodAndMovies()
+
+        if (isOnline(requireContext())) {
+            fetchLastMoodAndMovies()
+        } else {
+            showLocalMovies()
+        }
 
         return view
     }
@@ -66,6 +84,19 @@ class MovieFragment : Fragment() {
         } else {
             progressBar.visibility = View.GONE
             movieRecyclerView.visibility = View.VISIBLE
+        }
+    }
+
+    private fun showLocalMovies() {
+        GlobalScope.launch(Dispatchers.Main) {
+            val localMovies = withContext(Dispatchers.IO) { movieDao.getAllMovies() }
+            if (localMovies.isNotEmpty()) {
+                movieAdapter.updateMovies(localMovies.map { it.toMovie() })
+                showLoading(false)
+            } else {
+                showLoading(false)
+                Toast.makeText(requireContext(), "No local data available.", Toast.LENGTH_SHORT).show()
+            }
         }
     }
 
@@ -113,6 +144,7 @@ class MovieFragment : Fragment() {
                     val movieResponse = response.body()
                     if (movieResponse != null) {
                         val movies = movieResponse.results
+                        saveMoviesLocally(movies)
                         fetchTrailersForMovies(movies)
                         showLoading(false)
                     } else {
@@ -126,6 +158,7 @@ class MovieFragment : Fragment() {
             override fun onFailure(call: Call<MovieResponse>, t: Throwable) {
                 showLoading(false)
                 Toast.makeText(requireContext(), "Failed to fetch movies", Toast.LENGTH_SHORT).show()
+                showLocalMovies()
             }
         })
     }
@@ -151,5 +184,32 @@ class MovieFragment : Fragment() {
                     }
                 })
         }
+    }
+
+    private fun saveMoviesLocally(movies: List<Movie>) {
+        GlobalScope.launch(Dispatchers.IO) {
+            movieDao.deleteAllMovies()
+            movieDao.insertMovies(movies.map { it.toMovieEntity() })
+        }
+    }
+
+    private fun Movie.toMovieEntity(): MovieEntity {
+        return MovieEntity(
+            id = this.id,
+            title = this.title,
+            description = this.description,
+            thumbnailUrl = this.thumbnailUrl,
+            trailerUrl = this.trailerUrl
+        )
+    }
+
+    private fun MovieEntity.toMovie(): Movie {
+        return Movie(
+            id = this.id,
+            title = this.title,
+            description = this.description,
+            thumbnailUrl = this.thumbnailUrl,
+            trailerUrl = this.trailerUrl
+        )
     }
 }

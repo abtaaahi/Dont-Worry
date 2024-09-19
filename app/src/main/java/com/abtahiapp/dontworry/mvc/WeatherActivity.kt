@@ -8,7 +8,7 @@ import androidx.core.app.ActivityCompat
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.abtahiapp.dontworry.R
-import com.abtahiapp.dontworry.RetrofitClient
+import com.abtahiapp.dontworry.utils.RetrofitClient
 import com.abtahiapp.dontworry.adapter.WeatherAdapter
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices

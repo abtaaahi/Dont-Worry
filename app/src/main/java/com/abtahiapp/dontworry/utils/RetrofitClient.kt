@@ -1,4 +1,4 @@
-package com.abtahiapp.dontworry
+package com.abtahiapp.dontworry.utils
 
 import com.abtahiapp.dontworry.apiservice.CurrentWeatherApiService
 import com.abtahiapp.dontworry.apiservice.GoogleCustomSearchApiService

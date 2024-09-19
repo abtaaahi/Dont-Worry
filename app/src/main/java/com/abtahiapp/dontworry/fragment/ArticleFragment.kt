@@ -10,7 +10,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.abtahiapp.dontworry.BuildConfig
 import com.abtahiapp.dontworry.R
-import com.abtahiapp.dontworry.RetrofitClient
+import com.abtahiapp.dontworry.utils.RetrofitClient
 import com.abtahiapp.dontworry.adapter.ArticleAdapter
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount
 import com.google.firebase.database.DataSnapshot
@@ -28,6 +28,14 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+import android.content.Context
+import android.net.ConnectivityManager
+import android.net.NetworkInfo
+import com.abtahiapp.dontworry.utils.CseImage
+import com.abtahiapp.dontworry.utils.Item
+import com.abtahiapp.dontworry.utils.Pagemap
+import com.abtahiapp.dontworry.room.ArticleDatabase
+import com.abtahiapp.dontworry.room.ArticleEntity
 
 class ArticleFragment : Fragment() {
 
@@ -37,6 +45,7 @@ class ArticleFragment : Fragment() {
     private lateinit var articleRecyclerView: RecyclerView
     private lateinit var progressBar: LottieAnimationView
     private lateinit var swipeRefreshLayout: SwipeRefreshLayout
+    private lateinit var databaseRoom: ArticleDatabase
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -50,19 +59,35 @@ class ArticleFragment : Fragment() {
         articleRecyclerView.layoutManager = LinearLayoutManager(requireContext(), LinearLayoutManager.VERTICAL, false)
         articleAdapter = ArticleAdapter(requireContext(), mutableListOf())
         articleRecyclerView.adapter = articleAdapter
+        databaseRoom = ArticleDatabase.getDatabase(requireContext())
 
         account = activity?.intent?.getParcelableExtra("account") ?: return view
 
         database = FirebaseDatabase.getInstance().getReference("user_information")
 
         showLoading(true)
-        fetchLastMoodAndArticles()
+        if (isOnline(requireContext())) {
+            fetchLastMoodAndArticles()
+        } else {
+            loadArticlesFromLocal()
+        }
 
         swipeRefreshLayout.setOnRefreshListener {
-            fetchArticles(null)
+            if (isOnline(requireContext())) {
+                fetchLastMoodAndArticles()
+            } else {
+                swipeRefreshLayout.isRefreshing = false
+                Toast.makeText(requireContext(), "You are offline. Cannot refresh.", Toast.LENGTH_SHORT).show()
+            }
         }
 
         return view
+    }
+
+    private fun isOnline(context: Context): Boolean {
+        val connectivityManager = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+        val activeNetwork: NetworkInfo? = connectivityManager.activeNetworkInfo
+        return activeNetwork?.isConnected == true
     }
 
     private fun showLoading(isLoading: Boolean) {
@@ -111,13 +136,48 @@ class ArticleFragment : Fragment() {
                 val response = withContext(Dispatchers.IO) {
                     RetrofitClient.instance.getSearchResults(query, customSearchEngineId, apiKey)
                 }
+                saveArticlesToLocal(response.items)
                 articleAdapter.updateArticles(response.items)
             } catch (e: Exception) {
                 Toast.makeText(requireContext(), "Failed to fetch articles", Toast.LENGTH_SHORT).show()
+                loadArticlesFromLocal()
             } finally {
                 showLoading(false)
                 swipeRefreshLayout.isRefreshing = false
             }
+        }
+    }
+
+    private suspend fun saveArticlesToLocal(articles: List<Item>) {
+        withContext(Dispatchers.IO) {
+            val articleEntities = articles.map {
+                ArticleEntity(
+                    title = it.title,
+                    description = it.snippet,
+                    imageUrl = it.pagemap?.cse_image?.firstOrNull()?.src,
+                    link = it.link
+                )
+            }
+            databaseRoom.articleDao().clearArticles()
+            databaseRoom.articleDao().insertArticles(articleEntities)
+        }
+    }
+
+    private fun loadArticlesFromLocal() {
+        lifecycleScope.launch {
+            val savedArticles = withContext(Dispatchers.IO) {
+                databaseRoom.articleDao().getAllArticles()
+            }
+
+            val items = savedArticles.map {
+                Item(title = it.title, snippet = it.description, link = it.link, pagemap = Pagemap(listOf(
+                    CseImage(it.imageUrl)
+                ))
+                )
+            }
+
+            articleAdapter.updateArticles(items)
+            showLoading(false)
         }
     }
 }

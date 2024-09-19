@@ -7,11 +7,11 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.abtahiapp.dontworry.BuildConfig
-import com.abtahiapp.dontworry.Movie
-import com.abtahiapp.dontworry.MovieResponse
+import com.abtahiapp.dontworry.utils.Movie
+import com.abtahiapp.dontworry.utils.MovieResponse
 import com.abtahiapp.dontworry.R
-import com.abtahiapp.dontworry.RetrofitClient
-import com.abtahiapp.dontworry.TrailerResponse
+import com.abtahiapp.dontworry.utils.RetrofitClient
+import com.abtahiapp.dontworry.utils.TrailerResponse
 import com.abtahiapp.dontworry.adapter.MoreMovieAdapter
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.YouTubePlayer
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.listeners.AbstractYouTubePlayerListener

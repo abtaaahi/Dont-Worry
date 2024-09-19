@@ -7,8 +7,10 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
+import android.widget.Toast
 import androidx.recyclerview.widget.RecyclerView
-import com.abtahiapp.dontworry.Movie
+import com.abtahiapp.dontworry.utils.Movie
+import com.abtahiapp.dontworry.utils.NetworkUtil.isOnline
 import com.abtahiapp.dontworry.R
 import com.abtahiapp.dontworry.activity.MovieActivity
 import com.bumptech.glide.Glide
@@ -25,12 +27,16 @@ class MovieAdapter(private val context: Context, private var movies: MutableList
             val fullThumbnailUrl = "https://image.tmdb.org/t/p/w500" + movie.thumbnailUrl
             Glide.with(context).load(fullThumbnailUrl).into(thumbnail)
             itemView.setOnClickListener {
-                val intent = Intent(context, MovieActivity::class.java).apply {
-                    putExtra("title", movie.title)
-                    putExtra("description", movie.description)
-                    putExtra("trailerUrl", movie.trailerUrl)
+                if (isOnline(context)) {
+                    val intent = Intent(context, MovieActivity::class.java).apply {
+                        putExtra("title", movie.title)
+                        putExtra("description", movie.description)
+                        putExtra("trailerUrl", movie.trailerUrl)
+                    }
+                    context.startActivity(intent)
+                } else {
+                    Toast.makeText(context, "You are offline.", Toast.LENGTH_SHORT).show()
                 }
-                context.startActivity(intent)
             }
         }
     }

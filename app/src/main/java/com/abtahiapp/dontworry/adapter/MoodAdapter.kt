@@ -6,7 +6,7 @@ import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
-import com.abtahiapp.dontworry.Mood
+import com.abtahiapp.dontworry.utils.Mood
 import com.abtahiapp.dontworry.R
 
 class MoodAdapter(private val moodList: List<Mood>) : RecyclerView.Adapter<MoodAdapter.MoodViewHolder>() {

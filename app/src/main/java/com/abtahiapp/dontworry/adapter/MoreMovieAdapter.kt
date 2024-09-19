@@ -7,7 +7,7 @@ import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
-import com.abtahiapp.dontworry.Movie
+import com.abtahiapp.dontworry.utils.Movie
 import com.abtahiapp.dontworry.R
 import com.bumptech.glide.Glide
 

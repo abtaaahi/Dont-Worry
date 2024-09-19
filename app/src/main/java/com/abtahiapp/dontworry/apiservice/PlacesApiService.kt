@@ -1,6 +1,6 @@
 package com.abtahiapp.dontworry.apiservice
 
-import com.abtahiapp.dontworry.CustomSearchResponse
+import com.abtahiapp.dontworry.utils.CustomSearchResponse
 //import com.abtahiapp.dontworry.PlacesResponse
 import retrofit2.Call
 import retrofit2.http.GET

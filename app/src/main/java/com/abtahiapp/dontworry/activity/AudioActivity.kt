@@ -8,8 +8,8 @@ import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.RecyclerView
 import com.abtahiapp.dontworry.BuildConfig
 import com.abtahiapp.dontworry.R
-import com.abtahiapp.dontworry.RetrofitClient
-import com.abtahiapp.dontworry.VideoItem
+import com.abtahiapp.dontworry.utils.RetrofitClient
+import com.abtahiapp.dontworry.utils.VideoItem
 import com.abtahiapp.dontworry.adapter.MoreAudioAdapter
 import com.abtahiapp.dontworry.query.ArticleVideoQuery
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.YouTubePlayer

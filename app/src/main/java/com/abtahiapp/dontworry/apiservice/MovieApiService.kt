@@ -1,7 +1,7 @@
 package com.abtahiapp.dontworry.apiservice
 
-import com.abtahiapp.dontworry.MovieResponse
-import com.abtahiapp.dontworry.TrailerResponse
+import com.abtahiapp.dontworry.utils.MovieResponse
+import com.abtahiapp.dontworry.utils.TrailerResponse
 import retrofit2.Call
 import retrofit2.http.GET
 import retrofit2.http.Path

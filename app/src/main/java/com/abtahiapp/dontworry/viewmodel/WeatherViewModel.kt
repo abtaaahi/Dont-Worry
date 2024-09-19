@@ -4,7 +4,7 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.abtahiapp.dontworry.WeatherForecast
+import com.abtahiapp.dontworry.utils.WeatherForecast
 import com.abtahiapp.dontworry.repository.WeatherRepository
 import kotlinx.coroutines.launch
 

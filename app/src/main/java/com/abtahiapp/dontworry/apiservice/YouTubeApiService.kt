@@ -1,7 +1,6 @@
 package com.abtahiapp.dontworry.apiservice
 
-import com.abtahiapp.dontworry.VideoResponse
-import retrofit2.Call
+import com.abtahiapp.dontworry.utils.VideoResponse
 import retrofit2.http.GET
 import retrofit2.http.Query
 

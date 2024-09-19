@@ -1,7 +1,6 @@
-package com.abtahiapp.dontworry
+package com.abtahiapp.dontworry.utils
 
 import android.app.Application
-import com.abtahiapp.dontworry.SocketManager
 
 class MyApplication : Application() {
 
