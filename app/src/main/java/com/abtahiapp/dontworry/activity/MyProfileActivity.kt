@@ -1,8 +1,6 @@
 package com.abtahiapp.dontworry.activity
 
-import android.content.Context
 import android.content.Intent
-import android.net.ConnectivityManager
 import android.os.Bundle
 import android.util.Log
 import android.widget.Button
@@ -15,6 +13,7 @@ import com.abtahiapp.dontworry.R
 import com.abtahiapp.dontworry.room.UserProfileDao
 import com.abtahiapp.dontworry.room.UserProfileDatabase
 import com.abtahiapp.dontworry.room.UserProfileEntity
+import com.abtahiapp.dontworry.utils.NetworkUtil.isOnline
 import com.bumptech.glide.Glide
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInClient
@@ -69,7 +68,7 @@ class MyProfileActivity : AppCompatActivity() {
         googleSignInClient = GoogleSignIn.getClient(this, gso)
 
         logoutButton.setOnClickListener {
-            if(isNetworkAvailable()){
+            if(isOnline(this)){
                 googleSignInClient.signOut().addOnCompleteListener {
                     val intent = Intent(this, SignInActivity::class.java)
                     startActivity(intent)
@@ -82,7 +81,7 @@ class MyProfileActivity : AppCompatActivity() {
         }
 
         editDetailsButton.setOnClickListener {
-            if(isNetworkAvailable()){
+            if(isOnline(this)){
                 val intent = Intent(this, InfoUpdateActivity::class.java)
                 intent.putExtra("userID", userId)
                 startActivity(intent)
@@ -104,7 +103,7 @@ class MyProfileActivity : AppCompatActivity() {
             overridePendingTransition(R.anim.enter_anim, R.anim.exit_anim)
         }
 
-        if (isNetworkAvailable()) {
+        if (isOnline(this)) {
             loadProfileDataFromFirebase(userId)
         } else {
             loadProfileDataFromLocal(userId)
@@ -113,7 +112,7 @@ class MyProfileActivity : AppCompatActivity() {
 
     override fun onResume() {
         super.onResume()
-        if (isNetworkAvailable()) {
+        if (isOnline(this)) {
             loadProfileDataFromFirebase(userId)
         } else {
             loadProfileDataFromLocal(userId)
@@ -210,11 +209,5 @@ class MyProfileActivity : AppCompatActivity() {
                 Toast.makeText(this@MyProfileActivity, "No offline data found", Toast.LENGTH_SHORT).show()
             }
         }
-    }
-
-    private fun isNetworkAvailable(): Boolean {
-        val connectivityManager = getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
-        val networkInfo = connectivityManager.activeNetworkInfo
-        return networkInfo != null && networkInfo.isConnected
     }
 }

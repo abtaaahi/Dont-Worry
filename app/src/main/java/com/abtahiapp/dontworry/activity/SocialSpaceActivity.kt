@@ -1,9 +1,7 @@
 package com.abtahiapp.dontworry.activity
 
-import android.content.Context
 import android.content.Intent
 import android.graphics.drawable.GradientDrawable
-import android.net.ConnectivityManager
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
@@ -26,6 +24,7 @@ import com.abtahiapp.dontworry.adapter.PostAdapter
 import com.abtahiapp.dontworry.room.SocialPostDao
 import com.abtahiapp.dontworry.room.SocialPostDatabase
 import com.abtahiapp.dontworry.room.SocialPostEntity
+import com.abtahiapp.dontworry.utils.NetworkUtil.isOnline
 import com.bumptech.glide.Glide
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.material.bottomsheet.BottomSheetDialog
@@ -127,7 +126,7 @@ class SocialSpaceActivity : AppCompatActivity() {
         }
 
         postButton.setOnClickListener {
-            if (isOnline()) {
+            if (isOnline(this)) {
                 postContentToDatabase(account?.displayName, account?.photoUrl.toString())
             } else {
                 Toast.makeText(this, "You are offline. Cannot post at this time.", Toast.LENGTH_SHORT).show()
@@ -197,17 +196,11 @@ class SocialSpaceActivity : AppCompatActivity() {
     }
 
     private fun checkAndUpdatePosts(userName: String?, userPhotoUrl: String?) {
-        if (isOnline()) {
+        if (isOnline(this)) {
             fetchPostsFromFirebase()
         } else {
             //Toast.makeText(this, "Showing offline data", Toast.LENGTH_SHORT).show()
         }
-    }
-
-    private fun isOnline(): Boolean {
-        val connectivityManager = getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
-        val activeNetwork = connectivityManager.activeNetworkInfo
-        return activeNetwork != null && activeNetwork.isConnected
     }
 
     private fun updateStatusIndicator(status: String) {

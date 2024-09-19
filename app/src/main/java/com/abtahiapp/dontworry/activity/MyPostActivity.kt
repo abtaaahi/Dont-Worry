@@ -1,7 +1,5 @@
 package com.abtahiapp.dontworry.activity
 
-import android.content.Context
-import android.net.ConnectivityManager
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.widget.EditText
@@ -17,6 +15,7 @@ import com.abtahiapp.dontworry.adapter.PostAdapter
 import com.abtahiapp.dontworry.room.PostDao
 import com.abtahiapp.dontworry.room.PostDatabase
 import com.abtahiapp.dontworry.room.PostEntity
+import com.abtahiapp.dontworry.utils.NetworkUtil.isOnline
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
@@ -36,7 +35,6 @@ class MyPostActivity : AppCompatActivity() {
     private lateinit var databaseReference: DatabaseReference
     private lateinit var currentUserId: String
     private lateinit var postDao: PostDao
-    private var isOnline = true
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -55,9 +53,7 @@ class MyPostActivity : AppCompatActivity() {
 
         databaseReference = FirebaseDatabase.getInstance().getReference("social_posts")
 
-        checkNetworkStatus()
-
-        if (isOnline) {
+        if (isOnline(this)) {
             loadPostsFromFirebase()
         } else {
             loadPostsFromRoom()
@@ -128,7 +124,7 @@ class MyPostActivity : AppCompatActivity() {
     }
 
     private fun showOptionsDialog(post: Post) {
-        if (!isOnline) {
+        if (!isOnline(this)) {
             Toast.makeText(this, "You are offline. Update/Delete disabled.", Toast.LENGTH_SHORT).show()
             return
         }
@@ -188,11 +184,5 @@ class MyPostActivity : AppCompatActivity() {
                     Toast.makeText(this, "Failed to delete post", Toast.LENGTH_SHORT).show()
                 }
             }
-    }
-
-    private fun checkNetworkStatus() {
-        val connectivityManager = getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
-        val networkInfo = connectivityManager.activeNetworkInfo
-        isOnline = networkInfo?.isConnected == true
     }
 }

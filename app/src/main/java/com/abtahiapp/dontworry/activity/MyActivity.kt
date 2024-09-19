@@ -20,6 +20,7 @@ import androidx.lifecycle.lifecycleScope
 import com.abtahiapp.dontworry.room.MoodDao
 import com.abtahiapp.dontworry.room.MoodDatabase
 import com.abtahiapp.dontworry.room.MoodEntity
+import com.abtahiapp.dontworry.utils.NetworkUtil.isOnline
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -66,12 +67,6 @@ class MyActivity : AppCompatActivity() {
     private fun parseDateTime(dateTime: String): Date? {
         val sdf = SimpleDateFormat("hh:mm a dd MMM", Locale.getDefault())
         return sdf.parse(dateTime)
-    }
-
-    fun isOnline(context: Context): Boolean {
-        val connectivityManager = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
-        val capabilities = connectivityManager.getNetworkCapabilities(connectivityManager.activeNetwork)
-        return capabilities?.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET) == true
     }
 
     private fun fetchMoodsFromFirebase() {
