@@ -43,6 +43,8 @@ class MyProfileActivity : AppCompatActivity() {
         val editDetailsButton: ImageButton = findViewById(R.id.editDetails)
         val activityButton: Button = findViewById(R.id.activity_button)
         val myPostButton: Button = findViewById(R.id.my_post_button)
+        val personalSpaceButton: Button = findViewById(R.id.personal_space)
+
 
         database = UserProfileDatabase.getDatabase(this)
         userProfileDao = database.userProfileDao()
@@ -92,6 +94,13 @@ class MyProfileActivity : AppCompatActivity() {
 
         activityButton.setOnClickListener {
             val intent = Intent(this, MyActivity::class.java)
+            intent.putExtra("userId", userId)
+            startActivity(intent)
+            overridePendingTransition(R.anim.enter_anim, R.anim.exit_anim)
+        }
+
+        personalSpaceButton.setOnClickListener {
+            val intent = Intent(this, PersonalSpaceActivity::class.java)
             intent.putExtra("userId", userId)
             startActivity(intent)
             overridePendingTransition(R.anim.enter_anim, R.anim.exit_anim)

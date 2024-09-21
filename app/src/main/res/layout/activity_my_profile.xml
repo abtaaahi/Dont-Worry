@@ -51,7 +51,7 @@
         android:layout_marginTop="16dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/my_post_button">
+        app:layout_constraintTop_toBottomOf="@+id/personal_space">
 
         <TextView
             android:layout_width="0dp"
@@ -181,29 +181,54 @@
 
     </LinearLayout>
 
-    <Button
-        android:id="@+id/activity_button"
+
+    <LinearLayout
+        android:id="@+id/linearlayout3"
         android:layout_width="match_parent"
-        android:layout_height="40dp"
-        android:textColor="@color/buttonTextColor"
-        android:layout_marginTop="16dp"
-        android:backgroundTint="@color/textColor"
-        android:text="@string/activity_button"
-        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:weightSum="2"
+        android:layout_marginTop="8dp"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/user_email" />
+        app:layout_constraintTop_toBottomOf="@+id/user_email">
+        <Button
+            android:id="@+id/activity_button"
+            android:layout_width="0dp"
+            android:layout_height="40dp"
+            android:layout_weight="1"
+            android:layout_marginEnd="4dp"
+            android:textColor="@color/buttonTextColor"
+            android:backgroundTint="@color/textColor"
+            android:text="@string/activity_button"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/user_email" />
+
+        <Button
+            android:id="@+id/my_post_button"
+            android:layout_width="0dp"
+            android:layout_height="40dp"
+            android:layout_weight="1"
+            android:layout_marginStart="4dp"
+            android:textColor="@color/buttonTextColor"
+            android:backgroundTint="@color/textColor"
+            android:text="My Post"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/activity_button" />
+    </LinearLayout>
 
     <Button
-        android:id="@+id/my_post_button"
+        android:id="@+id/personal_space"
         android:layout_width="match_parent"
         android:layout_height="40dp"
         android:textColor="@color/buttonTextColor"
         android:layout_marginTop="8dp"
         android:backgroundTint="@color/textColor"
-        android:text="My Post"
+        android:text="Personal Space"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/activity_button" />
+        app:layout_constraintTop_toBottomOf="@+id/linearlayout3" />
 
     <Button
         android:id="@+id/logout_button"
