@@ -16,6 +16,9 @@ import android.Manifest
 import android.media.MediaRecorder
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import android.os.Environment
+import android.util.Log
+import com.google.android.gms.tasks.Task
+import com.google.android.gms.tasks.Tasks
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.storage.FirebaseStorage
 import java.io.File
@@ -113,18 +116,43 @@ class PersonalSpaceActivity : AppCompatActivity() {
                 ivSelectedImage.visibility = ImageView.VISIBLE
                 imageUri = saveBitmapToFile(bitmap)
                 isImageAdded = true
+                Log.i("ImageUpload", "Image URI: $imageUri")
                 updateSubmitButton(it)
             }
         }
     }
 
     private fun saveBitmapToFile(bitmap: Bitmap): Uri? {
-        val tempFile = File(getExternalFilesDir(Environment.DIRECTORY_PICTURES), "temp_image.jpg")
-        tempFile.outputStream().use { out ->
-            bitmap.compress(Bitmap.CompressFormat.JPEG, 100, out)
+        try {
+            // Create a temp file in the app's external storage directory
+            val tempFile = File(getExternalFilesDir(Environment.DIRECTORY_PICTURES), "temp_image_${System.currentTimeMillis()}.jpg")
+
+            // Check if the file's directory exists, if not, create it
+            if (!tempFile.parentFile.exists()) {
+                tempFile.parentFile.mkdirs()
+            }
+
+            // Compress the bitmap and save it to the file
+            tempFile.outputStream().use { out ->
+                val success = bitmap.compress(Bitmap.CompressFormat.JPEG, 100, out)
+                if (!success) {
+                    Log.e("ImageSave", "Failed to compress and save bitmap.")
+                    return null
+                }
+                out.flush() // Ensure all data is written before closing the stream
+            }
+
+            // Log the successful file save
+            Log.i("ImageSave", "Image saved to: ${tempFile.absolutePath}")
+
+            // Return the URI of the saved image file
+            return Uri.fromFile(tempFile)
+        } catch (e: IOException) {
+            Log.e("ImageSave", "Error saving bitmap to file", e)
+            return null
         }
-        return Uri.fromFile(tempFile)
     }
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -151,7 +179,6 @@ class PersonalSpaceActivity : AppCompatActivity() {
         val btnCamera = dialog.findViewById<Button>(R.id.btn_camera)
         val btnGallery = dialog.findViewById<Button>(R.id.btn_gallery)
         val btnSubmit = dialog.findViewById<Button>(R.id.btn_submit)
-        val ivSelectedImage = dialog.findViewById<ImageView>(R.id.iv_selected_image)
         val tvRecordingStatus = dialog.findViewById<TextView>(R.id.tv_recording_status)
 
         btnStartRecording.setOnClickListener {
@@ -203,7 +230,9 @@ class PersonalSpaceActivity : AppCompatActivity() {
 
     private fun submitData(userId: String, text: String, voicePath: String?, imageUri: Uri?) {
         val databaseRef = FirebaseDatabase.getInstance()
-            .getReference("user_information/$userId/personal_space")
+            .getReference("user_information")
+            .child(userId)
+            .child("personal_space")
 
         val timestamp = System.currentTimeMillis()
         val date = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault()).format(Date(timestamp))
@@ -214,60 +243,77 @@ class PersonalSpaceActivity : AppCompatActivity() {
         dataMap["text"] = text
         dataMap["timestamp"] = date
 
-        var isUploadSuccessful = false
+        val uploadTasks = mutableListOf<Task<Uri>>()  // Keep track of all upload tasks
 
-        var isDataSaved = false
-
+        // Upload voice file if exists
         if (voicePath != null) {
             val voiceFile = Uri.fromFile(File(voicePath))
             val voiceRef = storageRef.child("voiceRecording.mp3")
-            voiceRef.putFile(voiceFile)
-                .addOnSuccessListener {
-                    voiceRef.downloadUrl.addOnSuccessListener { uri ->
-                        dataMap["voiceUrl"] = uri.toString()
-                        isUploadSuccessful = true
-
-                        if (!isDataSaved || imageUri == null) {
-                            databaseRef.child(timestamp.toString()).setValue(dataMap)
-                            isDataSaved = true
-                        }
-                    }
+            val voiceUploadTask = voiceRef.putFile(voiceFile).continueWithTask { task ->
+                if (!task.isSuccessful) {
+                    throw task.exception ?: Exception("Unknown voice upload error")
                 }
-                .addOnFailureListener {
-                    Toast.makeText(this, "Failed to upload voice recording", Toast.LENGTH_SHORT).show()
-                }
+                voiceRef.downloadUrl
+            }
+            voiceUploadTask.addOnSuccessListener { uri ->
+                dataMap["voiceUrl"] = uri.toString()
+            }.addOnFailureListener { exception ->
+                val errorMsg = "Failed to upload voice recording: ${exception.message}"
+                Toast.makeText(this, errorMsg, Toast.LENGTH_SHORT).show()
+                Log.e("SubmitData", errorMsg, exception)
+            }
+            uploadTasks.add(voiceUploadTask) // Add voice upload task to the list
         }
 
+        // Upload image file if exists
         if (imageUri != null) {
             val imageRef = storageRef.child("image.jpg")
-            imageRef.putFile(imageUri)
-                .addOnSuccessListener {
-                    imageRef.downloadUrl.addOnSuccessListener { uri ->
-                        dataMap["imageUrl"] = uri.toString()
-                        isUploadSuccessful = true
-
-                        if (!isDataSaved || voicePath == null) {
-                            databaseRef.child(timestamp.toString()).setValue(dataMap)
-                            isDataSaved = true
-                        }
-                    }
+            val imageUploadTask = imageRef.putFile(imageUri).continueWithTask { task ->
+                if (!task.isSuccessful) {
+                    throw task.exception ?: Exception("Unknown image upload error")
                 }
-                .addOnFailureListener {
-                    Toast.makeText(this, "Failed to upload image", Toast.LENGTH_SHORT).show()
-                }
+                imageRef.downloadUrl
+            }
+            imageUploadTask.addOnSuccessListener { uri ->
+                dataMap["imageUrl"] = uri.toString()
+                Log.i("ImageUpload", "Image uploaded successfully: ${uri.toString()}")
+            }.addOnFailureListener { exception ->
+                val errorMsg = "Failed to upload image: ${exception.message}"
+                Toast.makeText(this, errorMsg, Toast.LENGTH_SHORT).show()
+                Log.e("SubmitData", errorMsg, exception)
+            }
+            uploadTasks.add(imageUploadTask)
+        } else {
+            Log.w("ImageUpload", "Image URI is null, skipping image upload")
         }
 
-        if (voicePath == null && imageUri == null) {
+
+        if (uploadTasks.isEmpty()) {
             Toast.makeText(this, "Nothing to upload", Toast.LENGTH_SHORT).show()
+            Log.w("SubmitData", "No voice or image file provided for upload.")
             return
         }
 
-        if (isUploadSuccessful) {
-            Toast.makeText(this, "Submitted", Toast.LENGTH_SHORT).show()
-        } else {
-            Toast.makeText(this, "Failed to upload both voice and image", Toast.LENGTH_SHORT).show()
-        }
+        Tasks.whenAllComplete(uploadTasks)
+            .addOnSuccessListener {
+                databaseRef.child(timestamp.toString()).setValue(dataMap)
+                    .addOnSuccessListener {
+                        Toast.makeText(this, "Data submitted successfully", Toast.LENGTH_SHORT).show()
+                        Log.i("SubmitData", "Data submitted successfully")
+                    }
+                    .addOnFailureListener { exception ->
+                        val errorMsg = "Failed to save data: ${exception.message}"
+                        Toast.makeText(this, errorMsg, Toast.LENGTH_SHORT).show()
+                        Log.e("SubmitData", errorMsg, exception)
+                    }
+            }
+            .addOnFailureListener { exception ->
+                val errorMsg = "Failed to upload one or more files: ${exception.message}"
+                Toast.makeText(this, errorMsg, Toast.LENGTH_SHORT).show()
+                Log.e("SubmitData", errorMsg, exception)
+            }
     }
+
 
     private fun checkCameraPermission(): Boolean {
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA)
