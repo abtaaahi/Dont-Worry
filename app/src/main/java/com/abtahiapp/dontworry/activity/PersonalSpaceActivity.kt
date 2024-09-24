@@ -2,8 +2,6 @@ package com.abtahiapp.dontworry.activity
 
 import android.app.Dialog
 import android.content.pm.PackageManager
-import android.graphics.Bitmap
-import android.net.Uri
 import android.os.Bundle
 import android.view.ViewGroup
 import android.widget.*
@@ -14,6 +12,7 @@ import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import android.Manifest
 import android.media.MediaRecorder
+import android.net.Uri
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import android.os.Environment
 import android.util.Log
@@ -29,11 +28,8 @@ import java.util.*
 class PersonalSpaceActivity : AppCompatActivity() {
 
     private var isVoiceRecorded = false
-    private var isImageAdded = false
-    private val CAMERA_PERMISSION_REQUEST_CODE = 100
     val userId = intent?.getStringExtra("userId") ?: ""
     private var recordedFilePath: String? = null
-    private var imageUri: Uri? = null
     private var currentDialog: Dialog? = null
     private var mediaRecorder: MediaRecorder? = null
     private val AUDIO_PERMISSION_REQUEST_CODE = 101
@@ -94,66 +90,6 @@ class PersonalSpaceActivity : AppCompatActivity() {
                 storagePermission == PackageManager.PERMISSION_GRANTED
     }
 
-    private val galleryLauncher = registerForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
-        uri?.let {
-            val dialog = currentDialog // Get the current opened dialog
-            dialog?.let {
-                val ivSelectedImage = it.findViewById<ImageView>(R.id.iv_selected_image)
-                ivSelectedImage.setImageURI(uri)
-                ivSelectedImage.visibility = ImageView.VISIBLE
-                isImageAdded = true
-                updateSubmitButton(it)
-            }
-        }
-    }
-
-    private val cameraLauncher = registerForActivityResult(ActivityResultContracts.TakePicturePreview()) { bitmap: Bitmap? ->
-        bitmap?.let {
-            val dialog = currentDialog
-            dialog?.let {
-                val ivSelectedImage = it.findViewById<ImageView>(R.id.iv_selected_image)
-                ivSelectedImage.setImageBitmap(bitmap)
-                ivSelectedImage.visibility = ImageView.VISIBLE
-                imageUri = saveBitmapToFile(bitmap)
-                isImageAdded = true
-                Log.i("ImageUpload", "Image URI: $imageUri")
-                updateSubmitButton(it)
-            }
-        }
-    }
-
-    private fun saveBitmapToFile(bitmap: Bitmap): Uri? {
-        try {
-            // Create a temp file in the app's external storage directory
-            val tempFile = File(getExternalFilesDir(Environment.DIRECTORY_PICTURES), "temp_image_${System.currentTimeMillis()}.jpg")
-
-            // Check if the file's directory exists, if not, create it
-            if (!tempFile.parentFile.exists()) {
-                tempFile.parentFile.mkdirs()
-            }
-
-            // Compress the bitmap and save it to the file
-            tempFile.outputStream().use { out ->
-                val success = bitmap.compress(Bitmap.CompressFormat.JPEG, 100, out)
-                if (!success) {
-                    Log.e("ImageSave", "Failed to compress and save bitmap.")
-                    return null
-                }
-                out.flush() // Ensure all data is written before closing the stream
-            }
-
-            // Log the successful file save
-            Log.i("ImageSave", "Image saved to: ${tempFile.absolutePath}")
-
-            // Return the URI of the saved image file
-            return Uri.fromFile(tempFile)
-        } catch (e: IOException) {
-            Log.e("ImageSave", "Error saving bitmap to file", e)
-            return null
-        }
-    }
-
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_personal_space)
@@ -176,8 +112,6 @@ class PersonalSpaceActivity : AppCompatActivity() {
         val etText = dialog.findViewById<EditText>(R.id.et_text)
         val btnStartRecording = dialog.findViewById<Button>(R.id.btn_start_recording)
         val btnStopRecording = dialog.findViewById<Button>(R.id.btn_stop_recording)
-        val btnCamera = dialog.findViewById<Button>(R.id.btn_camera)
-        val btnGallery = dialog.findViewById<Button>(R.id.btn_gallery)
         val btnSubmit = dialog.findViewById<Button>(R.id.btn_submit)
         val tvRecordingStatus = dialog.findViewById<TextView>(R.id.tv_recording_status)
 
@@ -198,25 +132,15 @@ class PersonalSpaceActivity : AppCompatActivity() {
             updateSubmitButton(dialog)
         }
 
-        btnCamera.setOnClickListener {
-            if (checkCameraPermission()){
-                cameraLauncher.launch(null)
-            }
-        }
-
-        btnGallery.setOnClickListener {
-            galleryLauncher.launch("image/*")
-        }
-
         btnSubmit.setOnClickListener {
-            if (isVoiceRecorded || isImageAdded) {
+            if (isVoiceRecorded) {
                 val userText = etText.text.toString()
-                submitData(userId!!, userText, recordedFilePath, imageUri)
+                submitData(userId!!, userText, recordedFilePath)
                 Toast.makeText(this, "Submitted", Toast.LENGTH_SHORT).show()
                 dialog.dismiss()
                 currentDialog = null
             } else {
-                Toast.makeText(this, "Please add a voice message or an image", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this, "Please add a voice message", Toast.LENGTH_SHORT).show()
             }
         }
 
@@ -225,10 +149,10 @@ class PersonalSpaceActivity : AppCompatActivity() {
 
     private fun updateSubmitButton(dialog: Dialog) {
         val btnSubmit = dialog.findViewById<Button>(R.id.btn_submit)
-        btnSubmit.isEnabled = isVoiceRecorded || isImageAdded
+        btnSubmit.isEnabled = isVoiceRecorded
     }
 
-    private fun submitData(userId: String, text: String, voicePath: String?, imageUri: Uri?) {
+    private fun submitData(userId: String, text: String, voicePath: String?) {
         val databaseRef = FirebaseDatabase.getInstance()
             .getReference("user_information")
             .child(userId)
@@ -243,7 +167,7 @@ class PersonalSpaceActivity : AppCompatActivity() {
         dataMap["text"] = text
         dataMap["timestamp"] = date
 
-        val uploadTasks = mutableListOf<Task<Uri>>()  // Keep track of all upload tasks
+        val uploadTasks = mutableListOf<Task<Uri>>()
 
         // Upload voice file if exists
         if (voicePath != null) {
@@ -265,32 +189,9 @@ class PersonalSpaceActivity : AppCompatActivity() {
             uploadTasks.add(voiceUploadTask) // Add voice upload task to the list
         }
 
-        // Upload image file if exists
-        if (imageUri != null) {
-            val imageRef = storageRef.child("image.jpg")
-            val imageUploadTask = imageRef.putFile(imageUri).continueWithTask { task ->
-                if (!task.isSuccessful) {
-                    throw task.exception ?: Exception("Unknown image upload error")
-                }
-                imageRef.downloadUrl
-            }
-            imageUploadTask.addOnSuccessListener { uri ->
-                dataMap["imageUrl"] = uri.toString()
-                Log.i("ImageUpload", "Image uploaded successfully: ${uri.toString()}")
-            }.addOnFailureListener { exception ->
-                val errorMsg = "Failed to upload image: ${exception.message}"
-                Toast.makeText(this, errorMsg, Toast.LENGTH_SHORT).show()
-                Log.e("SubmitData", errorMsg, exception)
-            }
-            uploadTasks.add(imageUploadTask)
-        } else {
-            Log.w("ImageUpload", "Image URI is null, skipping image upload")
-        }
-
-
         if (uploadTasks.isEmpty()) {
             Toast.makeText(this, "Nothing to upload", Toast.LENGTH_SHORT).show()
-            Log.w("SubmitData", "No voice or image file provided for upload.")
+            Log.w("SubmitData", "No voice file provided for upload.")
             return
         }
 
@@ -314,35 +215,12 @@ class PersonalSpaceActivity : AppCompatActivity() {
             }
     }
 
-
-    private fun checkCameraPermission(): Boolean {
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA)
-            != PackageManager.PERMISSION_GRANTED
-        ) {
-            ActivityCompat.requestPermissions(
-                this,
-                arrayOf(Manifest.permission.CAMERA),
-                CAMERA_PERMISSION_REQUEST_CODE
-            )
-            return false
-        }
-        return true
-    }
-
     override fun onRequestPermissionsResult(
         requestCode: Int,
         permissions: Array<out String>,
         grantResults: IntArray
     ) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-        if (requestCode == CAMERA_PERMISSION_REQUEST_CODE) {
-            if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                cameraLauncher.launch(null)
-            } else {
-                Toast.makeText(this, "Camera permission denied", Toast.LENGTH_SHORT).show()
-            }
-        }
-
         if (requestCode == AUDIO_PERMISSION_REQUEST_CODE) {
             if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                 startVoiceRecording()
