@@ -159,6 +159,12 @@ sealed class HomeFeedItem {
     data class HomeItemItem(val homeItem: HomeItem) : HomeFeedItem()
 }
 
+data class PersonalItem(
+    val text: String,
+    val timestamp: String,
+    val voiceUrl: String
+)
+
 //data class NewsResponse(
 //    val status: String,
 //    val totalResults: Int,

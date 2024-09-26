@@ -9,14 +9,14 @@
         android:id="@+id/et_text"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="Enter text (optional)"
+        android:hint="@string/voice_space_title"
         android:inputType="text"
         android:layout_marginBottom="16dp"/>
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Voice Message"/>
+        android:text="@string/voice_message"/>
 
     <LinearLayout
         android:orientation="horizontal"
@@ -28,14 +28,14 @@
         <Button
             android:id="@+id/btn_start_recording"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Start Recording" />
+            android:layout_height="40dp"
+            android:text="Start" />
 
         <Button
             android:id="@+id/btn_stop_recording"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Stop Recording"
+            android:layout_height="40dp"
+            android:text="Stop"
             android:layout_marginStart="16dp"
             android:enabled="false" />
     </LinearLayout>
@@ -47,44 +47,10 @@
         android:text="No recording yet"
         android:layout_marginBottom="16dp"/>
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Add Image" />
-
-    <LinearLayout
-        android:orientation="horizontal"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:gravity="center_vertical"
-        android:layout_marginBottom="8dp">
-
-        <Button
-            android:id="@+id/btn_camera"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Camera" />
-
-        <Button
-            android:id="@+id/btn_gallery"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Gallery"
-            android:layout_marginStart="16dp" />
-    </LinearLayout>
-
-    <ImageView
-        android:id="@+id/iv_selected_image"
-        android:layout_width="match_parent"
-        android:layout_height="200dp"
-        android:layout_marginBottom="16dp"
-        android:scaleType="centerCrop"
-        android:visibility="gone" />
-
     <Button
         android:id="@+id/btn_submit"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="40dp"
         android:text="Submit"
         android:enabled="false" />
 </LinearLayout>
