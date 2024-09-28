@@ -39,3 +39,44 @@ class SplashActivity : AppCompatActivity() {
         }, SPLASH_TIME_OUT)
     }
 }
+```
+## Store Mood in Firebase Realtime Database:
+
+```kotlin
+val database = FirebaseDatabase.getInstance().getReference("user_information")
+val moodHistoryRef = database.child(account.id!!).child("mood_history")
+
+moodHistoryRef.orderByChild("date").equalTo(currentDate)
+    .addListenerForSingleValueEvent(object : ValueEventListener {
+        override fun onDataChange(dataSnapshot: DataSnapshot) {
+            if (!dataSnapshot.exists()) {
+                showMoodDialog(account.id!!)
+            } else {
+                val lastMood = dataSnapshot.children.last().child("mood").getValue(String::class.java)
+            }
+        }
+
+        override fun onCancelled(databaseError: DatabaseError) {
+            Toast.makeText(this@MainActivity, "Failed to check mood history", Toast.LENGTH_SHORT).show()
+        }
+    })
+
+private fun storeMoodInDatabase(userId: String, moodName: String, details: String) {
+        val database = FirebaseDatabase.getInstance().getReference("user_information")
+
+        val currentDate = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Date())
+        val currentDateTime = SimpleDateFormat("hh:mm a dd MMM", Locale.getDefault()).format(Date())
+
+        val moodData = mapOf(
+            "date" to currentDate,
+            "dateTime" to currentDateTime,
+            "mood" to moodName,
+            "details" to details
+        )
+
+        database.child(userId).child("mood_history").push().setValue(moodData).addOnSuccessListener {
+        }.addOnFailureListener {
+            Toast.makeText(this, "Failed to save mood data", Toast.LENGTH_SHORT).show()
+        }
+    }
+```
