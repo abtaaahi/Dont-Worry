@@ -1,4 +1,3 @@
-<?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:orientation="vertical"
     android:layout_width="match_parent"
@@ -14,37 +13,10 @@
         android:layout_marginBottom="16dp"/>
 
     <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/voice_message"/>
-
-    <LinearLayout
-        android:orientation="horizontal"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:gravity="center_vertical"
-        android:layout_marginBottom="8dp">
-
-        <Button
-            android:id="@+id/btn_start_recording"
-            android:layout_width="wrap_content"
-            android:layout_height="40dp"
-            android:text="Start" />
-
-        <Button
-            android:id="@+id/btn_stop_recording"
-            android:layout_width="wrap_content"
-            android:layout_height="40dp"
-            android:text="Stop"
-            android:layout_marginStart="16dp"
-            android:enabled="false" />
-    </LinearLayout>
-
-    <TextView
         android:id="@+id/tv_recording_status"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="No recording yet"
+        android:text="Recording in progress..."
         android:layout_marginBottom="16dp"/>
 
     <Button
