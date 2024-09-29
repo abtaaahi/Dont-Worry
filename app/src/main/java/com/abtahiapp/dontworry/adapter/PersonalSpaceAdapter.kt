@@ -4,7 +4,6 @@ import android.media.MediaPlayer
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Button
 import android.widget.ImageButton
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
@@ -15,13 +14,12 @@ class PersonalSpaceAdapter(private val personalItems: List<PersonalItem>) :
     RecyclerView.Adapter<PersonalSpaceAdapter.PersonalSpaceViewHolder>() {
 
     private var mediaPlayer: MediaPlayer? = null
+    private var isPlaying = false
 
     inner class PersonalSpaceViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         val tvText: TextView = itemView.findViewById(R.id.tv_text)
         val tvTimestamp: TextView = itemView.findViewById(R.id.tv_timestamp)
-        val btnPlay: ImageButton = itemView.findViewById(R.id.btn_play)
-        val btnPause: ImageButton = itemView.findViewById(R.id.btn_pause)
-        val btnStop: ImageButton = itemView.findViewById(R.id.btn_stop)
+        val btnPlayPause: ImageButton = itemView.findViewById(R.id.btn_play_pause)
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): PersonalSpaceViewHolder {
@@ -35,55 +33,48 @@ class PersonalSpaceAdapter(private val personalItems: List<PersonalItem>) :
         holder.tvText.text = currentItem.text
         holder.tvTimestamp.text = currentItem.timestamp
 
-        holder.btnPause.visibility = View.INVISIBLE
-        holder.btnStop.visibility = View.INVISIBLE
+        holder.btnPlayPause.setBackgroundResource(R.drawable.play)  // Start with play icon
 
-        holder.btnPlay.setOnClickListener {
+        holder.btnPlayPause.setOnClickListener {
             if (mediaPlayer == null) {
                 mediaPlayer = MediaPlayer().apply {
                     setDataSource(currentItem.voiceUrl)
                     prepare()
                     start()
                 }
-
-                holder.btnPause.visibility = View.VISIBLE
-                holder.btnStop.visibility = View.VISIBLE
-                holder.btnPlay.isEnabled = false
-            } else if (!mediaPlayer!!.isPlaying) {
-                mediaPlayer!!.start()
-                holder.btnPlay.isEnabled = false
-            }
-        }
-
-        holder.btnPause.setOnClickListener {
-            mediaPlayer?.let {
-                if (it.isPlaying) {
-                    it.pause()
-                    // Re-enable the play button when paused
-                    holder.btnPlay.isEnabled = true
+                isPlaying = true
+                holder.btnPlayPause.setBackgroundResource(R.drawable.pause)  // Set to pause icon
+            } else {
+                if (mediaPlayer!!.isPlaying) {
+                    mediaPlayer!!.pause()
+                    isPlaying = false
+                    holder.btnPlayPause.setBackgroundResource(R.drawable.play)  // Switch back to play icon
+                } else {
+                    mediaPlayer!!.start()
+                    isPlaying = true
+                    holder.btnPlayPause.setBackgroundResource(R.drawable.pause)  // Switch to pause icon
                 }
             }
         }
 
-        holder.btnStop.setOnClickListener {
-            mediaPlayer?.let {
-                if (it.isPlaying || it.isLooping) {
-                    it.stop()
-                    it.reset()
-                    mediaPlayer = null
-
-                    // Hide pause and stop buttons again
-                    holder.btnPause.visibility = View.INVISIBLE
-                    holder.btnStop.visibility = View.INVISIBLE
-
-                    // Re-enable the play button after stopping
-                    holder.btnPlay.isEnabled = true
-                }
-            }
+        holder.itemView.setOnClickListener {
+            releaseMediaPlayer(holder)
         }
     }
 
     override fun getItemCount() = personalItems.size
+
+    private fun releaseMediaPlayer(holder: PersonalSpaceViewHolder) {
+        mediaPlayer?.let {
+            if (it.isPlaying || it.isLooping) {
+                it.stop()
+                it.release()
+                mediaPlayer = null
+                holder.btnPlayPause.setBackgroundResource(R.drawable.play)
+                isPlaying = false
+            }
+        }
+    }
 
     fun releaseMediaPlayer() {
         mediaPlayer?.release()

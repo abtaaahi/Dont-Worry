@@ -19,6 +19,7 @@ import android.os.Looper
 import android.text.Editable
 import android.text.TextWatcher
 import android.util.Log
+import android.view.View
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.abtahiapp.dontworry.adapter.PersonalSpaceAdapter
@@ -89,13 +90,16 @@ class PersonalSpaceActivity : AppCompatActivity() {
         dialog.setContentView(R.layout.personal_space_dialog)
         val window = dialog.window
         window?.setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT)
+
+        dialog.setCanceledOnTouchOutside(false)
         dialog.show()
 
+        val closeButton = dialog.findViewById<ImageButton>(R.id.btn_close_dialog)
         val etText = dialog.findViewById<EditText>(R.id.et_text)
         val btnSubmit = dialog.findViewById<Button>(R.id.btn_submit)
         val tvRecordingStatus = dialog.findViewById<TextView>(R.id.tv_recording_status)
 
-        btnSubmit.isEnabled = false
+        btnSubmit.visibility = View.GONE
 
         recordedFilePath = startVoiceRecording()
         recordingStartTime = System.currentTimeMillis()
@@ -105,11 +109,19 @@ class PersonalSpaceActivity : AppCompatActivity() {
         etText.addTextChangedListener(object : TextWatcher {
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
-                btnSubmit.isEnabled = isVoiceRecorded || etText.text.isNotEmpty()
+                if (etText.text.isNotEmpty()) {
+                    btnSubmit.visibility = View.VISIBLE
+                } else {
+                    btnSubmit.visibility = View.GONE
+                }
             }
 
             override fun afterTextChanged(s: Editable?) {}
         })
+
+        closeButton.setOnClickListener {
+            dialog.dismiss()
+        }
 
         btnSubmit.setOnClickListener {
             if (isVoiceRecorded) {

@@ -4,25 +4,40 @@
     android:layout_height="wrap_content"
     android:padding="20dp">
 
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <ImageButton
+            android:id="@+id/btn_close_dialog"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_alignParentEnd="true"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:src="@drawable/close" />
+
+    </RelativeLayout>
+
     <EditText
         android:id="@+id/et_text"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:hint="@string/voice_space_title"
         android:inputType="text"
-        android:layout_marginBottom="16dp"/>
+        android:layout_marginBottom="16dp" />
 
     <TextView
         android:id="@+id/tv_recording_status"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Recording in progress..."
-        android:layout_marginBottom="16dp"/>
+        android:text="@string/recording_in_progress"
+        android:layout_marginBottom="16dp" />
 
     <Button
         android:id="@+id/btn_submit"
         android:layout_width="match_parent"
         android:layout_height="40dp"
-        android:text="Submit"
-        android:enabled="false" />
+        android:backgroundTint="@color/color_one"
+        android:textColor="@color/white"
+        android:text="@string/submit" />
 </LinearLayout>
