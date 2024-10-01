@@ -13,8 +13,8 @@ import com.abtahiapp.dontworry.utils.PersonalItem
 class PersonalSpaceAdapter(private val personalItems: List<PersonalItem>) :
     RecyclerView.Adapter<PersonalSpaceAdapter.PersonalSpaceViewHolder>() {
 
-    private var mediaPlayer: MediaPlayer? = null
-    private var isPlaying = false
+    private var currentMediaPlayer: MediaPlayer? = null
+    private var currentPlayingPosition: Int = -1
 
     inner class PersonalSpaceViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         val tvText: TextView = itemView.findViewById(R.id.tv_text)
@@ -33,51 +33,64 @@ class PersonalSpaceAdapter(private val personalItems: List<PersonalItem>) :
         holder.tvText.text = currentItem.text
         holder.tvTimestamp.text = currentItem.timestamp
 
-        holder.btnPlayPause.setBackgroundResource(R.drawable.play)  // Start with play icon
-
-        holder.btnPlayPause.setOnClickListener {
-            if (mediaPlayer == null) {
-                mediaPlayer = MediaPlayer().apply {
-                    setDataSource(currentItem.voiceUrl)
-                    prepare()
-                    start()
-                }
-                isPlaying = true
-                holder.btnPlayPause.setBackgroundResource(R.drawable.pause)  // Set to pause icon
-            } else {
-                if (mediaPlayer!!.isPlaying) {
-                    mediaPlayer!!.pause()
-                    isPlaying = false
-                    holder.btnPlayPause.setBackgroundResource(R.drawable.play)  // Switch back to play icon
-                } else {
-                    mediaPlayer!!.start()
-                    isPlaying = true
-                    holder.btnPlayPause.setBackgroundResource(R.drawable.pause)  // Switch to pause icon
-                }
-            }
+        if (position == currentPlayingPosition && currentMediaPlayer?.isPlaying == true) {
+            holder.btnPlayPause.setBackgroundResource(R.drawable.pause)
+        } else {
+            holder.btnPlayPause.setBackgroundResource(R.drawable.play)
         }
 
-        holder.itemView.setOnClickListener {
-            releaseMediaPlayer(holder)
+        holder.btnPlayPause.setOnClickListener {
+            if (position == currentPlayingPosition) {
+                togglePlayPause(holder)
+            } else {
+                stopCurrentPlaying()
+
+                startPlaying(currentItem, holder, position)
+            }
         }
     }
 
     override fun getItemCount() = personalItems.size
 
-    private fun releaseMediaPlayer(holder: PersonalSpaceViewHolder) {
-        mediaPlayer?.let {
-            if (it.isPlaying || it.isLooping) {
-                it.stop()
-                it.release()
-                mediaPlayer = null
+    private fun startPlaying(item: PersonalItem, holder: PersonalSpaceViewHolder, position: Int) {
+        currentPlayingPosition = position
+        currentMediaPlayer = MediaPlayer().apply {
+            setDataSource(item.voiceUrl)
+            prepare()
+            start()
+        }
+        holder.btnPlayPause.setBackgroundResource(R.drawable.pause)
+
+        currentMediaPlayer?.setOnCompletionListener {
+            holder.btnPlayPause.setBackgroundResource(R.drawable.play)
+            currentPlayingPosition = -1
+        }
+    }
+
+    private fun togglePlayPause(holder: PersonalSpaceViewHolder) {
+        currentMediaPlayer?.let {
+            if (it.isPlaying) {
+                it.pause()
                 holder.btnPlayPause.setBackgroundResource(R.drawable.play)
-                isPlaying = false
+            } else {
+                it.start()
+                holder.btnPlayPause.setBackgroundResource(R.drawable.pause)
             }
         }
     }
 
+    private fun stopCurrentPlaying() {
+        if (currentMediaPlayer != null) {
+            currentMediaPlayer?.stop()
+            currentMediaPlayer?.release()
+            currentMediaPlayer = null
+            notifyItemChanged(currentPlayingPosition)
+            currentPlayingPosition = -1
+        }
+    }
+
     fun releaseMediaPlayer() {
-        mediaPlayer?.release()
-        mediaPlayer = null
+        currentMediaPlayer?.release()
+        currentMediaPlayer = null
     }
 }

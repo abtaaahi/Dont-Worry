@@ -13,7 +13,7 @@ interface PersonalItemDao {
     @Insert
     suspend fun insertAll(personalItems: List<PersonalItemEntity>)
 
-    @Query("SELECT * FROM personal_items")
+    @Query("SELECT * FROM personal_items ORDER BY timestamp DESC")
     fun getAllItems(): List<PersonalItemEntity>
 
     @Insert

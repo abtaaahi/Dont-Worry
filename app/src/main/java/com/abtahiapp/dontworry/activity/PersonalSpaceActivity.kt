@@ -25,10 +25,6 @@ import com.abtahiapp.dontworry.room.PersonalItemEntity
 import com.abtahiapp.dontworry.room.PersonalSpaceDatabase
 import com.abtahiapp.dontworry.utils.NetworkUtil
 import com.abtahiapp.dontworry.utils.PersonalItem
-import com.google.firebase.database.DataSnapshot
-import com.google.firebase.database.DatabaseError
-import com.google.firebase.database.FirebaseDatabase
-import com.google.firebase.database.ValueEventListener
 import com.google.firebase.storage.FirebaseStorage
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -48,6 +44,9 @@ class PersonalSpaceActivity : AppCompatActivity() {
     private var updateTimeRunnable: Runnable? = null
     private lateinit var db: PersonalSpaceDatabase
     private lateinit var personalItemDao: PersonalItemDao
+    private lateinit var adapter: PersonalSpaceAdapter
+    private val personalItems = mutableListOf<PersonalItem>()
+    private lateinit var username: String
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -64,60 +63,31 @@ class PersonalSpaceActivity : AppCompatActivity() {
         val recyclerView = findViewById<RecyclerView>(R.id.recycler_view)
         recyclerView.layoutManager = LinearLayoutManager(this)
 
-        val personalItems = mutableListOf<PersonalItem>()
-        val adapter = PersonalSpaceAdapter(personalItems)
+        adapter = PersonalSpaceAdapter(personalItems)
         recyclerView.adapter = adapter
 
-        val userId = intent?.getStringExtra("userId") ?: ""
+        CoroutineScope(Dispatchers.IO).launch {
+            val offlineItems = personalItemDao.getAllItems()
+            Log.d("PersonalSpaceActivity", "Fetched ${offlineItems.size} offline items from Room")
 
-        if (NetworkUtil.isOnline(this)) {
-            Log.d("PersonalSpaceActivity", "Online, fetching data from Firebase")
-            val databaseRef = FirebaseDatabase.getInstance()
-                .getReference("user_information")
-                .child(userId)
-                .child("personal_space")
+            if (offlineItems.isEmpty()) {
+                Log.d("PersonalSpaceActivity", "No items found in the database.")
+            }
 
-            databaseRef.addValueEventListener(object : ValueEventListener {
-                override fun onDataChange(snapshot: DataSnapshot) {
-                    personalItems.clear()
-                    for (dataSnapshot in snapshot.children) {
-                        val text = dataSnapshot.child("text").getValue(String::class.java) ?: ""
-                        val timestamp = dataSnapshot.child("timestamp").getValue(String::class.java) ?: ""
-                        val voiceUrl = dataSnapshot.child("voiceUrl").getValue(String::class.java) ?: ""
-                        personalItems.add(PersonalItem(text, timestamp, voiceUrl))
-                    }
-                    Log.d("PersonalSpaceActivity", "Fetched ${personalItems.size} items from Firebase")
+            val convertedItems = offlineItems.map {
+                PersonalItem(it.text, it.timestamp, it.voiceUrl.toString())
+            }
 
-                    CoroutineScope(Dispatchers.IO).launch {
-                        personalItemDao.insertAll(personalItems.map {
-                            PersonalItemEntity(it.text, it.timestamp, it.voiceUrl)
-                        })
-                    }
-
-                    adapter.notifyDataSetChanged()
-                }
-
-                override fun onCancelled(error: DatabaseError) {
-                    Log.e("PersonalSpaceActivity", "Failed to load data: ${error.message}")
-                    Toast.makeText(this@PersonalSpaceActivity, "Failed to load data", Toast.LENGTH_SHORT).show()
-                }
-            })
-        } else {
-            CoroutineScope(Dispatchers.IO).launch {
-                val offlineItems = personalItemDao.getAllItems()
-                Log.d("PersonalSpaceActivity", "Fetched ${offlineItems.size} offline items from Room")
-                val convertedItems = offlineItems.map {
-                    PersonalItem(it.text, it.timestamp, it.voiceUrl.toString())
-                }
-
-                runOnUiThread {
-                    personalItems.clear()
-                    personalItems.addAll(convertedItems)
-                    Log.d("PersonalSpaceActivity", "Offline items added to list: ${personalItems.size}")
-                    adapter.notifyDataSetChanged()
-                }
+            runOnUiThread {
+                personalItems.clear()
+                personalItems.addAll(convertedItems)
+                Log.d("PersonalSpaceActivity", "Offline items added to list: ${personalItems.size}")
+                adapter.notifyDataSetChanged()
             }
         }
+
+        val userId = intent?.getStringExtra("userId") ?: ""
+        username = intent?.getStringExtra("name") ?: ""
 
         val fabAdd = findViewById<FloatingActionButton>(R.id.fab_add)
         if (!NetworkUtil.isOnline(this)) {
@@ -249,66 +219,69 @@ class PersonalSpaceActivity : AppCompatActivity() {
         dataMap["text"] = text
         dataMap["timestamp"] = date
 
+        val filenameDate = SimpleDateFormat("ddMMMyy_hhmma", Locale.getDefault()).format(Date(timestamp)).lowercase()
+
+        val filename = "${username}_${userId}_voice_$filenameDate.mp3"
+
         if (voicePath != null) {
-            if (NetworkUtil.isOnline(this)) {
-                // Save to Firebase if online
-                val storageRef = FirebaseStorage.getInstance().reference.child("personal_space/$userId/$timestamp")
-                val voiceFile = Uri.fromFile(File(voicePath))
-                val voiceRef = storageRef.child("voiceRecording.mp3")
-                voiceRef.putFile(voiceFile).continueWithTask { task ->
-                    if (!task.isSuccessful) {
-                        throw task.exception ?: Exception("Unknown voice upload error")
-                    }
-                    voiceRef.downloadUrl
-                }.addOnSuccessListener { uri ->
-                    dataMap["voiceUrl"] = uri.toString()
-                    FirebaseDatabase.getInstance().getReference("user_information")
-                        .child(userId)
-                        .child("personal_space")
-                        .child(timestamp.toString())
-                        .setValue(dataMap)
-                        .addOnSuccessListener {
-                            CoroutineScope(Dispatchers.IO).launch {
-                                personalItemDao.insertItem(PersonalItemEntity(text, date, voicePath))
-                                Log.d("PersonalSpaceActivity", "Inserted item to Room: $text")
-                            }
-                            Toast.makeText(this, "Data submitted successfully", Toast.LENGTH_SHORT).show()
-                        }
-                }.addOnFailureListener {
-                    Toast.makeText(this, "Failed to upload voice", Toast.LENGTH_SHORT).show()
-                }
-            } else {
-                CoroutineScope(Dispatchers.IO).launch {
-                    personalItemDao.insertItem(PersonalItemEntity(text, date, voicePath))
-                    Log.d("PersonalSpaceActivity", "Inserted offline item: $text, date: $date, voicePath: $voicePath")
-                    runOnUiThread {
-                        Toast.makeText(this@PersonalSpaceActivity, "Data saved offline", Toast.LENGTH_SHORT).show()
-                    }
+            CoroutineScope(Dispatchers.IO).launch {
+                personalItemDao.insertItem(PersonalItemEntity(text, date, voicePath))
+                Log.d("PersonalSpaceActivity", "Inserted offline item: $text, date: $date, voicePath: $voicePath")
+                runOnUiThread {
+                    //Toast.makeText(this@PersonalSpaceActivity, "Data saved offline", Toast.LENGTH_SHORT).show()
+                    refreshRecyclerView(adapter, personalItems)
                 }
             }
+
+            val storageRef = FirebaseStorage.getInstance().reference
+                .child("personal_space/$filename")
+
+            val voiceFile = Uri.fromFile(File(voicePath))
+
+            storageRef.putFile(voiceFile)
+                .addOnSuccessListener {
+                    storageRef.downloadUrl.addOnSuccessListener { uri ->
+                        Log.d("PersonalSpaceActivity", "Voice uploaded to Firebase: $uri")
+                        //Toast.makeText(this@PersonalSpaceActivity, "Voice saved to Firebase", Toast.LENGTH_SHORT).show()
+                    }
+                }
+                .addOnFailureListener { exception ->
+                    Log.e("PersonalSpaceActivity", "Failed to upload voice: ${exception.message}")
+                    //Toast.makeText(this@PersonalSpaceActivity, "Failed to upload voice to Firebase", Toast.LENGTH_SHORT).show()
+                }
         } else {
-            // Text-only entry
-            if (NetworkUtil.isOnline(this)) {
-                FirebaseDatabase.getInstance().getReference("user_information")
-                    .child(userId)
-                    .child("personal_space")
-                    .child(timestamp.toString())
-                    .setValue(dataMap)
-                    .addOnSuccessListener {
-                        CoroutineScope(Dispatchers.IO).launch {
-                            personalItemDao.insertItem(PersonalItemEntity(text, date, null))
-                            Log.d("PersonalSpaceActivity", "Inserted text-only item to Room: $text")
-                        }
-                        Toast.makeText(this, "Data submitted successfully", Toast.LENGTH_SHORT).show()
-                    }
-            } else {
-                CoroutineScope(Dispatchers.IO).launch {
-                    personalItemDao.insertItem(PersonalItemEntity(text, date, null))
-                    runOnUiThread {
-                        Toast.makeText(this@PersonalSpaceActivity, "Data saved offline", Toast.LENGTH_SHORT).show()
-                    }
+            CoroutineScope(Dispatchers.IO).launch {
+                personalItemDao.insertItem(PersonalItemEntity(text, date, null))
+                runOnUiThread {
+                    //Toast.makeText(this@PersonalSpaceActivity, "Data saved offline", Toast.LENGTH_SHORT).show()
+                    refreshRecyclerView(adapter, personalItems)
                 }
             }
         }
+    }
+
+    private fun refreshRecyclerView(adapter: PersonalSpaceAdapter, personalItems: MutableList<PersonalItem>) {
+        CoroutineScope(Dispatchers.IO).launch {
+            val updatedItems = personalItemDao.getAllItems().map {
+                PersonalItem(it.text, it.timestamp, it.voiceUrl.toString())
+            }
+
+            runOnUiThread {
+                personalItems.clear()
+                personalItems.addAll(updatedItems)
+                adapter.notifyDataSetChanged()
+                Log.d("PersonalSpaceActivity", "RecyclerView refreshed with ${personalItems.size} items")
+            }
+        }
+    }
+
+    override fun onBackPressed() {
+        adapter.releaseMediaPlayer()
+        super.onBackPressed()
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        adapter.releaseMediaPlayer()
     }
 }

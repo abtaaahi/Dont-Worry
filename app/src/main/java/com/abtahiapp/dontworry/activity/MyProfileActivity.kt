@@ -102,6 +102,7 @@ class MyProfileActivity : AppCompatActivity() {
         personalSpaceButton.setOnClickListener {
             val intent = Intent(this, PersonalSpaceActivity::class.java)
             intent.putExtra("userId", userId)
+            intent.putExtra("name", name)
             startActivity(intent)
             overridePendingTransition(R.anim.enter_anim, R.anim.exit_anim)
         }
