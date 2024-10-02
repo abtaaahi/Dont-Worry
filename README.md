@@ -80,3 +80,34 @@ private fun storeMoodInDatabase(userId: String, moodName: String, details: Strin
         }
     }
 ```
+## Dependencies
+
+``` kts
+
+dependencies {
+    implementation (libs.play.services.auth)
+    implementation (libs.glide)
+    implementation (libs.circleimageview)
+    implementation (libs.core)
+    implementation (libs.retrofit)
+    implementation (libs.converter.gson)
+    implementation (libs.logging.interceptor)
+    implementation (libs.exoplayer)
+    implementation(libs.firebase.database)
+    implementation(libs.play.services.location)
+    implementation(libs.firebase.storage)
+    testImplementation(libs.junit)
+    androidTestImplementation(libs.androidx.junit)
+    androidTestImplementation(libs.androidx.espresso.core)
+    implementation(libs.kotlinx.coroutines.android)
+    implementation(libs.androidx.lifecycle.viewmodel.ktx)
+    implementation (libs.androidx.fragment.ktx)
+    implementation (libs.socket.io.client)
+    implementation(libs.lottie)
+    implementation(libs.androidx.room.runtime)
+    implementation(libs.androidx.room.ktx)
+    kapt(libs.androidx.room.compiler)
+    implementation(libs.androidx.swiperefreshlayout)
+}
+
+```
