@@ -123,7 +123,7 @@ const app = express();
 const server = http.createServer(app);
 const io = socketIo(server);
 
-const mongoURI = 'mongodb+srv://abtaaahi_dontworry:8d3fmnkz3JuZdii9@cluster0.jg6nk.mongodb.net/abtaaahi_dontworry?retryWrites=true&w=majority';
+const mongoURI = '';
 
 const client = new MongoClient(mongoURI, { useNewUrlParser: true, useUnifiedTopology: true });
 
@@ -136,7 +136,7 @@ async function connectToMongoDB() {
     collection = db.collection('user_status');
 }
 
-app.use(express.static('app/src/main/javascript/chat-app/public'));
+app.use(express.static(''));
 
 io.on('connection', async (socket) => {
     const userId = socket.handshake.query.userId;
