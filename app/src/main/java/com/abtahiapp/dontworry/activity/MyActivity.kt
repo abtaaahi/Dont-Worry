@@ -11,9 +11,6 @@ import com.google.firebase.database.FirebaseDatabase
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
-import android.content.Context
-import android.net.ConnectivityManager
-import android.net.NetworkCapabilities
 import android.view.View
 import android.widget.ProgressBar
 import androidx.lifecycle.lifecycleScope
