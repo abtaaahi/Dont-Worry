@@ -33,6 +33,12 @@ import java.io.File
 import java.io.IOException
 import java.text.SimpleDateFormat
 import java.util.*
+import org.tensorflow.lite.Interpreter
+import java.io.FileInputStream
+import java.nio.ByteBuffer
+import java.nio.ByteOrder
+import java.nio.MappedByteBuffer
+import java.nio.channels.FileChannel
 
 class PersonalSpaceActivity : AppCompatActivity() {
 
@@ -47,10 +53,13 @@ class PersonalSpaceActivity : AppCompatActivity() {
     private lateinit var adapter: PersonalSpaceAdapter
     private val personalItems = mutableListOf<PersonalItem>()
     private lateinit var username: String
+    private lateinit var tfliteInterpreter: Interpreter
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_personal_space)
+
+        tfliteInterpreter = Interpreter(loadModelFile())
 
         db = Room.databaseBuilder(
             applicationContext,
@@ -100,6 +109,22 @@ class PersonalSpaceActivity : AppCompatActivity() {
         fabAdd.setOnClickListener {
             openDialog(userId)
         }
+
+        val btnAnalysis = findViewById<Button>(R.id.btn_analysis)
+        btnAnalysis.setOnClickListener {
+            if (personalItems.isNotEmpty()) {
+                val firstAudioPath = personalItems[0].voiceUrl
+                analyzeMood(firstAudioPath)
+            } else {
+                Toast.makeText(this, "No audio recordings available.", Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
+
+    private fun loadModelFile(): MappedByteBuffer {
+        val fileDescriptor = assets.openFd("yamnet.tflite")
+        val inputStream = FileInputStream(fileDescriptor.fileDescriptor)
+        return inputStream.channel.map(FileChannel.MapMode.READ_ONLY, fileDescriptor.startOffset, fileDescriptor.declaredLength)
     }
 
     private fun openDialog(userId: String) {
@@ -283,5 +308,66 @@ class PersonalSpaceActivity : AppCompatActivity() {
     override fun onDestroy() {
         super.onDestroy()
         adapter.releaseMediaPlayer()
+        tfliteInterpreter.close()
+    }
+
+    private fun analyzeMood(audioPath: String) {
+        val audioData = loadAudioData(audioPath)
+
+        if (audioData != null) {
+            val outputSize= 521
+            val output = Array(1) { FloatArray(outputSize) }
+            tfliteInterpreter.run(audioData, output)
+
+            val predictedMood = output[0].indices.maxByOrNull { output[0][it] } ?: -1
+            val moodLabel = getMoodLabel(predictedMood)
+            Toast.makeText(this, "Predicted mood: $moodLabel", Toast.LENGTH_SHORT).show()
+        } else {
+            Toast.makeText(this, "Error loading audio data.", Toast.LENGTH_SHORT).show()
+        }}
+
+    private fun loadAudioData(audioPath: String): FloatArray? {
+        try {
+            val requiredSize = 15600
+            val audioData = FloatArray(requiredSize)
+
+            val file = File(audioPath)
+            val inputStream = FileInputStream(file)
+            val buffer = ByteArray(requiredSize * 4)
+
+            var bytesRead = inputStream.read(buffer)
+            var index = 0
+            while (bytesRead != -1 && index < requiredSize) {
+                val floatValue = ByteBuffer.wrap(buffer, index * 4, 4).order(ByteOrder.nativeOrder()).getFloat()
+                audioData[index] = floatValue
+                index++
+                if (index >= requiredSize) {
+                    break
+                }
+
+                if (bytesRead < requiredSize * 4) {
+                    bytesRead = inputStream.read(buffer, bytesRead, (requiredSize * 4) - bytesRead)
+                }
+            }
+
+            inputStream.close()
+
+            return audioData
+        } catch (e: Exception) {
+            Log.e("PersonalSpaceActivity", "Error loading audio data: ${e.message}")
+            return null
+        }
+    }
+
+    private fun getMoodLabel(index: Int): String {
+        return when (index) {
+            0 -> "Happy"
+            1 -> "Sad"
+            2 -> "Angry"
+            3 -> "Neutral"
+            4 -> "Fearful"
+            5 -> "Disgusted"
+            else -> "Unknown Mood"
+        }
     }
 }

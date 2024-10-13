@@ -8,24 +8,41 @@
     android:padding="16dp"
     tools:context=".activity.PersonalSpaceActivity">
 
-    <TextView
-        android:id="@+id/title"
+    <LinearLayout
+        android:id="@+id/linearlayout"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:text="Personal Space:"
-        android:textStyle="bold"
-        android:textSize="20sp"
+        android:orientation="horizontal"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        android:textColor="@color/textColor"/>
+        app:layout_constraintTop_toTopOf="parent"
+        android:gravity="center_vertical">
+
+        <TextView
+            android:id="@+id/title"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="@string/personal_space"
+            android:textStyle="bold"
+            android:textSize="20sp"
+            android:textColor="@color/textColor" />
+
+        <Button
+            android:id="@+id/btn_analysis"
+            android:layout_width="wrap_content"
+            android:layout_height="40dp"
+            android:text="@string/analyze_mood"
+            android:textColor="@color/white"
+            android:backgroundTint="@color/color_one" />
+    </LinearLayout>
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recycler_view"
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:layout_marginTop="8dp"
-        app:layout_constraintTop_toBottomOf="@id/title"
+        app:layout_constraintTop_toBottomOf="@id/linearlayout"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
