@@ -118,15 +118,20 @@ class HomeFragment : Fragment() {
                 val posts = loadPostsFromFirebase()
                 val items = fetchDataFromApi()
 
-                saveToLocalDatabase(posts, items)
-
-                updateUI(posts, items)
+                if (isAdded) {
+                    saveToLocalDatabase(posts, items)
+                    updateUI(posts, items)
+                }
             } catch (e: Exception) {
-                Toast.makeText(requireContext(), "Error fetching data.", Toast.LENGTH_SHORT).show()
-                loadFromLocalDatabase()
+                if (isAdded) {
+                    Toast.makeText(requireContext(), "Error fetchingdata.", Toast.LENGTH_SHORT).show()
+                    loadFromLocalDatabase()
+                }
             } finally {
-                swipeRefreshLayout.isRefreshing = false
-                showLoading(false)
+                if (isAdded) {
+                    swipeRefreshLayout.isRefreshing = false
+                    showLoading(false)
+                }
             }
         }
     }

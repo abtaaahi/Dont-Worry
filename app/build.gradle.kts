@@ -23,6 +23,7 @@ android {
         buildConfigField("String", "TMDB_API_KEY", "\"${project.properties["TMDB_API_KEY"]}\"")
         buildConfigField("String", "QUOTE_API_NINJA_KEY", "\"${project.properties["QUOTE_API_NINJA_KEY"]}\"")
         buildConfigField("String", "OPEN_WEATHER_API_KEY", "\"${project.properties["OPEN_WEATHER_API_KEY"]}\"")
+        buildConfigField("String", "REVAI_ACCESS_TOKEN", "\"${project.properties["REVAI_ACCESS_TOKEN"]}\"")
     }
 
     buildFeatures {
@@ -76,5 +77,4 @@ dependencies {
     implementation(libs.androidx.room.ktx)
     kapt(libs.androidx.room.compiler)
     implementation(libs.androidx.swiperefreshlayout)
-    implementation(libs.tensorflow.lite)
 }

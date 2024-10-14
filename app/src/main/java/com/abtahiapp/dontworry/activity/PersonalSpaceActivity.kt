@@ -16,6 +16,7 @@ import android.text.Editable
 import android.text.TextWatcher
 import android.util.Log
 import android.view.View
+import androidx.appcompat.app.AlertDialog
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.room.Room
@@ -25,20 +26,21 @@ import com.abtahiapp.dontworry.room.PersonalItemEntity
 import com.abtahiapp.dontworry.room.PersonalSpaceDatabase
 import com.abtahiapp.dontworry.utils.NetworkUtil
 import com.abtahiapp.dontworry.utils.PersonalItem
+import com.abtahiapp.dontworry.utils.RetrofitClient
+import com.airbnb.lottie.LottieAnimationView
 import com.google.firebase.storage.FirebaseStorage
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import okhttp3.MediaType.Companion.toMediaTypeOrNull
+import okhttp3.MultipartBody
+import okhttp3.RequestBody.Companion.asRequestBody
+import org.json.JSONObject
 import java.io.File
 import java.io.IOException
 import java.text.SimpleDateFormat
 import java.util.*
-import org.tensorflow.lite.Interpreter
-import java.io.FileInputStream
-import java.nio.ByteBuffer
-import java.nio.ByteOrder
-import java.nio.MappedByteBuffer
-import java.nio.channels.FileChannel
 
 class PersonalSpaceActivity : AppCompatActivity() {
 
@@ -53,13 +55,10 @@ class PersonalSpaceActivity : AppCompatActivity() {
     private lateinit var adapter: PersonalSpaceAdapter
     private val personalItems = mutableListOf<PersonalItem>()
     private lateinit var username: String
-    private lateinit var tfliteInterpreter: Interpreter
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_personal_space)
-
-        tfliteInterpreter = Interpreter(loadModelFile())
 
         db = Room.databaseBuilder(
             applicationContext,
@@ -112,19 +111,89 @@ class PersonalSpaceActivity : AppCompatActivity() {
 
         val btnAnalysis = findViewById<Button>(R.id.btn_analysis)
         btnAnalysis.setOnClickListener {
+            if (!NetworkUtil.isOnline(this)) {
+                Toast.makeText(this, "Connect to the internet to use this feature.", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
+
             if (personalItems.isNotEmpty()) {
-                val firstAudioPath = personalItems[0].voiceUrl
-                analyzeMood(firstAudioPath)
+                val firstRecording = personalItems[0].voiceUrl
+
+                if (firstRecording != null) {
+                    val audioFile = File(firstRecording)
+                    val requestFile = MultipartBody.Part.createFormData(
+                        "media", audioFile.name, audioFile.asRequestBody("audio/mp3".toMediaTypeOrNull())
+                    )
+
+                    val dialogView = layoutInflater.inflate(R.layout.dialog_analyze, null)
+                    val progressBar = dialogView.findViewById<LottieAnimationView>(R.id.progress_bar)
+                    val tvMessage = dialogView.findViewById<TextView>(R.id.tv_message)
+
+                    val dialog = AlertDialog.Builder(this)
+                        .setView(dialogView)
+                        .setCancelable(true)
+                        .create()
+
+                    dialog.show()
+
+                    tvMessage.text = "Wait some time, it is processing the voice..."
+
+                    CoroutineScope(Dispatchers.IO).launch {
+                        try {
+                            val transcriptionResponse = RetrofitClient.revInstance.submitTranscriptionJob(requestFile).execute()
+                            if (transcriptionResponse.isSuccessful) {
+                                val jobId = extractJobId(transcriptionResponse.body()?.string())
+
+                                delay(10000)
+
+                                val transcriptResponse = RetrofitClient.revInstance.getTranscriptionResult(jobId).execute()
+                                if (transcriptResponse.isSuccessful) {
+                                    val transcriptJson = transcriptResponse.body()?.string()
+                                    Log.e("Transcription", "Response: $transcriptJson")
+
+                                    if (transcriptJson != null) {
+                                        val transcribedText = extractTranscribedText(transcriptJson)
+
+                                        runOnUiThread {
+                                            tvMessage.text = transcribedText
+                                            progressBar.visibility = View.GONE
+                                        }
+                                    } else {
+                                        runOnUiThread {
+                                            tvMessage.text = "No transcription available."
+                                            progressBar.visibility = View.GONE
+                                        }
+                                    }
+                                } else {
+                                    runOnUiThread {
+                                        tvMessage.text = "Error fetching transcription: ${transcriptResponse.message()}"
+                                        progressBar.visibility = View.GONE
+                                    }
+                                    Log.e("Transcription", "Error response: ${transcriptResponse.code()} - ${transcriptResponse.message()}")
+                                }
+                            } else {
+                                runOnUiThread {
+                                    tvMessage.text = "Error starting transcription: ${transcriptionResponse.message()}"
+                                    progressBar.visibility = View.GONE
+                                }
+                                Log.e("Transcription", "Error response: ${transcriptionResponse.code()} - ${transcriptionResponse.message()}")
+                            }
+                        } catch (e: Exception) {
+                            e.printStackTrace()
+                            Log.e("Transcription", "Exception during transcription: ${e.message}", e)
+                            runOnUiThread {
+                                tvMessage.text = "Error: ${e.message}"
+                                progressBar.visibility = View.GONE
+                            }
+                        }
+                    }
+                } else {
+                    Toast.makeText(this, "No audio file found for the first recording.", Toast.LENGTH_SHORT).show()
+                }
             } else {
                 Toast.makeText(this, "No audio recordings available.", Toast.LENGTH_SHORT).show()
             }
         }
-    }
-
-    private fun loadModelFile(): MappedByteBuffer {
-        val fileDescriptor = assets.openFd("yamnet.tflite")
-        val inputStream = FileInputStream(fileDescriptor.fileDescriptor)
-        return inputStream.channel.map(FileChannel.MapMode.READ_ONLY, fileDescriptor.startOffset, fileDescriptor.declaredLength)
     }
 
     private fun openDialog(userId: String) {
@@ -308,66 +377,34 @@ class PersonalSpaceActivity : AppCompatActivity() {
     override fun onDestroy() {
         super.onDestroy()
         adapter.releaseMediaPlayer()
-        tfliteInterpreter.close()
     }
 
-    private fun analyzeMood(audioPath: String) {
-        val audioData = loadAudioData(audioPath)
+    fun extractJobId(responseBody: String?): String {
+        if (responseBody == null || responseBody.isEmpty()) {
+            throw IllegalArgumentException("Response body is empty or null")
+        }
 
-        if (audioData != null) {
-            val outputSize= 521
-            val output = Array(1) { FloatArray(outputSize) }
-            tfliteInterpreter.run(audioData, output)
+        val jsonObject = JSONObject(responseBody)
+        return jsonObject.getString("id")
+    }
 
-            val predictedMood = output[0].indices.maxByOrNull { output[0][it] } ?: -1
-            val moodLabel = getMoodLabel(predictedMood)
-            Toast.makeText(this, "Predicted mood: $moodLabel", Toast.LENGTH_SHORT).show()
-        } else {
-            Toast.makeText(this, "Error loading audio data.", Toast.LENGTH_SHORT).show()
-        }}
+    fun extractTranscribedText(responseBody: String): String {
+        val jsonObject = JSONObject(responseBody)
+        val monologues = jsonObject.getJSONArray("monologues")
+        val stringBuilder = StringBuilder()
 
-    private fun loadAudioData(audioPath: String): FloatArray? {
-        try {
-            val requiredSize = 15600
-            val audioData = FloatArray(requiredSize)
+        for (i in 0 until monologues.length()) {
+            val monologue = monologues.getJSONObject(i)
+            val elements = monologue.getJSONArray("elements")
 
-            val file = File(audioPath)
-            val inputStream = FileInputStream(file)
-            val buffer = ByteArray(requiredSize * 4)
-
-            var bytesRead = inputStream.read(buffer)
-            var index = 0
-            while (bytesRead != -1 && index < requiredSize) {
-                val floatValue = ByteBuffer.wrap(buffer, index * 4, 4).order(ByteOrder.nativeOrder()).getFloat()
-                audioData[index] = floatValue
-                index++
-                if (index >= requiredSize) {
-                    break
-                }
-
-                if (bytesRead < requiredSize * 4) {
-                    bytesRead = inputStream.read(buffer, bytesRead, (requiredSize * 4) - bytesRead)
+            for (j in 0 until elements.length()) {
+                val element = elements.getJSONObject(j)
+                if (element.getString("type") == "text") {
+                    stringBuilder.append(element.getString("value")).append(" ")
                 }
             }
-
-            inputStream.close()
-
-            return audioData
-        } catch (e: Exception) {
-            Log.e("PersonalSpaceActivity", "Error loading audio data: ${e.message}")
-            return null
         }
-    }
 
-    private fun getMoodLabel(index: Int): String {
-        return when (index) {
-            0 -> "Happy"
-            1 -> "Sad"
-            2 -> "Angry"
-            3 -> "Neutral"
-            4 -> "Fearful"
-            5 -> "Disgusted"
-            else -> "Unknown Mood"
-        }
+        return stringBuilder.toString().trim()
     }
 }
