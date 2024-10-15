@@ -5,7 +5,7 @@ services:
     plan: free
     buildCommand:
       - npm install
-      - pip install textblob
+      - python3 -m pip install textblob
     startCommand: node server.js
     envVars:
       - key: PYTHON_VERSION
