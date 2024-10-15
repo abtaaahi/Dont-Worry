@@ -9,13 +9,13 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
 app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, 'app/src/main/sentimentAnalysis/index.html'));
+    res.sendFile(path.join(__dirname, 'index.html'));
 });
 
 app.post('/analyze', (req, res) => {
     const userInput = req.body.text;
 
-    const pythonProcess = spawn('python3', [path.join(__dirname, 'app/src/main/sentimentAnalysis/sentiment.py'), userInput]);
+    const pythonProcess = spawn('python3', [path.join(__dirname, 'sentiment.py'), userInput]);
 
     pythonProcess.stdout.on('data', (data) => {
         const result = JSON.parse(data.toString());
