@@ -15,6 +15,5 @@ def analyze_sentiment(text):
 if __name__ == "__main__":
     input_text = sys.argv[1]
     sentiment_result = analyze_sentiment(input_text)
-    # Send the result back in JSON format
     result = {"sentiment": sentiment_result}
     print(json.dumps(result))
