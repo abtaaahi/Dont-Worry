@@ -1,0 +1,17 @@
+services:
+  - type: web
+    name: sentiment-analysis-service
+    env: node
+    plan: free
+    buildCommand:
+      - npm install
+    startCommand: node server.js
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.9
+    runtime: node 16
+    region: oregon
+    disk:
+      - name: persistent_disk
+        mountPath: /mnt/data
+        sizeGB: 1

@@ -4,6 +4,7 @@ import android.app.Dialog
 import android.content.Intent
 import android.os.Bundle
 import android.view.View
+import android.view.ViewGroup
 import android.widget.Button
 import android.widget.EditText
 import android.widget.ImageView
@@ -14,6 +15,7 @@ import com.abtahiapp.dontworry.R
 import com.abtahiapp.dontworry.adapter.ViewPagerAdapter
 import com.bumptech.glide.Glide
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.tabs.TabLayout
 import com.google.android.material.tabs.TabLayoutMediator
 import com.google.firebase.database.DataSnapshot
@@ -91,8 +93,15 @@ class MainActivity : AppCompatActivity() {
         }.attach()
     }
     private fun showMoodDialog(userId: String) {
-        val dialog = Dialog(this)
-        dialog.setContentView(R.layout.how_was_the_day_dialog)
+        val dialogView = layoutInflater.inflate(R.layout.how_was_the_day_dialog, null)
+
+        val dialog = MaterialAlertDialogBuilder(this)
+            .setView(dialogView)
+            .setCancelable(false)
+            .create()
+
+        dialog.show()
+        dialog.window?.setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT)
 
         val moodImages = mapOf(
             R.id.mood_1 to "Angry",
@@ -102,36 +111,34 @@ class MainActivity : AppCompatActivity() {
             R.id.mood_5 to "Very Fine"
         )
 
-        val etDetails: EditText = dialog.findViewById(R.id.et_details)
+        val etDetails: EditText = dialogView.findViewById(R.id.et_details)
 
         var selectedMood: String? = null
 
         moodImages.forEach { (imageViewId, moodName) ->
-            val imageView: ImageView = dialog.findViewById(imageViewId)
+            val imageView: ImageView = dialogView.findViewById(imageViewId)
             imageView.setOnClickListener {
                 if (selectedMood == moodName) {
                     selectedMood = null
                     moodImages.keys.forEach { id ->
-                        dialog.findViewById<ImageView>(id).visibility = View.VISIBLE
+                        dialogView.findViewById<ImageView>(id).visibility = View.VISIBLE
                     }
                 } else {
                     selectedMood = moodName
                     moodImages.keys.forEach { id ->
-                        dialog.findViewById<ImageView>(id).visibility = if (id == imageViewId) View.VISIBLE else View.INVISIBLE
+                        dialogView.findViewById<ImageView>(id).visibility = if (id == imageViewId) View.VISIBLE else View.INVISIBLE
                     }
                 }
             }
         }
 
-        val button: Button = dialog.findViewById(R.id.submit)
+        val button: Button = dialogView.findViewById(R.id.submit)
         button.setOnClickListener {
             selectedMood?.let {
                 storeMoodInDatabase(userId, it, etDetails.text.toString())
                 dialog.dismiss()
             } ?: Toast.makeText(this, "Please select a mood", Toast.LENGTH_SHORT).show()
         }
-
-        dialog.show()
     }
 
     private fun storeMoodInDatabase(userId: String, moodName: String, details: String) {

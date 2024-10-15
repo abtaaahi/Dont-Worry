@@ -16,7 +16,6 @@ import android.text.Editable
 import android.text.TextWatcher
 import android.util.Log
 import android.view.View
-import androidx.appcompat.app.AlertDialog
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.room.Room
@@ -28,6 +27,7 @@ import com.abtahiapp.dontworry.utils.NetworkUtil
 import com.abtahiapp.dontworry.utils.PersonalItem
 import com.abtahiapp.dontworry.utils.RetrofitClient
 import com.airbnb.lottie.LottieAnimationView
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.firebase.storage.FirebaseStorage
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -129,7 +129,7 @@ class PersonalSpaceActivity : AppCompatActivity() {
                     val progressBar = dialogView.findViewById<LottieAnimationView>(R.id.progress_bar)
                     val tvMessage = dialogView.findViewById<TextView>(R.id.tv_message)
 
-                    val dialog = AlertDialog.Builder(this)
+                    val dialog = MaterialAlertDialogBuilder(this)
                         .setView(dialogView)
                         .setCancelable(true)
                         .create()
@@ -197,18 +197,20 @@ class PersonalSpaceActivity : AppCompatActivity() {
     }
 
     private fun openDialog(userId: String) {
-        val dialog = Dialog(this)
-        dialog.setContentView(R.layout.personal_space_dialog)
-        val window = dialog.window
-        window?.setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT)
+        val dialogView = layoutInflater.inflate(R.layout.personal_space_dialog, null)
 
-        dialog.setCanceledOnTouchOutside(false)
+        val dialog = MaterialAlertDialogBuilder(this)
+            .setView(dialogView)
+            .setCancelable(false)
+            .create()
+
         dialog.show()
+        dialog.window?.setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT)
 
-        val closeButton = dialog.findViewById<ImageButton>(R.id.btn_close_dialog)
-        val etText = dialog.findViewById<EditText>(R.id.et_text)
-        val btnSubmit = dialog.findViewById<Button>(R.id.btn_submit)
-        val tvRecordingStatus = dialog.findViewById<TextView>(R.id.tv_recording_status)
+        val closeButton = dialogView.findViewById<ImageButton>(R.id.btn_close_dialog)
+        val etText = dialogView.findViewById<EditText>(R.id.et_text)
+        val btnSubmit = dialogView.findViewById<Button>(R.id.btn_submit)
+        val tvRecordingStatus = dialogView.findViewById<TextView>(R.id.tv_recording_status)
 
         btnSubmit.visibility = View.GONE
 
@@ -220,11 +222,7 @@ class PersonalSpaceActivity : AppCompatActivity() {
         etText.addTextChangedListener(object : TextWatcher {
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
-                if (etText.text.isNotEmpty()) {
-                    btnSubmit.visibility = View.VISIBLE
-                } else {
-                    btnSubmit.visibility = View.GONE
-                }
+                btnSubmit.visibility = if (etText.text.isNotEmpty()) View.VISIBLE else View.GONE
             }
 
             override fun afterTextChanged(s: Editable?) {}

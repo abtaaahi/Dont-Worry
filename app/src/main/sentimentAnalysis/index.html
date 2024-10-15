@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sentiment Analysis</title>
+</head>
+<body>
+<h1>Sentiment Analysis</h1>
+<form id="sentiment-form">
+    <label for="text">Enter text:</label>
+    <input type="text" id="text" name="text" required>
+    <button type="submit">Analyze Sentiment</button>
+</form>
+<div id="result"></div>
+
+<script>
+    document.getElementById('sentiment-form').addEventListener('submit', function(event) {
+        event.preventDefault();
+
+        const textInput = document.getElementById('text').value;
+
+        fetch('/analyze', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ text: textInput }),
+        })
+        .then(response => response.json())
+        .then(data => {
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = `<h3>Sentiment: ${data.sentiment}</h3>`;
+        })
+        .catch(error => {
+            console.error('Error:', error);
+        });
+    });
+</script>
+</body>
+</html>

@@ -16,7 +16,7 @@
             android:layout_height="wrap_content"
             android:text="How are you feeling today?"
             android:maxLines="1"
-            android:textSize="16sp"
+            android:textSize="14sp"
             android:textColor="@color/textColor"
             android:layout_weight="1"
             android:textStyle="bold"

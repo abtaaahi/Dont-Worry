@@ -2,6 +2,7 @@ package com.abtahiapp.dontworry.activity
 
 import android.os.Bundle
 import android.view.LayoutInflater
+import android.view.ViewGroup
 import android.widget.EditText
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
@@ -17,6 +18,7 @@ import com.abtahiapp.dontworry.room.PostDatabase
 import com.abtahiapp.dontworry.room.PostEntity
 import com.abtahiapp.dontworry.utils.NetworkUtil.isOnline
 import com.google.android.gms.auth.api.signin.GoogleSignIn
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.DatabaseReference
@@ -131,10 +133,9 @@ class MyPostActivity : AppCompatActivity() {
 
         val dialogView = LayoutInflater.from(this).inflate(R.layout.dialog_post_options, null)
         val editTextPostContent = dialogView.findViewById<EditText>(R.id.edit_text_post_content)
-
         editTextPostContent.setText(post.content)
 
-        val dialogBuilder = AlertDialog.Builder(this)
+        val dialogBuilder = MaterialAlertDialogBuilder(this)
             .setTitle("Options")
             .setView(dialogView)
             .setPositiveButton("Update") { _, _ ->
@@ -143,9 +144,7 @@ class MyPostActivity : AppCompatActivity() {
                     updatePost(post, updatedContent)
                 }
             }
-            .setNegativeButton("Delete") { _, _ ->
-                deletePost(post)
-            }
+            .setNegativeButton("Delete") { _, _ -> deletePost(post) }
             .setNeutralButton("Cancel", null)
 
         val dialog = dialogBuilder.create()
@@ -160,6 +159,7 @@ class MyPostActivity : AppCompatActivity() {
         }
 
         dialog.show()
+        dialog.window?.setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT)
     }
 
     private fun updatePost(post: Post, updatedContent: String) {
