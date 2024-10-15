@@ -24,7 +24,13 @@ app.post('/analyze', (req, res) => {
 
     pythonProcess.stderr.on('data', (data) => {
         console.error(`Error: ${data}`);
-        res.status(500).send("Error analyzing sentiment");
+        if (!res.headersSent) {
+            res.status(500).send("Error analyzing sentiment");
+        }
+    });
+
+    pythonProcess.on('close', (code) => {
+        console.log(`Python process exited with code ${code}`);
     });
 });
 
