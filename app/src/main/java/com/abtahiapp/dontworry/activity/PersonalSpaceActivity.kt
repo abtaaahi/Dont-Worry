@@ -20,12 +20,14 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.room.Room
 import com.abtahiapp.dontworry.adapter.PersonalSpaceAdapter
+import com.abtahiapp.dontworry.apiservice.TextBlobApiService
 import com.abtahiapp.dontworry.room.PersonalItemDao
 import com.abtahiapp.dontworry.room.PersonalItemEntity
 import com.abtahiapp.dontworry.room.PersonalSpaceDatabase
 import com.abtahiapp.dontworry.utils.NetworkUtil
 import com.abtahiapp.dontworry.utils.PersonalItem
 import com.abtahiapp.dontworry.utils.RetrofitClient
+import com.abtahiapp.dontworry.utils.SentimentRequest
 import com.airbnb.lottie.LottieAnimationView
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.firebase.storage.FirebaseStorage
@@ -154,9 +156,21 @@ class PersonalSpaceActivity : AppCompatActivity() {
                                     if (transcriptJson != null) {
                                         val transcribedText = extractTranscribedText(transcriptJson)
 
-                                        runOnUiThread {
-                                            tvMessage.text = transcribedText
-                                            progressBar.visibility = View.GONE
+                                        val apiService = RetrofitClient.create(TextBlobApiService::class.java)
+                                        val sentimentRequest = SentimentRequest(transcribedText)
+
+                                        val sentimentResponse = apiService.analyzeSentiment(sentimentRequest).execute()
+                                        if (sentimentResponse.isSuccessful) {
+                                            val sentimentResult = sentimentResponse.body()
+                                            runOnUiThread {
+                                                tvMessage.text = "${transcribedText}\nSentiment: ${sentimentResult?.sentiment}"
+                                                progressBar.visibility = View.GONE
+                                            }
+                                        } else {
+                                            runOnUiThread {
+                                                tvMessage.text = "Error fetching sentiment: ${sentimentResponse.message()}"
+                                                progressBar.visibility = View.GONE
+                                            }
                                         }
                                     } else {
                                         runOnUiThread {

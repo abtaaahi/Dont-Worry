@@ -7,6 +7,7 @@ import com.abtahiapp.dontworry.apiservice.MovieApiService
 import com.abtahiapp.dontworry.apiservice.PlacesApiService
 import com.abtahiapp.dontworry.apiservice.QuotesApiService
 import com.abtahiapp.dontworry.apiservice.RevAiService
+import com.abtahiapp.dontworry.apiservice.TextBlobApiService
 import com.abtahiapp.dontworry.apiservice.WeatherApiService
 import com.abtahiapp.dontworry.apiservice.YouTubeApiService
 import okhttp3.Interceptor
@@ -26,6 +27,7 @@ object RetrofitClient {
     private const val BASE_URL_QUOTES = "https://api.api-ninjas.com/v1/"
     private const val BASE_URL_REV = "https://api.rev.ai/"
     private const val ACCESS_TOKEN = BuildConfig.REVAI_ACCESS_TOKEN
+    private const val BASE_URL_TEXT_BLOB = "https://sentiment-analysis-service.onrender.com"
     //private const val BASE_URL_AUDIO = "https://theaudiodb.com/api/v1/json/2/"
     //private const val BASE_URL_SPOTIFY = "https://api.spotify.com/v1/"
     //private const val BASE_URL_DEEZER = "https://api.deezer.com/"
@@ -126,6 +128,15 @@ object RetrofitClient {
             .build()
 
         retrofit.create(RevAiService::class.java)
+    }
+
+    private val retrofit = Retrofit.Builder()
+        .baseUrl(BASE_URL_TEXT_BLOB)
+        .addConverterFactory(GsonConverterFactory.create())
+        .build()
+
+    fun create(serviceClass: Class<TextBlobApiService>): TextBlobApiService {
+        return retrofit.create(serviceClass)
     }
 
 //    val placesInstance: PlacesApiService by lazy {

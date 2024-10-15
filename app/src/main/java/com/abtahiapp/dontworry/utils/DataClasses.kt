@@ -165,6 +165,10 @@ data class PersonalItem(
     val voiceUrl: String
 )
 
+data class SentimentRequest(val text: String)
+
+data class SentimentResponse(val sentiment: String)
+
 //data class NewsResponse(
 //    val status: String,
 //    val totalResults: Int,
