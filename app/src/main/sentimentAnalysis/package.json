@@ -1,5 +1,5 @@
 {
-  "name": "sentimentAnalysis",
+  "name": "sentimentanalysis",
   "version": "1.0.0",
   "description": "A simple sentiment analysis web application using Node.js and Python.",
   "main": "server.js",
@@ -7,10 +7,13 @@
     "start": "node server.js"
   },
   "dependencies": {
-    "express": "^4.17.1",
-    "body-parser": "^1.19.0"
+    "body-parser": "^1.20.3",
+    "express": "^4.21.1"
   },
   "engines": {
     "node": "16.x"
-  }
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
 }
