@@ -27,6 +27,9 @@
         android:theme="@style/Theme.DontWorryYourPersonalTherapist"
         tools:targetApi="31">
         <activity
+            android:name=".activity.ChatbotActivity"
+            android:exported="false" />
+        <activity
             android:name=".activity.PersonalSpaceActivity"
             android:exported="false" />
         <activity

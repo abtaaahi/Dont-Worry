@@ -5,12 +5,19 @@ import json
 def analyze_sentiment(text):
     blob = TextBlob(text)
     sentiment = blob.sentiment.polarity
-    if sentiment > 0:
-        return "positive"
+
+    if sentiment > 0.5:
+        return "happy and positive thoughts 💭"
+    elif 0 < sentiment <= 0.5:
+        return "feeling good with positivity 😌"
     elif sentiment == 0:
-        return "neutral"
+        return "normal 😐"
+    elif sentiment < -0.5 and sentiment > -0.8:
+        return "sad and depressed 😢"
+    elif sentiment <= -0.8:
+        return "angry and negativity 😡"
     else:
-        return "negative"
+        return "neutral 😶"
 
 if __name__ == "__main__":
     input_text = sys.argv[1]

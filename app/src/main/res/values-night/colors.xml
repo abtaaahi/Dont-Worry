@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <color name="black">#000000</color>
+    <color name="white">#FFFFFFFF</color>
     <color name="textColor">#FFFFFF</color>
     <color name="color_one">#A02334 </color>
     <color name="buttonTextColor">#000000</color>
@@ -8,5 +10,6 @@
     <color name="red">#FF0000</color>
     <color name="green">#00FF00</color>
     <color name="grey">#808080</color>
+    <color name="voice_select_color">#A02334 </color>
 
 </resources>

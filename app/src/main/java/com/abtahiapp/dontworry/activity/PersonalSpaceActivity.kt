@@ -1,6 +1,6 @@
 package com.abtahiapp.dontworry.activity
 
-import android.app.Dialog
+import android.content.Intent
 import android.os.Bundle
 import android.view.ViewGroup
 import android.widget.*
@@ -8,7 +8,6 @@ import androidx.appcompat.app.AppCompatActivity
 import com.abtahiapp.dontworry.R
 import android.media.MediaRecorder
 import android.net.Uri
-import com.google.android.material.floatingactionbutton.FloatingActionButton
 import android.os.Environment
 import android.os.Handler
 import android.os.Looper
@@ -30,6 +29,7 @@ import com.abtahiapp.dontworry.utils.RetrofitClient
 import com.abtahiapp.dontworry.utils.SentimentRequest
 import com.airbnb.lottie.LottieAnimationView
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
 import com.google.firebase.storage.FirebaseStorage
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -57,6 +57,7 @@ class PersonalSpaceActivity : AppCompatActivity() {
     private lateinit var adapter: PersonalSpaceAdapter
     private val personalItems = mutableListOf<PersonalItem>()
     private lateinit var username: String
+    private var selectedPosition: Int = -1
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -73,7 +74,9 @@ class PersonalSpaceActivity : AppCompatActivity() {
         val recyclerView = findViewById<RecyclerView>(R.id.recycler_view)
         recyclerView.layoutManager = LinearLayoutManager(this)
 
-        adapter = PersonalSpaceAdapter(personalItems)
+        adapter = PersonalSpaceAdapter(personalItems) { selectedPos ->
+            selectedPosition = selectedPos
+        }
         recyclerView.adapter = adapter
 
         CoroutineScope(Dispatchers.IO).launch {
@@ -98,119 +101,149 @@ class PersonalSpaceActivity : AppCompatActivity() {
 
         val userId = intent?.getStringExtra("userId") ?: ""
         username = intent?.getStringExtra("name") ?: ""
+        val photoUrl = intent?.getStringExtra("photoUrl") ?: ""
 
-        val fabAdd = findViewById<FloatingActionButton>(R.id.fab_add)
+        val fabAdd = findViewById<ExtendedFloatingActionButton>(R.id.fab_add)
+        val fabAddChat = findViewById<ExtendedFloatingActionButton>(R.id.fab_add_chat)
         if (!NetworkUtil.isOnline(this)) {
             fabAdd.isEnabled = false
             fabAdd.alpha = 0.5f
+            fabAddChat.isEnabled = false
+            fabAddChat.alpha = 0.5f
         } else {
             fabAdd.isEnabled = true
             fabAdd.alpha = 1.0f
+            fabAddChat.isEnabled = true
+            fabAddChat.alpha = 1.0f
         }
         fabAdd.setOnClickListener {
             openDialog(userId)
+        }
+        fabAddChat.setOnClickListener {
+            val intent = Intent(this, ChatbotActivity::class.java)
+            intent.putExtra("userID", userId)
+            intent.putExtra("photoUrl", photoUrl)
+            startActivity(intent)
         }
 
         val btnAnalysis = findViewById<Button>(R.id.btn_analysis)
         btnAnalysis.setOnClickListener {
             if (!NetworkUtil.isOnline(this)) {
-                Toast.makeText(this, "Connect to the internet to use this feature.", Toast.LENGTH_SHORT).show()
+                Toast.makeText(
+                    this,
+                    "Connect to the internet to use this feature.",
+                    Toast.LENGTH_SHORT
+                ).show()
                 return@setOnClickListener
             }
 
-            if (personalItems.isNotEmpty()) {
-                val firstRecording = personalItems[0].voiceUrl
+            val itemToAnalyze =
+                if (selectedPosition != -1) personalItems[selectedPosition] else personalItems[0]
 
-                if (firstRecording != null) {
-                    val audioFile = File(firstRecording)
-                    val requestFile = MultipartBody.Part.createFormData(
-                        "media", audioFile.name, audioFile.asRequestBody("audio/mp3".toMediaTypeOrNull())
-                    )
-
-                    val dialogView = layoutInflater.inflate(R.layout.dialog_analyze, null)
-                    val progressBar = dialogView.findViewById<LottieAnimationView>(R.id.progress_bar)
-                    val tvMessage = dialogView.findViewById<TextView>(R.id.tv_message)
-
-                    val dialog = MaterialAlertDialogBuilder(this)
-                        .setView(dialogView)
-                        .setCancelable(true)
-                        .create()
-
-                    dialog.show()
-
-                    tvMessage.text = "Wait some time, it is processing the voice..."
-
-                    CoroutineScope(Dispatchers.IO).launch {
-                        try {
-                            val transcriptionResponse = RetrofitClient.revInstance.submitTranscriptionJob(requestFile).execute()
-                            if (transcriptionResponse.isSuccessful) {
-                                val jobId = extractJobId(transcriptionResponse.body()?.string())
-
-                                delay(10000)
-
-                                val transcriptResponse = RetrofitClient.revInstance.getTranscriptionResult(jobId).execute()
-                                if (transcriptResponse.isSuccessful) {
-                                    val transcriptJson = transcriptResponse.body()?.string()
-                                    Log.e("Transcription", "Response: $transcriptJson")
-
-                                    if (transcriptJson != null) {
-                                        val transcribedText = extractTranscribedText(transcriptJson)
-
-                                        val apiService = RetrofitClient.create(TextBlobApiService::class.java)
-                                        val sentimentRequest = SentimentRequest(transcribedText)
-
-                                        val sentimentResponse = apiService.analyzeSentiment(sentimentRequest).execute()
-                                        if (sentimentResponse.isSuccessful) {
-                                            val sentimentResult = sentimentResponse.body()
-                                            runOnUiThread {
-                                                tvMessage.text = "${transcribedText}\nSentiment: ${sentimentResult?.sentiment}"
-                                                progressBar.visibility = View.GONE
-                                            }
-                                        } else {
-                                            runOnUiThread {
-                                                tvMessage.text = "Error fetching sentiment: ${sentimentResponse.message()}"
-                                                progressBar.visibility = View.GONE
-                                            }
-                                        }
-                                    } else {
-                                        runOnUiThread {
-                                            tvMessage.text = "No transcription available."
-                                            progressBar.visibility = View.GONE
-                                        }
-                                    }
-                                } else {
-                                    runOnUiThread {
-                                        tvMessage.text = "Error fetching transcription: ${transcriptResponse.message()}"
-                                        progressBar.visibility = View.GONE
-                                    }
-                                    Log.e("Transcription", "Error response: ${transcriptResponse.code()} - ${transcriptResponse.message()}")
-                                }
-                            } else {
-                                runOnUiThread {
-                                    tvMessage.text = "Error starting transcription: ${transcriptionResponse.message()}"
-                                    progressBar.visibility = View.GONE
-                                }
-                                Log.e("Transcription", "Error response: ${transcriptionResponse.code()} - ${transcriptionResponse.message()}")
-                            }
-                        } catch (e: Exception) {
-                            e.printStackTrace()
-                            Log.e("Transcription", "Exception during transcription: ${e.message}", e)
-                            runOnUiThread {
-                                tvMessage.text = "Error: ${e.message}"
-                                progressBar.visibility = View.GONE
-                            }
-                        }
-                    }
-                } else {
-                    Toast.makeText(this, "No audio file found for the first recording.", Toast.LENGTH_SHORT).show()
-                }
+            if (itemToAnalyze.voiceUrl != null) {
+                analyzeVoice(itemToAnalyze.voiceUrl!!)
+                adapter.selectedPosition = -1
+                adapter.notifyDataSetChanged()
             } else {
-                Toast.makeText(this, "No audio recordings available.", Toast.LENGTH_SHORT).show()
+                Toast.makeText(
+                    this,
+                    "No audio file found for the selected item.",
+                    Toast.LENGTH_SHORT
+                ).show()
             }
         }
     }
+        private fun analyzeVoice(voiceUrl: String) {
+            val audioFile = File(voiceUrl)
 
-    private fun openDialog(userId: String) {
+            if (!audioFile.exists()) {
+                Toast.makeText(this, "Audio file not found.", Toast.LENGTH_SHORT).show()
+                return
+            }
+
+            val requestFile = MultipartBody.Part.createFormData(
+                "media", audioFile.name, audioFile.asRequestBody("audio/mp3".toMediaTypeOrNull())
+            )
+
+            val dialogView = layoutInflater.inflate(R.layout.dialog_analyze, null)
+            val progressBar = dialogView.findViewById<LottieAnimationView>(R.id.progress_bar)
+            val tvMessage = dialogView.findViewById<TextView>(R.id.tv_message)
+
+            val dialog = MaterialAlertDialogBuilder(this)
+                .setView(dialogView)
+                .setCancelable(true)
+                .create()
+
+            dialog.show()
+            tvMessage.text = "Processing the voice..."
+
+            CoroutineScope(Dispatchers.IO).launch {
+                try {
+                    val transcriptionResponse = RetrofitClient.revInstance.submitTranscriptionJob(requestFile).execute()
+
+                    if (transcriptionResponse.isSuccessful) {
+                        val jobId = extractJobId(transcriptionResponse.body()?.string())
+
+                        delay(10000)
+
+                        val transcriptResponse = RetrofitClient.revInstance.getTranscriptionResult(jobId).execute()
+
+                        if (transcriptResponse.isSuccessful) {
+                            val transcriptJson = transcriptResponse.body()?.string()
+                            Log.e("Transcription", "Response: $transcriptJson")
+
+                            if (transcriptJson != null) {
+                                val transcribedText = extractTranscribedText(transcriptJson)
+                                analyzeSentiment(transcribedText, tvMessage, progressBar)
+                            } else {
+                                updateUIOnError("No transcription available.", tvMessage, progressBar)
+                            }
+                        } else {
+                            updateUIOnError("Error fetching transcription: ${transcriptResponse.message()}", tvMessage, progressBar)
+                        }
+                    } else {
+                        updateUIOnError("Error starting transcription: ${transcriptionResponse.message()}", tvMessage, progressBar)
+                    }
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                    updateUIOnError("Error: ${e.message}", tvMessage, progressBar)
+                }
+            }
+        }
+
+        private fun analyzeSentiment(transcribedText: String, tvMessage: TextView, progressBar: LottieAnimationView) {
+            val apiService = RetrofitClient.create(TextBlobApiService::class.java)
+            val sentimentRequest = SentimentRequest(transcribedText)
+
+            CoroutineScope(Dispatchers.IO).launch {
+                try {
+                    val sentimentResponse = apiService.analyzeSentiment(sentimentRequest).execute()
+
+                    if (sentimentResponse.isSuccessful) {
+                        val sentimentResult = sentimentResponse.body()
+
+                        runOnUiThread {
+                            tvMessage.text = "${transcribedText}\nSentiment: ${sentimentResult?.sentiment}"
+                            progressBar.visibility = View.GONE
+                        }
+                    } else {
+                        updateUIOnError("Error fetching sentiment: ${sentimentResponse.message()}", tvMessage, progressBar)
+                    }
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                    updateUIOnError("Error analyzing sentiment: ${e.message}", tvMessage, progressBar)
+                }
+            }
+        }
+
+        private fun updateUIOnError(errorMessage: String, tvMessage: TextView, progressBar: LottieAnimationView) {
+            runOnUiThread {
+                tvMessage.text = errorMessage
+                progressBar.visibility = View.GONE
+            }
+        }
+
+        private fun openDialog(userId: String) {
         val dialogView = layoutInflater.inflate(R.layout.personal_space_dialog, null)
 
         val dialog = MaterialAlertDialogBuilder(this)

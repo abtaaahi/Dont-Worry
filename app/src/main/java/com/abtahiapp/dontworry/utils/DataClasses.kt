@@ -169,6 +169,12 @@ data class SentimentRequest(val text: String)
 
 data class SentimentResponse(val sentiment: String)
 
+data class ChatMessage(
+    val sender: String,
+    val content: String = "",
+    val isTyping: Boolean = false
+)
+
 //data class NewsResponse(
 //    val status: String,
 //    val totalResults: Int,

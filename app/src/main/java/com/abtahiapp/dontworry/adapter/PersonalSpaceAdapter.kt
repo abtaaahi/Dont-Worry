@@ -10,16 +10,18 @@ import androidx.recyclerview.widget.RecyclerView
 import com.abtahiapp.dontworry.R
 import com.abtahiapp.dontworry.utils.PersonalItem
 
-class PersonalSpaceAdapter(private val personalItems: List<PersonalItem>) :
+class PersonalSpaceAdapter(private val personalItems: List<PersonalItem>, private val onItemLongClick: (Int) -> Unit) :
     RecyclerView.Adapter<PersonalSpaceAdapter.PersonalSpaceViewHolder>() {
 
     private var currentMediaPlayer: MediaPlayer? = null
     private var currentPlayingPosition: Int = -1
+    var selectedPosition: Int = -1
 
     inner class PersonalSpaceViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         val tvText: TextView = itemView.findViewById(R.id.tv_text)
         val tvTimestamp: TextView = itemView.findViewById(R.id.tv_timestamp)
         val btnPlayPause: ImageButton = itemView.findViewById(R.id.btn_play_pause)
+        val dividerView: View = itemView.findViewById(R.id.divider)
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): PersonalSpaceViewHolder {
@@ -33,6 +35,14 @@ class PersonalSpaceAdapter(private val personalItems: List<PersonalItem>) :
         holder.tvText.text = currentItem.text
         holder.tvTimestamp.text = currentItem.timestamp
 
+        if (position == selectedPosition) {
+            holder.itemView.setBackgroundResource(R.drawable.rounded_corners_selected)
+            holder.dividerView.visibility = View.GONE
+        } else {
+            holder.itemView.setBackgroundResource(R.drawable.rounded_corners)
+            holder.dividerView.visibility = View.VISIBLE
+        }
+
         if (position == currentPlayingPosition && currentMediaPlayer?.isPlaying == true) {
             holder.btnPlayPause.setBackgroundResource(R.drawable.pause)
         } else {
@@ -44,9 +54,15 @@ class PersonalSpaceAdapter(private val personalItems: List<PersonalItem>) :
                 togglePlayPause(holder)
             } else {
                 stopCurrentPlaying()
-
                 startPlaying(currentItem, holder, position)
             }
+        }
+
+        holder.itemView.setOnLongClickListener {
+            selectedPosition = if (selectedPosition == position) -1 else position
+            onItemLongClick(position)
+            notifyDataSetChanged()
+            true
         }
     }
 
