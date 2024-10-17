@@ -74,8 +74,11 @@ class ChatbotActivity : AppCompatActivity() {
                 val response = generativeModel.generateContent(message)
 
                 withContext(Dispatchers.Main) {
-                    chatMessages.removeAt(chatMessages.size - 1)
-                    chatAdapter.notifyItemRemoved(chatMessages.size)
+                    val lastIndex = chatMessages.size - 1
+                    if (chatMessages[lastIndex].isTyping) {
+                        chatMessages.removeAt(lastIndex)
+                        chatAdapter.notifyItemRemoved(lastIndex)
+                    }
 
                     response.text?.let {
                         chatMessages.add(ChatMessage("bot", it))

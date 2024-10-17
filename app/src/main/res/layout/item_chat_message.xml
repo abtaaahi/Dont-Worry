@@ -7,37 +7,38 @@
     android:padding="8dp">
 
     <LinearLayout
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        android:gravity="start"
-        android:layout_marginBottom="8dp">
+        android:gravity="end"
+        android:layout_marginBottom="0dp">
+
+        <TextView
+            android:id="@+id/userMessageTextView"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:background="@drawable/user_message_background"
+            android:padding="16dp"
+            android:textIsSelectable="true"
+            android:textColor="#FFFFFF"
+            android:visibility="gone" />
 
         <de.hdodenhof.circleimageview.CircleImageView
             android:id="@+id/userProfileImage"
             android:layout_width="40dp"
             android:layout_height="40dp"
             android:src="@drawable/person"
-            android:layout_marginEnd="8dp"
-            android:visibility="gone" />
-
-        <TextView
-            android:id="@+id/userMessageTextView"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:background="@drawable/user_message_background"
-            android:padding="16dp"
-            android:textIsSelectable="true"
-            android:textColor="#FFFFFF"
+            android:layout_marginStart="8dp"
             android:visibility="gone" />
     </LinearLayout>
 
     <LinearLayout
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
         android:gravity="start"
-        android:layout_marginBottom="8dp">
+        android:layout_marginBottom="0dp">
 
         <de.hdodenhof.circleimageview.CircleImageView
             android:id="@+id/botProfileImage"
@@ -68,3 +69,76 @@
             android:visibility="gone" />
     </LinearLayout>
 </LinearLayout>
+
+<!--Regular Discord / Google Chat Format:-->
+
+<!--<?xml version="1.0" encoding="utf-8"?>-->
+<!--<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"-->
+<!--xmlns:app="http://schemas.android.com/apk/res-auto"-->
+<!--android:layout_width="match_parent"-->
+<!--android:layout_height="wrap_content"-->
+<!--android:orientation="vertical"-->
+<!--android:padding="8dp">-->
+
+<!--<LinearLayout-->
+<!--    android:layout_width="wrap_content"-->
+<!--    android:layout_height="wrap_content"-->
+<!--    android:orientation="horizontal"-->
+<!--    android:gravity="start"-->
+<!--    android:layout_marginBottom="0dp">-->
+
+<!--    <de.hdodenhof.circleimageview.CircleImageView-->
+<!--        android:id="@+id/userProfileImage"-->
+<!--        android:layout_width="40dp"-->
+<!--        android:layout_height="40dp"-->
+<!--        android:src="@drawable/person"-->
+<!--        android:layout_marginEnd="8dp"-->
+<!--        android:visibility="gone" />-->
+
+<!--    <TextView-->
+<!--        android:id="@+id/userMessageTextView"-->
+<!--        android:layout_width="wrap_content"-->
+<!--        android:layout_height="wrap_content"-->
+<!--        android:background="@drawable/user_message_background"-->
+<!--        android:padding="16dp"-->
+<!--        android:textIsSelectable="true"-->
+<!--        android:textColor="#FFFFFF"-->
+<!--        android:visibility="gone" />-->
+<!--</LinearLayout>-->
+
+<!--<LinearLayout-->
+<!--    android:layout_width="wrap_content"-->
+<!--    android:layout_height="wrap_content"-->
+<!--    android:orientation="horizontal"-->
+<!--    android:gravity="start"-->
+<!--    android:layout_marginBottom="0dp">-->
+
+<!--    <de.hdodenhof.circleimageview.CircleImageView-->
+<!--        android:id="@+id/botProfileImage"-->
+<!--        android:layout_width="40dp"-->
+<!--        android:layout_height="40dp"-->
+<!--        android:src="@drawable/aitherapist"-->
+<!--        android:layout_marginEnd="8dp"-->
+<!--        android:visibility="gone" />-->
+
+<!--    <TextView-->
+<!--        android:id="@+id/botMessageTextView"-->
+<!--        android:layout_width="wrap_content"-->
+<!--        android:layout_height="wrap_content"-->
+<!--        android:background="@drawable/bot_message_background"-->
+<!--        android:padding="16dp"-->
+<!--        android:textIsSelectable="true"-->
+<!--        android:textColor="#000000"-->
+<!--        android:visibility="gone" />-->
+
+<!--    <com.airbnb.lottie.LottieAnimationView-->
+<!--        android:id="@+id/typingIndicator"-->
+<!--        android:layout_width="60dp"-->
+<!--        android:layout_height="60dp"-->
+<!--        android:layout_marginStart="8dp"-->
+<!--        app:lottie_fileName="typing.json"-->
+<!--        app:lottie_autoPlay="false"-->
+<!--        app:lottie_loop="true"-->
+<!--        android:visibility="gone" />-->
+<!--</LinearLayout>-->
+<!--</LinearLayout>-->

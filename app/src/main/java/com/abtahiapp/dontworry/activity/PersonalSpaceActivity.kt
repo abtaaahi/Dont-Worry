@@ -1,6 +1,7 @@
 package com.abtahiapp.dontworry.activity
 
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.os.Bundle
 import android.view.ViewGroup
 import android.widget.*
@@ -15,6 +16,8 @@ import android.text.Editable
 import android.text.TextWatcher
 import android.util.Log
 import android.view.View
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.room.Room
@@ -43,6 +46,7 @@ import java.io.File
 import java.io.IOException
 import java.text.SimpleDateFormat
 import java.util.*
+import android.Manifest
 
 class PersonalSpaceActivity : AppCompatActivity() {
 
@@ -58,6 +62,7 @@ class PersonalSpaceActivity : AppCompatActivity() {
     private val personalItems = mutableListOf<PersonalItem>()
     private lateinit var username: String
     private var selectedPosition: Int = -1
+    private var audioPermissionsCallback: ((Boolean) -> Unit)? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -117,7 +122,13 @@ class PersonalSpaceActivity : AppCompatActivity() {
             fabAddChat.alpha = 1.0f
         }
         fabAdd.setOnClickListener {
-            openDialog(userId)
+            requestAudioPermissions { isGranted ->
+                if (isGranted) {
+                    openDialog(userId)
+                } else {
+                    Toast.makeText(this, "Audio permissions are required", Toast.LENGTH_SHORT).show()
+                }
+            }
         }
         fabAddChat.setOnClickListener {
             val intent = Intent(this, ChatbotActivity::class.java)
@@ -153,63 +164,91 @@ class PersonalSpaceActivity : AppCompatActivity() {
             }
         }
     }
-        private fun analyzeVoice(voiceUrl: String) {
-            val audioFile = File(voiceUrl)
 
-            if (!audioFile.exists()) {
-                Toast.makeText(this, "Audio file not found.", Toast.LENGTH_SHORT).show()
-                return
-            }
+    private fun requestAudioPermissions(callback: (Boolean) -> Unit) {
+        val permissions = arrayOf(
+            Manifest.permission.RECORD_AUDIO,
+            Manifest.permission.WRITE_EXTERNAL_STORAGE
+        )
 
-            val requestFile = MultipartBody.Part.createFormData(
-                "media", audioFile.name, audioFile.asRequestBody("audio/mp3".toMediaTypeOrNull())
-            )
+        if (ContextCompat.checkSelfPermission(this, permissions[0]) == PackageManager.PERMISSION_GRANTED &&
+            ContextCompat.checkSelfPermission(this, permissions[1]) == PackageManager.PERMISSION_GRANTED) {
+            callback(true)
+            return}
 
-            val dialogView = layoutInflater.inflate(R.layout.dialog_analyze, null)
-            val progressBar = dialogView.findViewById<LottieAnimationView>(R.id.progress_bar)
-            val tvMessage = dialogView.findViewById<TextView>(R.id.tv_message)
+        ActivityCompat.requestPermissions(this, permissions, AUDIO_PERMISSION_REQUEST_CODE)
+    }
 
-            val dialog = MaterialAlertDialogBuilder(this)
-                .setView(dialogView)
-                .setCancelable(true)
-                .create()
+    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        if (requestCode == AUDIO_PERMISSION_REQUEST_CODE) {
+            val isGranted = grantResults.isNotEmpty() && grantResults.all { it == PackageManager.PERMISSION_GRANTED }
+            audioPermissionsCallback?.invoke(isGranted)
+            audioPermissionsCallback = null
+        }
+    }
 
-            dialog.show()
-            tvMessage.text = "Processing the voice..."
+    companion object {
+        private const val AUDIO_PERMISSION_REQUEST_CODE = 123
+    }
 
-            CoroutineScope(Dispatchers.IO).launch {
-                try {
-                    val transcriptionResponse = RetrofitClient.revInstance.submitTranscriptionJob(requestFile).execute()
+    private fun analyzeVoice(voiceUrl: String) {
+        val audioFile = File(voiceUrl)
 
-                    if (transcriptionResponse.isSuccessful) {
-                        val jobId = extractJobId(transcriptionResponse.body()?.string())
+        if (!audioFile.exists()) {
+            Toast.makeText(this, "Audio file not found.", Toast.LENGTH_SHORT).show()
+            return
+        }
 
-                        delay(10000)
+        val requestFile = MultipartBody.Part.createFormData(
+            "media", audioFile.name, audioFile.asRequestBody("audio/mp3".toMediaTypeOrNull())
+        )
 
-                        val transcriptResponse = RetrofitClient.revInstance.getTranscriptionResult(jobId).execute()
+        val dialogView = layoutInflater.inflate(R.layout.dialog_analyze, null)
+        val progressBar = dialogView.findViewById<LottieAnimationView>(R.id.progress_bar)
+        val tvMessage = dialogView.findViewById<TextView>(R.id.tv_message)
 
-                        if (transcriptResponse.isSuccessful) {
-                            val transcriptJson = transcriptResponse.body()?.string()
-                            Log.e("Transcription", "Response: $transcriptJson")
+        val dialog = MaterialAlertDialogBuilder(this)
+            .setView(dialogView)
+            .setCancelable(true)
+            .create()
 
-                            if (transcriptJson != null) {
-                                val transcribedText = extractTranscribedText(transcriptJson)
-                                analyzeSentiment(transcribedText, tvMessage, progressBar)
-                            } else {
-                                updateUIOnError("No transcription available.", tvMessage, progressBar)
-                            }
+        dialog.show()
+        tvMessage.text = "Processing the voice..."
+
+        CoroutineScope(Dispatchers.IO).launch {
+            try {
+                val transcriptionResponse = RetrofitClient.revInstance.submitTranscriptionJob(requestFile).execute()
+
+                if (transcriptionResponse.isSuccessful) {
+                    val jobId = extractJobId(transcriptionResponse.body()?.string())
+
+                    delay(10000)
+
+                    val transcriptResponse = RetrofitClient.revInstance.getTranscriptionResult(jobId).execute()
+
+                    if (transcriptResponse.isSuccessful) {
+                        val transcriptJson = transcriptResponse.body()?.string()
+                        Log.e("Transcription", "Response: $transcriptJson")
+
+                        if (transcriptJson != null) {
+                            val transcribedText = extractTranscribedText(transcriptJson)
+                            analyzeSentiment(transcribedText, tvMessage, progressBar)
                         } else {
-                            updateUIOnError("Error fetching transcription: ${transcriptResponse.message()}", tvMessage, progressBar)
+                            updateUIOnError("No transcription available.", tvMessage, progressBar)
                         }
                     } else {
-                        updateUIOnError("Error starting transcription: ${transcriptionResponse.message()}", tvMessage, progressBar)
+                        updateUIOnError("Error fetching transcription: ${transcriptResponse.message()}", tvMessage, progressBar)
                     }
-                } catch (e: Exception) {
-                    e.printStackTrace()
-                    updateUIOnError("Error: ${e.message}", tvMessage, progressBar)
+                } else {
+                    updateUIOnError("Error starting transcription: ${transcriptionResponse.message()}", tvMessage, progressBar)
                 }
+            } catch (e: Exception) {
+                e.printStackTrace()
+                updateUIOnError("Error: ${e.message}", tvMessage, progressBar)
             }
         }
+    }
 
         private fun analyzeSentiment(transcribedText: String, tvMessage: TextView, progressBar: LottieAnimationView) {
             val apiService = RetrofitClient.create(TextBlobApiService::class.java)
@@ -223,7 +262,7 @@ class PersonalSpaceActivity : AppCompatActivity() {
                         val sentimentResult = sentimentResponse.body()
 
                         runOnUiThread {
-                            tvMessage.text = "${transcribedText}\nSentiment: ${sentimentResult?.sentiment}"
+                            tvMessage.text = "Voice Space: ${transcribedText}\nSentiment: ${sentimentResult?.sentiment}\nSentiment Score: ${sentimentResult?.score}"
                             progressBar.visibility = View.GONE
                         }
                     } else {

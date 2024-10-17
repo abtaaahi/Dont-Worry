@@ -24,13 +24,16 @@ class ChatAdapter(
     override fun onBindViewHolder(holder: ChatViewHolder, position: Int) {
         val message = chatMessages[position]
 
+        holder.userMessageTextView.visibility = View.GONE
+        holder.botMessageTextView.visibility = View.GONE
+        holder.userProfileImage.visibility = View.GONE
+        holder.botProfileImage.visibility = View.GONE
+        holder.typingIndicator.visibility = View.GONE
+
         if (message.sender == "user") {
             holder.userMessageTextView.text = message.content
             holder.userMessageTextView.visibility = View.VISIBLE
-            holder.botMessageTextView.visibility = View.GONE
             holder.userProfileImage.visibility = View.VISIBLE
-            holder.botProfileImage.visibility = View.GONE
-            holder.typingIndicator.visibility = View.GONE
 
             if (userPhotoUrl.isNotEmpty()) {
                 Glide.with(holder.itemView.context)
@@ -43,16 +46,11 @@ class ChatAdapter(
         } else if (message.isTyping) {
             holder.typingIndicator.visibility = View.VISIBLE
             holder.typingIndicator.playAnimation()
-            holder.botMessageTextView.visibility = View.GONE
             holder.botProfileImage.visibility = View.VISIBLE
-            holder.userProfileImage.visibility = View.GONE
         } else {
-            holder.typingIndicator.visibility = View.GONE
-            holder.typingIndicator.cancelAnimation()
             holder.botMessageTextView.text = message.content
             holder.botMessageTextView.visibility = View.VISIBLE
             holder.botProfileImage.visibility = View.VISIBLE
-            holder.userProfileImage.visibility = View.GONE
         }
     }
 

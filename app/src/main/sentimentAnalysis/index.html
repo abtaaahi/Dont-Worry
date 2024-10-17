@@ -30,7 +30,7 @@
         .then(response => response.json())
         .then(data => {
             const resultDiv = document.getElementById('result');
-            resultDiv.innerHTML = `<h3>Sentiment: ${data.sentiment}</h3>`;
+            resultDiv.innerHTML = `<h3>Sentiment: ${data.sentiment}</h3><p>Score: ${data.score}</p>`;
         })
         .catch(error => {
             console.error('Error:', error);

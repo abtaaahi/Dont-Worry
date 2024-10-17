@@ -167,7 +167,7 @@ data class PersonalItem(
 
 data class SentimentRequest(val text: String)
 
-data class SentimentResponse(val sentiment: String)
+data class SentimentResponse(val sentiment: String, val score: String)
 
 data class ChatMessage(
     val sender: String,
