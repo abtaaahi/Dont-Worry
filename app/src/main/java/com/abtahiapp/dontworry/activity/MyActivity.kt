@@ -12,11 +12,13 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 import android.view.View
+import android.widget.ImageButton
 import android.widget.ProgressBar
 import androidx.lifecycle.lifecycleScope
 import com.abtahiapp.dontworry.room.MoodDao
 import com.abtahiapp.dontworry.room.MoodDatabase
 import com.abtahiapp.dontworry.room.MoodEntity
+import com.abtahiapp.dontworry.utils.InfoBottomSheetDialog
 import com.abtahiapp.dontworry.utils.NetworkUtil.isOnline
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -39,6 +41,15 @@ class MyActivity : AppCompatActivity() {
         moodRecyclerView.layoutManager = LinearLayoutManager(this)
         moodAdapter = MoodAdapter(moodList)
         moodRecyclerView.adapter = moodAdapter
+
+        val infoButton = findViewById<ImageButton>(R.id.infoButton)
+        infoButton.setOnClickListener {
+
+            val infoMessage = getString(R.string.my_activity_info_message).trimIndent()
+
+            val infoBottomSheetDialog = InfoBottomSheetDialog(this, infoMessage)
+            infoBottomSheetDialog.show()
+        }
 
         val database = MoodDatabase.getDatabase(this)
         moodDao = database.moodDao()

@@ -107,7 +107,7 @@ class PostAdapter(private var posts: MutableList<Post>) : RecyclerView.Adapter<P
                 when {
                     TimeUnit.MILLISECONDS.toMinutes(diffInMillis) < 1 -> "Just now"
                     TimeUnit.MILLISECONDS.toMinutes(diffInMillis) < 60 -> {
-                        "${TimeUnit.MILLISECONDS.toMinutes(diffInMillis)}m ago"
+                        "${TimeUnit.MILLISECONDS.toMinutes(diffInMillis)}min ago"
                     }
                     TimeUnit.MILLISECONDS.toHours(diffInMillis) < 24 -> {
                         "${TimeUnit.MILLISECONDS.toHours(diffInMillis)}h ago"
@@ -119,7 +119,7 @@ class PostAdapter(private var posts: MutableList<Post>) : RecyclerView.Adapter<P
                         "${TimeUnit.MILLISECONDS.toDays(diffInMillis) / 7}w ago"
                     }
                     else -> {
-                        "${TimeUnit.MILLISECONDS.toDays(diffInMillis) / 30}m ago"
+                        "${TimeUnit.MILLISECONDS.toDays(diffInMillis) / 30}mo ago"
                     }
                 }
             } catch (e: Exception) {

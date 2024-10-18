@@ -11,14 +11,25 @@
     <string name="details">This information is for track your activity.</string>
     <string name="update_information">Update Information</string>
     <string name="don_t_worry">Don\'t Worry</string>
-    <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
     <string name="voice_space_title">Voice Space Title</string>
     <string name="voice_message">Voice Message</string>
-    <string name="recording_in_progress">Recording in progress...</string>
+    <string name="recording_in_progress">Recording in progress…</string>
     <string name="submit">Submit</string>
     <string name="personal_space">Personal Space:</string>
     <string name="analyze_mood">Analyze</string>
-
-
+    <string name="social_space">Social Space</string>
+    <string name="what_s_on_your_mind">What\'s on your mind?</string>
+    <string name="post">Post</string>
+    <string name="places_to_visit">Places to Visit</string>
+    <string name="places_activity_info_message">"\n                    🧳 Welcome to Places Activity!\n                    \n                    • It shows all tourist places in Bangladesh.\n                    • It offers ten different options to explore.\n                    • By tapping any item, it will open in Google Maps, providing location details.\n                \n                    ⚠️ Please note:\n                    An internet connection is required to receive responses.\n                    \n                    Enjoy exploring!\n                "</string>
+    <string name="chat_activity_info_message">"\n                    💬 Welcome to Chat Space, powered by Gemini.\n                    \n                    • This is a temporary chat session.\n                    • After leaving this activity, your messages will be lost.\n                    • Messages are not saved in the app's database or locally.\n                \n                    ⚠️ Please note:\n                    An internet connection is required to receive responses.\n                "</string>
+    <string name="social_space_info_message">"\n                    🌍 Welcome to Social Space!\n                    \n                    • All posts are visible to every user of this app.\n                    • Your active status is public.\n                    • Tap on profile pictures to see who is online.\n                \n                    ⚠️ Please note:\n                    • An internet connection is required to post.\n                    • Avoid sharing sensitive information like credit card details or API keys.\n                    \n                    Enjoy connecting with others!\n                "</string>
+    <string name="weather">Weather</string>
+    <string name="weather_info_message">"\n                    ☁️ Welcome to Weather Updates.\n                    \n                    • Get weather updates every three hours for the next 5 days.\n                    • Receive suggestions based on the current weather conditions.\n                \n                    ⚠️ Please note:\n                    • An internet connection is required to receive updates.\n                    \n                    Stay Healthy!\n                                "</string>
+    <string name="my_activity">My Activity</string>
+    <string name="my_activity_info_message">"\n                    🤠 Welcome to My Activity.\n                    \n                    • Track your daily activities and moods.\n                    • Each day, the app will ask how you’re feeling and record your mood.\n                \n                    📝 Please note:\n                    • You can view your activity history even when offline.\n                    \n                    Stay connected with your emotions and activities!\n                "</string>
+    <string name="my_uploads">My Uploads</string>
+    <string name="my_post_info_message">"\n                    📤 Welcome to My Post!\n                    \n                    • It shows all the post you have made in Social Space.\n                    • Long press/tap on empty space to update/delete your post.\n                \n                    ⚠️ Please note:\n                    • An internet connection is required to update/delete.\n                    • You can view your post even when offline.\n                    \n                    Enjoy connecting with others!\n                                "</string>
+    <string name="personal_space_info_message">"\n                    ⚕️ Welcome to Personal Space,\n                    \n                    • Record your voice and submit it for analysis.\n                    • Your voice will be transcribed to text and then analyzed.\n                    • Long press to select a voice for analysis or deletion.\n                    • To save a voice, you must add a name to it.\n                \n                    ⚠️ Please note:\n                    • An internet connection is required to record a voice.\n                    • You can listen to the saved voice without an internet connection.\n                    • Your recordings are saved only on your device. Uninstalling the app or clearing data will delete them.\n                    • For privacy reasons, we do not store your voices in our database.\n                    • Chat Space cannot open without an internet connection.\n                    \n                    Enjoy recording and analyzing your emotions!\n                    Try Chat Space and Stay Refreshed.\n                "</string>
 </resources>

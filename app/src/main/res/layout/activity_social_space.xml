@@ -9,6 +9,36 @@
     android:padding="16dp"
     tools:context=".activity.SocialSpaceActivity">
 
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="16dp">
+
+        <TextView
+            android:id="@+id/title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/social_space"
+            android:textStyle="bold"
+            android:textSize="20sp"
+            android:gravity="start"
+            android:textColor="@color/textColor"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent" />
+
+        <ImageButton
+            android:id="@+id/infoButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:gravity="end"
+            android:background="@drawable/info"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
     <ScrollView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -38,8 +68,9 @@
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:hint="What's on your mind?"
+                    android:hint="@string/what_s_on_your_mind"
                     android:background="@android:color/transparent"
+                    android:inputType="text"
                     android:paddingEnd="12dp"
                     android:paddingStart="0dp"
                     android:paddingTop="12dp"
@@ -54,7 +85,7 @@
                 android:id="@+id/post_button"
                 android:layout_width="wrap_content"
                 android:layout_height="40dp"
-                android:text="Post"
+                android:text="@string/post"
                 android:backgroundTint="@color/color_one"
                 android:textColor="@color/white"
                 android:visibility="gone"

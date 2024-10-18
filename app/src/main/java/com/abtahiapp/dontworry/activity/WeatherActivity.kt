@@ -4,6 +4,7 @@ import android.Manifest
 import android.content.pm.PackageManager
 import android.os.Bundle
 import android.view.View
+import android.widget.ImageButton
 import android.widget.ProgressBar
 import android.widget.TextView
 import android.widget.Toast
@@ -16,6 +17,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.abtahiapp.dontworry.BuildConfig
 import com.abtahiapp.dontworry.R
 import com.abtahiapp.dontworry.adapter.WeatherAdapter
+import com.abtahiapp.dontworry.utils.InfoBottomSheetDialog
 import com.abtahiapp.dontworry.viewmodel.WeatherViewModel
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
@@ -36,6 +38,15 @@ class WeatherActivity : AppCompatActivity() {
         weatherRecyclerView = findViewById(R.id.weather_recycler_view)
         suggestionTextView = findViewById(R.id.weather_suggestion)
         progressBar = findViewById(R.id.progress_bar)
+
+        val infoButton = findViewById<ImageButton>(R.id.infoButton)
+        infoButton.setOnClickListener {
+
+            val infoMessage = getString(R.string.weather_info_message).trimIndent()
+
+            val infoBottomSheetDialog = InfoBottomSheetDialog(this, infoMessage)
+            infoBottomSheetDialog.show()
+        }
 
         weatherRecyclerView.layoutManager = GridLayoutManager(this, 2)
         weatherAdapter = WeatherAdapter(this, mutableListOf())

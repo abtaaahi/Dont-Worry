@@ -47,6 +47,7 @@ import java.io.IOException
 import java.text.SimpleDateFormat
 import java.util.*
 import android.Manifest
+import com.abtahiapp.dontworry.utils.InfoBottomSheetDialog
 
 class PersonalSpaceActivity : AppCompatActivity() {
 
@@ -83,6 +84,15 @@ class PersonalSpaceActivity : AppCompatActivity() {
             selectedPosition = selectedPos
         }
         recyclerView.adapter = adapter
+
+        val infoButton = findViewById<ImageButton>(R.id.infoButton)
+        infoButton.setOnClickListener {
+
+            val infoMessage = getString(R.string.personal_space_info_message).trimIndent()
+
+            val infoBottomSheetDialog = InfoBottomSheetDialog(this, infoMessage)
+            infoBottomSheetDialog.show()
+        }
 
         CoroutineScope(Dispatchers.IO).launch {
             val offlineItems = personalItemDao.getAllItems()

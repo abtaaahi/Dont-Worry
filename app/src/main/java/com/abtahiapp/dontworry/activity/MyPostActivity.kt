@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import android.widget.EditText
+import android.widget.ImageButton
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
@@ -16,6 +17,7 @@ import com.abtahiapp.dontworry.adapter.PostAdapter
 import com.abtahiapp.dontworry.room.PostDao
 import com.abtahiapp.dontworry.room.PostDatabase
 import com.abtahiapp.dontworry.room.PostEntity
+import com.abtahiapp.dontworry.utils.InfoBottomSheetDialog
 import com.abtahiapp.dontworry.utils.NetworkUtil.isOnline
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
@@ -49,6 +51,15 @@ class MyPostActivity : AppCompatActivity() {
         recyclerViewPosts.layoutManager = LinearLayoutManager(this)
         postAdapter = PostAdapter(mutableListOf())
         recyclerViewPosts.adapter = postAdapter
+
+        val infoButton = findViewById<ImageButton>(R.id.infoButton)
+        infoButton.setOnClickListener {
+
+            val infoMessage = getString(R.string.my_post_info_message).trimIndent()
+
+            val infoBottomSheetDialog = InfoBottomSheetDialog(this, infoMessage)
+            infoBottomSheetDialog.show()
+        }
 
         val account = GoogleSignIn.getLastSignedInAccount(this)
         currentUserId = account?.id ?: "unknown"

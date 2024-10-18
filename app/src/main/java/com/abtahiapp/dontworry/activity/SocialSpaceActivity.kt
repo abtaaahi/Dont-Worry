@@ -9,6 +9,7 @@ import android.util.Log
 import android.view.View
 import android.widget.Button
 import android.widget.EditText
+import android.widget.ImageButton
 import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
@@ -24,6 +25,7 @@ import com.abtahiapp.dontworry.adapter.PostAdapter
 import com.abtahiapp.dontworry.room.SocialPostDao
 import com.abtahiapp.dontworry.room.SocialPostDatabase
 import com.abtahiapp.dontworry.room.SocialPostEntity
+import com.abtahiapp.dontworry.utils.InfoBottomSheetDialog
 import com.abtahiapp.dontworry.utils.NetworkUtil.isOnline
 import com.bumptech.glide.Glide
 import com.google.android.gms.auth.api.signin.GoogleSignIn
@@ -73,6 +75,15 @@ class SocialSpaceActivity : AppCompatActivity() {
                 .load(account.photoUrl)
                 .placeholder(R.drawable.person)
                 .into(profileImageView)
+        }
+
+        val infoButton = findViewById<ImageButton>(R.id.infoButton)
+        infoButton.setOnClickListener {
+
+            val infoMessage = getString(R.string.social_space_info_message).trimIndent()
+
+            val infoBottomSheetDialog = InfoBottomSheetDialog(this, infoMessage)
+            infoBottomSheetDialog.show()
         }
 
         postButton.visibility = Button.GONE

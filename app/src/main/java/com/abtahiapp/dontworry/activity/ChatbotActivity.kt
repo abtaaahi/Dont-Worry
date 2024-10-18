@@ -14,6 +14,7 @@ import com.google.ai.client.generativeai.GenerativeModel
 import kotlinx.coroutines.withContext
 import androidx.lifecycle.lifecycleScope
 import com.abtahiapp.dontworry.BuildConfig
+import com.abtahiapp.dontworry.utils.InfoBottomSheetDialog
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
@@ -29,6 +30,15 @@ class ChatbotActivity : AppCompatActivity() {
         override fun onCreate(savedInstanceState: Bundle?) {
             super.onCreate(savedInstanceState)
             setContentView(R.layout.activity_chatbot)
+
+            val infoButton = findViewById<ImageButton>(R.id.infoButton)
+            infoButton.setOnClickListener {
+
+                val infoMessage = getString(R.string.chat_activity_info_message).trimIndent()
+
+                val infoBottomSheetDialog = InfoBottomSheetDialog(this, infoMessage)
+                infoBottomSheetDialog.show()
+            }
 
             messageInput = findViewById(R.id.messageInput)
             sendButton = findViewById(R.id.sendButton)

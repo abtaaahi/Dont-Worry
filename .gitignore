@@ -19,3 +19,14 @@ gradle.properties
 /app/google-services.json
 /app/src/main/javascript/chat-app/.env
 /app/javascriptquiz01-firebase-adminsdk-7zfdf-2843bcb0b1.json
+settings.gradle.kts
+gradlew.bat
+gradlew
+build.gradle.kts
+.idea
+gradle/wrapper
+app/proguard-rules.pro
+app/src/androidTest
+app/src/test
+app/src/main/sentimentAnalysis/node_modules
+app/src/main/javascript/chat-app/node_modules

@@ -2,6 +2,7 @@ package com.abtahiapp.dontworry.activity
 
 import android.os.Bundle
 import android.view.View
+import android.widget.ImageButton
 import android.widget.ProgressBar
 import android.widget.Toast
 import androidx.activity.viewModels
@@ -12,6 +13,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.abtahiapp.dontworry.BuildConfig
 import com.abtahiapp.dontworry.R
 import com.abtahiapp.dontworry.adapter.PlacesAdapter
+import com.abtahiapp.dontworry.utils.InfoBottomSheetDialog
 import com.abtahiapp.dontworry.viewmodel.PlacesViewModel
 
 class PlacesActivity : AppCompatActivity() {
@@ -31,6 +33,15 @@ class PlacesActivity : AppCompatActivity() {
         placesRecyclerView.layoutManager = LinearLayoutManager(this)
         placesAdapter = PlacesAdapter(this, mutableListOf())
         placesRecyclerView.adapter = placesAdapter
+
+        val infoButton = findViewById<ImageButton>(R.id.infoButton)
+        infoButton.setOnClickListener {
+
+            val infoMessage = getString(R.string.places_activity_info_message).trimIndent()
+
+            val infoBottomSheetDialog = InfoBottomSheetDialog(this, infoMessage)
+            infoBottomSheetDialog.show()
+        }
 
         observeViewModel()
         fetchPlaces()

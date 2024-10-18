@@ -1,1 +1,6 @@
 /build
+proguard-rules.pro
+/src/androidTest
+/src/test
+/src/main/sentimentAnalysis/node_modules
+/src/main/javascript/chat-app/node_modules
