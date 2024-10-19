@@ -52,6 +52,11 @@ class MyPostActivity : AppCompatActivity() {
         postAdapter = PostAdapter(mutableListOf())
         recyclerViewPosts.adapter = postAdapter
 
+        val backButton: ImageButton = findViewById(R.id.back)
+        backButton.setOnClickListener {
+            onBackPressed()
+        }
+
         val infoButton = findViewById<ImageButton>(R.id.infoButton)
         infoButton.setOnClickListener {
 

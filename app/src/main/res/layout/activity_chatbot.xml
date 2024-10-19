@@ -5,13 +5,22 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:padding="16dp">
 
+    <ImageButton
+        android:id="@+id/back"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentStart="true"
+        android:layout_marginEnd="12dp"
+        android:background="@drawable/back" />
+
     <TextView
-        android:text="Chat Space"
+        android:text="@string/chat_space"
         android:id="@+id/title"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textStyle="bold"
         android:textSize="20sp"
+        android:layout_toEndOf="@id/back"
         android:layout_marginBottom="8dp"
         android:textColor="@color/textColor" />
 

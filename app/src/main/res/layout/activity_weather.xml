@@ -29,6 +29,14 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
+    <ImageButton
+        android:id="@+id/back"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        android:background="@drawable/back" />
+
     <TextView
         android:id="@+id/weathertitle"
         android:layout_width="0dp"
@@ -36,7 +44,8 @@
         android:text="@string/weather"
         android:textStyle="bold"
         android:textSize="20sp"
-        app:layout_constraintStart_toStartOf="parent"
+        android:layout_marginStart="12dp"
+        app:layout_constraintStart_toEndOf="@id/back"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintEnd_toStartOf="@id/infoButton"
         android:textColor="@color/textColor"/>

@@ -77,6 +77,11 @@ class SocialSpaceActivity : AppCompatActivity() {
                 .into(profileImageView)
         }
 
+        val backButton: ImageButton = findViewById(R.id.back)
+        backButton.setOnClickListener {
+            onBackPressed()
+        }
+
         val infoButton = findViewById<ImageButton>(R.id.infoButton)
         infoButton.setOnClickListener {
 

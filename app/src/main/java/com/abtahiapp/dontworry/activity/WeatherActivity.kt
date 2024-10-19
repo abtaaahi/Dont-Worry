@@ -39,6 +39,11 @@ class WeatherActivity : AppCompatActivity() {
         suggestionTextView = findViewById(R.id.weather_suggestion)
         progressBar = findViewById(R.id.progress_bar)
 
+        val backButton: ImageButton = findViewById(R.id.back)
+        backButton.setOnClickListener {
+            onBackPressed()
+        }
+
         val infoButton = findViewById<ImageButton>(R.id.infoButton)
         infoButton.setOnClickListener {
 

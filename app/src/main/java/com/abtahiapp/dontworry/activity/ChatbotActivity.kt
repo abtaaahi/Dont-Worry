@@ -31,6 +31,11 @@ class ChatbotActivity : AppCompatActivity() {
             super.onCreate(savedInstanceState)
             setContentView(R.layout.activity_chatbot)
 
+            val backButton: ImageButton = findViewById(R.id.back)
+            backButton.setOnClickListener {
+                onBackPressed()
+            }
+
             val infoButton = findViewById<ImageButton>(R.id.infoButton)
             infoButton.setOnClickListener {
 

@@ -69,6 +69,11 @@ class PersonalSpaceActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_personal_space)
 
+        val backButton: ImageButton = findViewById(R.id.back)
+        backButton.setOnClickListener {
+            onBackPressed()
+        }
+
         db = Room.databaseBuilder(
             applicationContext,
             PersonalSpaceDatabase::class.java, "personal_space_db"

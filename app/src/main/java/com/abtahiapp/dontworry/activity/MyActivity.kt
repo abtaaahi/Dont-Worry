@@ -42,6 +42,11 @@ class MyActivity : AppCompatActivity() {
         moodAdapter = MoodAdapter(moodList)
         moodRecyclerView.adapter = moodAdapter
 
+        val backButton: ImageButton = findViewById(R.id.back)
+        backButton.setOnClickListener {
+            onBackPressed()
+        }
+
         val infoButton = findViewById<ImageButton>(R.id.infoButton)
         infoButton.setOnClickListener {
 
