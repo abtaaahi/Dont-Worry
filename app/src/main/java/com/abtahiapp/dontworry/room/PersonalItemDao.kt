@@ -1,6 +1,7 @@
 package com.abtahiapp.dontworry.room
 
 import androidx.room.Dao
+import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.Query
 
@@ -18,4 +19,7 @@ interface PersonalItemDao {
 
     @Insert
     suspend fun insertItem(item: PersonalItemEntity)
+
+    @Delete
+    suspend fun delete(personalItem: PersonalItemEntity)
 }

@@ -10,7 +10,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.abtahiapp.dontworry.R
 import com.abtahiapp.dontworry.utils.PersonalItem
 
-class PersonalSpaceAdapter(private val personalItems: List<PersonalItem>, private val onItemLongClick: (Int) -> Unit) :
+class PersonalSpaceAdapter(private val personalItems: MutableList<PersonalItem>, private val onItemLongClick: (Int) -> Unit, private val onDeleteClick: (Int) -> Unit) :
     RecyclerView.Adapter<PersonalSpaceAdapter.PersonalSpaceViewHolder>() {
 
     private var currentMediaPlayer: MediaPlayer? = null
@@ -22,6 +22,7 @@ class PersonalSpaceAdapter(private val personalItems: List<PersonalItem>, privat
         val tvTimestamp: TextView = itemView.findViewById(R.id.tv_timestamp)
         val btnPlayPause: ImageButton = itemView.findViewById(R.id.btn_play_pause)
         val dividerView: View = itemView.findViewById(R.id.divider)
+        val deleteButton: ImageButton = itemView.findViewById(R.id.delete)
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): PersonalSpaceViewHolder {
@@ -38,9 +39,11 @@ class PersonalSpaceAdapter(private val personalItems: List<PersonalItem>, privat
         if (position == selectedPosition) {
             holder.itemView.setBackgroundResource(R.drawable.rounded_corners_selected)
             holder.dividerView.visibility = View.GONE
+            holder.deleteButton.visibility = View.VISIBLE
         } else {
             holder.itemView.setBackgroundResource(R.drawable.rounded_corners)
             holder.dividerView.visibility = View.VISIBLE
+            holder.deleteButton.visibility = View.GONE
         }
 
         if (position == currentPlayingPosition && currentMediaPlayer?.isPlaying == true) {
@@ -63,6 +66,10 @@ class PersonalSpaceAdapter(private val personalItems: List<PersonalItem>, privat
             onItemLongClick(position)
             notifyDataSetChanged()
             true
+        }
+
+        holder.deleteButton.setOnClickListener {
+            onDeleteClick(position)
         }
     }
 
@@ -108,5 +115,11 @@ class PersonalSpaceAdapter(private val personalItems: List<PersonalItem>, privat
     fun releaseMediaPlayer() {
         currentMediaPlayer?.release()
         currentMediaPlayer = null
+    }
+
+    fun removeItem(position: Int) {
+        personalItems.removeAt(position)
+        notifyItemRemoved(position)
+        notifyItemRangeChanged(position, personalItems.size)
     }
 }

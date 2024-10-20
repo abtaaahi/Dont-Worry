@@ -85,9 +85,11 @@ class PersonalSpaceActivity : AppCompatActivity() {
         val recyclerView = findViewById<RecyclerView>(R.id.recycler_view)
         recyclerView.layoutManager = LinearLayoutManager(this)
 
-        adapter = PersonalSpaceAdapter(personalItems) { selectedPos ->
+        adapter = PersonalSpaceAdapter(personalItems, { selectedPos ->
             selectedPosition = selectedPos
-        }
+        }, { deletePos ->
+            deletePersonalItem(deletePos)
+        })
         recyclerView.adapter = adapter
 
         val infoButton = findViewById<ImageButton>(R.id.infoButton)
@@ -222,6 +224,12 @@ class PersonalSpaceActivity : AppCompatActivity() {
         val dialogView = layoutInflater.inflate(R.layout.dialog_analyze, null)
         val progressBar = dialogView.findViewById<LottieAnimationView>(R.id.progress_bar)
         val tvMessage = dialogView.findViewById<TextView>(R.id.tv_message)
+        val layoutAnalysis1 = dialogView.findViewById<LinearLayout>(R.id.layout_analysis1)
+        val layoutAnalysis2 = dialogView.findViewById<LinearLayout>(R.id.layout_analysis2)
+        val layoutAnalysis3 = dialogView.findViewById<LinearLayout>(R.id.layout_analysis3)
+        val voiceText = dialogView.findViewById<TextView>(R.id.voiceText)
+        val sentimentText = dialogView.findViewById<TextView>(R.id.sentimentText)
+        val scoreText = dialogView.findViewById<TextView>(R.id.score)
 
         val dialog = MaterialAlertDialogBuilder(this)
             .setView(dialogView)
@@ -248,7 +256,8 @@ class PersonalSpaceActivity : AppCompatActivity() {
 
                         if (transcriptJson != null) {
                             val transcribedText = extractTranscribedText(transcriptJson)
-                            analyzeSentiment(transcribedText, tvMessage, progressBar)
+                            analyzeSentiment(transcribedText, tvMessage, progressBar, layoutAnalysis1, layoutAnalysis2,
+                                layoutAnalysis3, voiceText, sentimentText, scoreText)
                         } else {
                             updateUIOnError("No transcription available.", tvMessage, progressBar)
                         }
@@ -265,7 +274,9 @@ class PersonalSpaceActivity : AppCompatActivity() {
         }
     }
 
-        private fun analyzeSentiment(transcribedText: String, tvMessage: TextView, progressBar: LottieAnimationView) {
+        private fun analyzeSentiment(transcribedText: String, tvMessage: TextView, progressBar: LottieAnimationView,
+                                     layoutAnalysis1: LinearLayout, layoutAnalysis2: LinearLayout, layoutAnalysis3: LinearLayout,
+                                     voiceText: TextView, sentimentText: TextView, scoreText: TextView) {
             val apiService = RetrofitClient.create(TextBlobApiService::class.java)
             val sentimentRequest = SentimentRequest(transcribedText)
 
@@ -277,8 +288,37 @@ class PersonalSpaceActivity : AppCompatActivity() {
                         val sentimentResult = sentimentResponse.body()
 
                         runOnUiThread {
-                            tvMessage.text = "Voice Space: ${transcribedText}\nSentiment: ${sentimentResult?.sentiment}\nSentiment Score: ${sentimentResult?.score}"
                             progressBar.visibility = View.GONE
+                            tvMessage.visibility = View.GONE
+                            voiceText.text = "\"$transcribedText\""
+                            layoutAnalysis1.visibility = View.VISIBLE
+                            layoutAnalysis1.alpha = 0f
+                            layoutAnalysis1.animate()
+                                .alpha(1f)
+                                .setDuration(500)
+                                .withEndAction {
+                                    sentimentText.text = sentimentResult?.sentiment ?: "Unknown"
+                                    layoutAnalysis2.visibility = View.VISIBLE
+
+                                    layoutAnalysis2.alpha = 0f
+                                    layoutAnalysis2.animate()
+                                        .alpha(1f)
+                                        .setDuration(500)
+                                        .withEndAction {
+                                            val scoreFloat = sentimentResult?.score?.toFloatOrNull()
+                                            val roundedScore = scoreFloat?.let { String.format("%.2f", it) } ?: "N/A"
+                                            scoreText.text = roundedScore
+                                            layoutAnalysis3.visibility = View.VISIBLE
+
+                                            layoutAnalysis3.alpha = 0f
+                                            layoutAnalysis3.animate()
+                                                .alpha(1f)
+                                                .setDuration(500)
+                                                .start()
+                                        }
+                                        .start()
+                                }
+                                .start()
                         }
                     } else {
                         updateUIOnError("Error fetching sentiment: ${sentimentResponse.message()}", tvMessage, progressBar)
@@ -293,6 +333,7 @@ class PersonalSpaceActivity : AppCompatActivity() {
         private fun updateUIOnError(errorMessage: String, tvMessage: TextView, progressBar: LottieAnimationView) {
             runOnUiThread {
                 tvMessage.text = errorMessage
+                tvMessage.visibility = View.VISIBLE
                 progressBar.visibility = View.GONE
             }
         }
@@ -505,5 +546,22 @@ class PersonalSpaceActivity : AppCompatActivity() {
         }
 
         return stringBuilder.toString().trim()
+    }
+
+    private fun deletePersonalItem(position: Int) {
+        val itemToDelete = personalItems[position]
+
+        CoroutineScope(Dispatchers.IO).launch {
+            val entityToDelete = personalItemDao.getAllItems().firstOrNull {
+                it.timestamp == itemToDelete.timestamp && it.text == itemToDelete.text
+            }
+
+            if (entityToDelete != null) {
+                personalItemDao.delete(entityToDelete)
+                runOnUiThread {
+                    adapter.removeItem(position)
+                }
+            }
+        }
     }
 }

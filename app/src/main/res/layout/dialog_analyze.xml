@@ -7,6 +7,91 @@
     android:background="@color/dialogbackground"
     android:padding="20dp">
 
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/sentiment_analysis"
+        android:layout_gravity="center"
+        android:layout_marginBottom="12dp"
+        android:textSize="24sp"
+        android:textColor="@color/textColor"
+        android:textStyle="bold">
+
+    </TextView>
+    <LinearLayout
+        android:id="@+id/layout_analysis1"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="8dp"
+        android:visibility="gone"
+        android:orientation="horizontal">
+        <TextView
+            android:id="@+id/tv1"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="@color/textColor"
+            android:text="@string/voice"
+            android:textStyle="bold"
+            android:textAlignment="textStart"
+            android:textSize="16sp" />
+        <TextView
+            android:id="@+id/voiceText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="@color/textColor"
+            android:textAlignment="textStart"
+            android:textSize="16sp" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/layout_analysis2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="8dp"
+        android:visibility="gone"
+        android:orientation="horizontal">
+        <TextView
+            android:id="@+id/tv2"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="@color/textColor"
+            android:text="@string/sentiment"
+            android:textStyle="bold"
+            android:textAlignment="textStart"
+            android:textSize="16sp" />
+        <TextView
+            android:id="@+id/sentimentText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="@color/textColor"
+            android:textAlignment="textStart"
+            android:textSize="16sp" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/layout_analysis3"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:visibility="gone"
+        android:orientation="horizontal">
+        <TextView
+            android:id="@+id/tv3"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="@color/textColor"
+            android:text="@string/sentiment_score"
+            android:textStyle="bold"
+            android:textAlignment="textStart"
+            android:textSize="16sp" />
+        <TextView
+            android:id="@+id/score"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="@color/textColor"
+            android:textAlignment="textStart"
+            android:textSize="16sp" />
+    </LinearLayout>
+
     <com.airbnb.lottie.LottieAnimationView
         android:id="@+id/progress_bar"
         android:layout_width="100dp"
@@ -23,7 +108,6 @@
         android:layout_height="wrap_content"
         android:layout_gravity="center"
         android:textColor="@color/textColor"
-        android:text="Wait some time, it is processing the voice..."
         android:textAlignment="center"
         android:paddingTop="10dp"
         android:textSize="16sp" />
