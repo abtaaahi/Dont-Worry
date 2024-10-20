@@ -1,3 +1,4 @@
+require('dotenv').config();
 const express = require('express');
 const http = require('http');
 const socketIo = require('socket.io');
@@ -6,7 +7,7 @@ const app = express();
 const server = http.createServer(app);
 const io = socketIo(server);
 
-const mongoURI = 'mongodb+srv://abtaaahi_dontworry:8d3fmnkz3JuZdii9@cluster0.jg6nk.mongodb.net/abtaaahi_dontworry?retryWrites=true&w=majority';
+const mongoURI = process.env.MONGO_URI;
 
 const client = new MongoClient(mongoURI, { useNewUrlParser: true, useUnifiedTopology: true });
 
