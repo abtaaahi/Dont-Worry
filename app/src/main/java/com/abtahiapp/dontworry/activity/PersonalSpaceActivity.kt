@@ -64,10 +64,17 @@ class PersonalSpaceActivity : AppCompatActivity() {
     private lateinit var username: String
     private var selectedPosition: Int = -1
     private var audioPermissionsCallback: ((Boolean) -> Unit)? = null
+    private var storagePermissionsCallback: ((Boolean) -> Unit)? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_personal_space)
+
+        requestStoragePermissions { isGranted ->
+            if (!isGranted) {
+                Toast.makeText(this, "Storage permissions are required", Toast.LENGTH_SHORT).show()
+            }
+        }
 
         val backButton: ImageButton = findViewById(R.id.back)
         backButton.setOnClickListener {
@@ -183,30 +190,46 @@ class PersonalSpaceActivity : AppCompatActivity() {
     }
 
     private fun requestAudioPermissions(callback: (Boolean) -> Unit) {
-        val permissions = arrayOf(
-            Manifest.permission.RECORD_AUDIO,
-            Manifest.permission.WRITE_EXTERNAL_STORAGE
-        )
+        val audioPermission = Manifest.permission.RECORD_AUDIO
 
-        if (ContextCompat.checkSelfPermission(this, permissions[0]) == PackageManager.PERMISSION_GRANTED &&
-            ContextCompat.checkSelfPermission(this, permissions[1]) == PackageManager.PERMISSION_GRANTED) {
+        if (ContextCompat.checkSelfPermission(this, audioPermission) == PackageManager.PERMISSION_GRANTED) {
             callback(true)
-            return}
+            return
+        }
 
-        ActivityCompat.requestPermissions(this, permissions, AUDIO_PERMISSION_REQUEST_CODE)
+        ActivityCompat.requestPermissions(this, arrayOf(audioPermission), AUDIO_PERMISSION_REQUEST_CODE)
+    }
+
+    private fun requestStoragePermissions(callback: (Boolean) -> Unit) {
+        val storagePermission = Manifest.permission.WRITE_EXTERNAL_STORAGE
+
+        if (ContextCompat.checkSelfPermission(this, storagePermission) == PackageManager.PERMISSION_GRANTED) {
+            callback(true)
+            return
+        }
+
+        ActivityCompat.requestPermissions(this, arrayOf(storagePermission), STORAGE_PERMISSION_REQUEST_CODE)
     }
 
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-        if (requestCode == AUDIO_PERMISSION_REQUEST_CODE) {
-            val isGranted = grantResults.isNotEmpty() && grantResults.all { it == PackageManager.PERMISSION_GRANTED }
-            audioPermissionsCallback?.invoke(isGranted)
-            audioPermissionsCallback = null
+        when (requestCode) {
+            AUDIO_PERMISSION_REQUEST_CODE -> {
+                val isGranted = grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED
+                audioPermissionsCallback?.invoke(isGranted)
+                audioPermissionsCallback = null
+            }
+            STORAGE_PERMISSION_REQUEST_CODE -> {
+                val isGranted = grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED
+                storagePermissionsCallback?.invoke(isGranted)
+                storagePermissionsCallback = null
+            }
         }
     }
 
     companion object {
         private const val AUDIO_PERMISSION_REQUEST_CODE = 123
+        private const val STORAGE_PERMISSION_REQUEST_CODE = 456
     }
 
     private fun analyzeVoice(voiceUrl: String) {

@@ -18,19 +18,7 @@ import retrofit2.converter.gson.GsonConverterFactory
 import okhttp3.Request
 
 object RetrofitClient {
-//    private const val BASE_URL_NEWS = "https://newsapi.org/"
-    private const val BASE_URL_GOOGLE_CUSTOM_SEARCH = "https://www.googleapis.com/customsearch/"
-    private const val BASE_URL_GOOGLE = "https://www.googleapis.com/"
-    private const val BASE_URL_MOVIE = "https://api.themoviedb.org/3/"
-    private const val BASE_URL_WEATHER = "https://api.openweathermap.org/data/2.5/"
-    private const val BASE_URL_CURRENT_WEATHER = "https://api.openweathermap.org/"
-    private const val BASE_URL_QUOTES = "https://api.api-ninjas.com/v1/"
-    private const val BASE_URL_REV = "https://api.rev.ai/"
     private const val ACCESS_TOKEN = BuildConfig.REVAI_ACCESS_TOKEN
-    private const val BASE_URL_TEXT_BLOB = "https://sentiment-analysis-service.onrender.com"
-    //private const val BASE_URL_AUDIO = "https://theaudiodb.com/api/v1/json/2/"
-    //private const val BASE_URL_SPOTIFY = "https://api.spotify.com/v1/"
-    //private const val BASE_URL_DEEZER = "https://api.deezer.com/"
 
     private val logging = HttpLoggingInterceptor().apply {
         setLevel(HttpLoggingInterceptor.Level.BASIC)
@@ -42,25 +30,16 @@ object RetrofitClient {
 
     val instance: GoogleCustomSearchApiService by lazy {
         val retrofit = Retrofit.Builder()
-            .baseUrl(BASE_URL_GOOGLE_CUSTOM_SEARCH)
+            .baseUrl(BaseUrls.BASE_URL_GOOGLE_CUSTOM_SEARCH)
             .client(client)
             .addConverterFactory(GsonConverterFactory.create())
             .build()
         retrofit.create(GoogleCustomSearchApiService::class.java)
     }
 
-//    val instance: NewsApiService by lazy {
-//        val retrofit = Retrofit.Builder()
-//            .baseUrl(BASE_URL_NEWS)
-//            .client(client)
-//            .addConverterFactory(GsonConverterFactory.create())
-//            .build()
-//        retrofit.create(NewsApiService::class.java)
-//    }
-
     val youtubeInstance: YouTubeApiService by lazy {
         val retrofit = Retrofit.Builder()
-            .baseUrl(BASE_URL_GOOGLE)
+            .baseUrl(BaseUrls.BASE_URL_GOOGLE)
             .client(client)
             .addConverterFactory(GsonConverterFactory.create())
             .build()
@@ -69,7 +48,7 @@ object RetrofitClient {
 
     val movieInstance: MovieApiService by lazy {
         val retrofit = Retrofit.Builder()
-            .baseUrl(BASE_URL_MOVIE)
+            .baseUrl(BaseUrls.BASE_URL_MOVIE)
             .client(client)
             .addConverterFactory(GsonConverterFactory.create())
             .build()
@@ -78,7 +57,7 @@ object RetrofitClient {
 
     val weatherInstance: WeatherApiService by lazy {
         val retrofit = Retrofit.Builder()
-            .baseUrl(BASE_URL_WEATHER)
+            .baseUrl(BaseUrls.BASE_URL_WEATHER)
             .addConverterFactory(GsonConverterFactory.create())
             .build()
         retrofit.create(WeatherApiService::class.java)
@@ -86,7 +65,7 @@ object RetrofitClient {
 
     val currentWeatherInstance: CurrentWeatherApiService by lazy {
         val retrofit = Retrofit.Builder()
-            .baseUrl(BASE_URL_CURRENT_WEATHER)
+            .baseUrl(BaseUrls.BASE_URL_CURRENT_WEATHER)
             .addConverterFactory(GsonConverterFactory.create())
             .build()
         retrofit.create(CurrentWeatherApiService::class.java)
@@ -94,7 +73,7 @@ object RetrofitClient {
 
     val quotesInstance: QuotesApiService by lazy {
         val retrofit = Retrofit.Builder()
-            .baseUrl(BASE_URL_QUOTES)
+            .baseUrl(BaseUrls.BASE_URL_QUOTES)
             .addConverterFactory(GsonConverterFactory.create())
             .build()
         retrofit.create(QuotesApiService::class.java)
@@ -102,7 +81,7 @@ object RetrofitClient {
 
     val customSearchInstance: PlacesApiService by lazy {
         val retrofit = Retrofit.Builder()
-        .baseUrl(BASE_URL_GOOGLE)
+        .baseUrl(BaseUrls.BASE_URL_GOOGLE)
             .client(client)
             .addConverterFactory(GsonConverterFactory.create())
             .build()
@@ -122,7 +101,7 @@ object RetrofitClient {
 
     val revInstance: RevAiService by lazy {
         val retrofit = Retrofit.Builder()
-            .baseUrl(BASE_URL_REV)
+            .baseUrl(BaseUrls.BASE_URL_REV)
             .client(client2)
             .addConverterFactory(GsonConverterFactory.create())
             .build()
@@ -131,13 +110,23 @@ object RetrofitClient {
     }
 
     private val retrofit = Retrofit.Builder()
-        .baseUrl(BASE_URL_TEXT_BLOB)
+        .baseUrl(BaseUrls.BASE_URL_TEXT_BLOB)
         .addConverterFactory(GsonConverterFactory.create())
         .build()
 
     fun create(serviceClass: Class<TextBlobApiService>): TextBlobApiService {
         return retrofit.create(serviceClass)
     }
+}
+
+//    val instance: NewsApiService by lazy {
+//        val retrofit = Retrofit.Builder()
+//            .baseUrl(BASE_URL_NEWS)
+//            .client(client)
+//            .addConverterFactory(GsonConverterFactory.create())
+//            .build()
+//        retrofit.create(NewsApiService::class.java)
+//    }
 
 //    val placesInstance: PlacesApiService by lazy {
 //        val retrofit = Retrofit.Builder()
@@ -148,7 +137,6 @@ object RetrofitClient {
 //        retrofit.create(PlacesApiService::class.java)
 //    }
 
-
 //    val audioInstance: AudioApiService by lazy {
 //        Retrofit.Builder()
 //            .baseUrl(BASE_URL_DEEZER)
@@ -156,4 +144,3 @@ object RetrofitClient {
 //            .build()
 //            .create(AudioApiService::class.java)
 //    }
-}
