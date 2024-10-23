@@ -15,7 +15,7 @@ class SocketManager private constructor(context: Context) {
         try {
             val account = GoogleSignIn.getLastSignedInAccount(context)
             val userId = account?.id ?: "unknown"
-            socket = IO.socket("https://dont-worry.onrender.com", IO.Options().apply {
+            socket = IO.socket("${BaseUrls.BASE_URL_SOCIAL_SPACE}", IO.Options().apply {
                 query = "userId=$userId"
             })
         } catch (e: URISyntaxException) {

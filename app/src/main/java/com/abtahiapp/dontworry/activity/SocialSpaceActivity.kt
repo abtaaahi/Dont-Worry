@@ -15,28 +15,31 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
-import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.abtahiapp.dontworry.utils.Post
 import com.abtahiapp.dontworry.R
 import com.abtahiapp.dontworry.utils.SocketManager
 import com.abtahiapp.dontworry.adapter.PostAdapter
-import com.abtahiapp.dontworry.room.SocialPostDao
-import com.abtahiapp.dontworry.room.SocialPostDatabase
-import com.abtahiapp.dontworry.room.SocialPostEntity
+import com.abtahiapp.dontworry.utils.BaseUrls
 import com.abtahiapp.dontworry.utils.InfoBottomSheetDialog
 import com.abtahiapp.dontworry.utils.NetworkUtil.isOnline
 import com.bumptech.glide.Glide
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.firebase.database.*
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import java.text.SimpleDateFormat
-import java.util.*
+import okhttp3.Call
+import okhttp3.Callback
+import okhttp3.MediaType.Companion.toMediaTypeOrNull
+import okhttp3.OkHttpClient
+import okhttp3.Request
+import okhttp3.RequestBody.Companion.toRequestBody
+import okhttp3.Response
+import okio.IOException
 import org.json.JSONArray
 import org.json.JSONObject
+import java.text.SimpleDateFormat
+import java.util.*
 
 class SocialSpaceActivity : AppCompatActivity() {
 
@@ -50,7 +53,6 @@ class SocialSpaceActivity : AppCompatActivity() {
     private lateinit var bottomSheetDialog: BottomSheetDialog
     private lateinit var bottomSheetView: View
     private lateinit var statusTextView: TextView
-    private lateinit var socialPostDao: SocialPostDao
 
     private val onlineStatusMap = mutableMapOf<String, Boolean>()
 
@@ -58,8 +60,6 @@ class SocialSpaceActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_social_space)
 
-        val socialPostDatabase = SocialPostDatabase.getDatabase(this)
-        socialPostDao = socialPostDatabase.socialPostDao()
         profileImageView = findViewById(R.id.profile_image)
         editTextPost = findViewById(R.id.edit_text_post)
         postButton = findViewById(R.id.post_button)
@@ -84,33 +84,25 @@ class SocialSpaceActivity : AppCompatActivity() {
 
         val infoButton = findViewById<ImageButton>(R.id.infoButton)
         infoButton.setOnClickListener {
-
             val infoMessage = getString(R.string.social_space_info_message).trimIndent()
-
             val infoBottomSheetDialog = InfoBottomSheetDialog(this, infoMessage)
             infoBottomSheetDialog.show()
         }
 
         postButton.visibility = Button.GONE
 
-        editTextPost.setOnTouchListener { _, event ->
+        editTextPost.setOnTouchListener { _, _ ->
             editTextPost.isCursorVisible = true
             false
         }
 
-        editTextPost.setOnFocusChangeListener { v, hasFocus ->
-            if (hasFocus) {
-                editTextPost.isCursorVisible = true
-            } else {
-                editTextPost.isCursorVisible = false
-            }
+        editTextPost.setOnFocusChangeListener { _, hasFocus ->
+            editTextPost.isCursorVisible = hasFocus
         }
 
         editTextPost.addTextChangedListener(object : TextWatcher {
             override fun afterTextChanged(s: Editable?) {}
-
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
-
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
                 postButton.visibility = if (s.isNullOrEmpty()) Button.GONE else Button.VISIBLE
             }
@@ -120,11 +112,9 @@ class SocialSpaceActivity : AppCompatActivity() {
         postAdapter = PostAdapter(mutableListOf())
         recyclerViewPosts.adapter = postAdapter
 
-        observePosts()
         checkAndUpdatePosts(account?.displayName, account?.photoUrl.toString())
 
         if (account != null) {
-
             postAdapter.setOnProfileImageClickListener { post ->
                 val currentUser = GoogleSignIn.getLastSignedInAccount(this)?.id
                 if (post.userId == currentUser) {
@@ -196,26 +186,11 @@ class SocialSpaceActivity : AppCompatActivity() {
         }
     }
 
-    private fun observePosts() {
-        socialPostDao.getAllPosts().observe(this) { posts ->
-            if (posts.isNotEmpty()) {
-                postAdapter.updatePosts(posts.map {
-                    Post(
-                        it.userName,
-                        it.userPhotoUrl.toString(), it.content, it.postTime, it.userId, it.id
-                    )
-                })
-            } else {
-                //Toast.makeText(this, "No posts available offline", Toast.LENGTH_SHORT).show()
-            }
-        }
-    }
-
     private fun checkAndUpdatePosts(userName: String?, userPhotoUrl: String?) {
         if (isOnline(this)) {
             fetchPostsFromFirebase()
         } else {
-            //Toast.makeText(this, "Showing offline data", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, "You are offline", Toast.LENGTH_SHORT).show()
         }
     }
 
@@ -238,8 +213,8 @@ class SocialSpaceActivity : AppCompatActivity() {
 
             val postId = databaseReference.push().key ?: return
             val userId = GoogleSignIn.getLastSignedInAccount(this)?.id ?: "unknown"
-            val post = Post(userName ?: "Anonymous", userPhotoUrl ?: "", postContent, postTime, userId, postId)
-
+            val email = GoogleSignIn.getLastSignedInAccount(this)?.email ?: "unknown"
+            val post = Post(userName ?: "Anonymous", userPhotoUrl ?: "", postContent, postTime, userId, postId, email)
             databaseReference.child(postId).setValue(post).addOnCompleteListener { task ->
                 if (task.isSuccessful) {
                     editTextPost.text.clear()
@@ -254,31 +229,17 @@ class SocialSpaceActivity : AppCompatActivity() {
 
         databaseReference.addValueEventListener(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
-                val posts = mutableListOf<SocialPostEntity>()
+                val posts = mutableListOf<Post>()
                 for (postSnapshot in snapshot.children) {
                     val post = postSnapshot.getValue(Post::class.java)
                     if (post != null) {
-                        posts.add(
-                            SocialPostEntity(
-                                id = post.id,
-                                userName = post.userName,
-                                userPhotoUrl = post.userPhotoUrl,
-                                content = post.content,
-                                postTime = post.postTime,
-                                userId = post.userId
-                            )
-                        )
+                        posts.add(post)
                     }
                 }
-
-                lifecycleScope.launch(Dispatchers.IO) {
-                    socialPostDao.deleteAllPosts()
-                    socialPostDao.insertPosts(posts)
-                }
+                postAdapter.updatePosts(posts)
             }
 
             override fun onCancelled(error: DatabaseError) {
-                observePosts()
                 Toast.makeText(this@SocialSpaceActivity, "Failed to fetch posts", Toast.LENGTH_SHORT).show()
             }
         })
@@ -287,14 +248,64 @@ class SocialSpaceActivity : AppCompatActivity() {
     private fun showUserProfileBottomSheet(post: Post) {
         val profileImage = bottomSheetView.findViewById<ImageView>(R.id.profile_image_view)
         val userName = bottomSheetView.findViewById<TextView>(R.id.user_name_text_view)
+        val connectButton = bottomSheetView.findViewById<Button>(R.id.connect)
+        val userNameCurrent = GoogleSignIn.getLastSignedInAccount(this)?.displayName
+        val postUserEmail = post.email // Receiver Email
+        val userEmail = GoogleSignIn.getLastSignedInAccount(this)?.email // Sender Email
+        val photoURL = GoogleSignIn.getLastSignedInAccount(this)?.photoUrl.toString() // Sender Profile Photo
+
+        //Toast.makeText(this@SocialSpaceActivity, "$postUserEmail\n$userEmail\n$userNameCurrent", Toast.LENGTH_SHORT).show()
 
         Glide.with(this).load(post.userPhotoUrl).placeholder(R.drawable.person).into(profileImage)
         userName.text = post.userName
         userName.tag = post.userId
+        connectButton.setOnClickListener {
+            if (userNameCurrent != null) {
+                sendEmail(postUserEmail, userEmail, photoURL, userNameCurrent)
+            }
+        }
 
         bottomSheetDialog.setContentView(bottomSheetView)
         bottomSheetDialog.show()
 
         updateStatusIndicator(onlineStatusMap[post.userId]?.let { if (it) "online" else "offline" } ?: "offline")
+    }
+
+    private fun sendEmail(receiverEmail: String, senderEmail: String?, senderPhotoUrl: String, senderName: String) {
+        val emailData = JSONObject().apply {
+            put("senderName", senderName)
+            put("senderEmail", senderEmail)
+            put("receiverEmail", receiverEmail)
+            put("senderPhotoUrl", senderPhotoUrl)
+        }
+
+        val client = OkHttpClient()
+
+        val requestBody = emailData.toString().toRequestBody("application/json".toMediaTypeOrNull())
+
+        val request = Request.Builder()
+            .url("${BaseUrls.BASE_URL_SOCIAL_SPACE}/send-email")
+            .post(requestBody)
+            .build()
+
+        client.newCall(request).enqueue(object : Callback {
+            override fun onFailure(call: Call, e: IOException) {
+                Log.e("Email Error", "Failed to send email: ${e.message}")
+                runOnUiThread {
+                    Toast.makeText(this@SocialSpaceActivity, "Failed to send email", Toast.LENGTH_SHORT).show()
+                }
+            }
+
+            override fun onResponse(call: Call, response: Response) {
+                runOnUiThread {
+                    if (response.isSuccessful) {
+                        Toast.makeText(this@SocialSpaceActivity, "Email sent successfully", Toast.LENGTH_SHORT).show()
+                    } else {
+                        Log.e("Email Error", "Error sending email: ${response.message}")
+                        Toast.makeText(this@SocialSpaceActivity, "Error sending email", Toast.LENGTH_SHORT).show()
+                    }
+                }
+            }
+        })
     }
 }

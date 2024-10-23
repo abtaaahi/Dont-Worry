@@ -47,14 +47,13 @@
         </LinearLayout>
 
         <Button
-            android:id="@+id/send_message_button"
+            android:id="@+id/connect"
             android:layout_width="match_parent"
             android:layout_height="40dp"
             android:backgroundTint="@color/color_one"
             android:textColor="@color/white"
             android:textStyle="bold"
-            android:visibility="invisible"
-            android:text="Send Message"
+            android:text="Connect"
             android:layout_marginTop="8dp"/>
     </LinearLayout>
 </RelativeLayout>

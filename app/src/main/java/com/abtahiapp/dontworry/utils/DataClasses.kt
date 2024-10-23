@@ -151,7 +151,8 @@ data class Post(
     val content: String = "",
     val postTime: String = "",
     val userId: String = "",
-    var id: String = ""
+    var id: String = "",
+    var email: String = ""
 )
 
 sealed class HomeFeedItem {

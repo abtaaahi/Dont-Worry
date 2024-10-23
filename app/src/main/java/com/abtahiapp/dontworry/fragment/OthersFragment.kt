@@ -78,9 +78,13 @@ class OthersFragment : Fragment() {
         }
 
         cardView4.setOnClickListener {
-            val intent = Intent(activity, SocialSpaceActivity::class.java)
-            startActivity(intent)
-            activity?.overridePendingTransition(R.anim.enter_anim, R.anim.exit_anim)
+            if(isOnline()){
+                val intent = Intent(activity, SocialSpaceActivity::class.java)
+                startActivity(intent)
+                activity?.overridePendingTransition(R.anim.enter_anim, R.anim.exit_anim)
+            } else{
+                Toast.makeText(requireContext(), "You are offline!", Toast.LENGTH_SHORT).show()
+            }
         }
 
         if (!isOnline()) {
