@@ -31,3 +31,4 @@ app/src/test
 app/src/main/sentimentAnalysis/node_modules
 app/src/main/javascript/chat-app/node_modules
 /app/src/main/java/com/abtahiapp/dontworry/utils/BaseUrls.kt
+/app/release/

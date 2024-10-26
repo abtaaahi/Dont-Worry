@@ -214,7 +214,7 @@ class SocialSpaceActivity : AppCompatActivity() {
             val postId = databaseReference.push().key ?: return
             val userId = GoogleSignIn.getLastSignedInAccount(this)?.id ?: "unknown"
             val email = GoogleSignIn.getLastSignedInAccount(this)?.email ?: "unknown"
-            val post = Post(userName ?: "Anonymous", userPhotoUrl ?: "", postContent, postTime, userId, postId, email)
+            val post = Post(userName ?: "Anonymous", userPhotoUrl ?: "", postContent, postTime, userId, postId, email, currentTime)
             databaseReference.child(postId).setValue(post).addOnCompleteListener { task ->
                 if (task.isSuccessful) {
                     editTextPost.text.clear()
@@ -230,12 +230,25 @@ class SocialSpaceActivity : AppCompatActivity() {
         databaseReference.addValueEventListener(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
                 val posts = mutableListOf<Post>()
+                val sdf = SimpleDateFormat("dd MMM yyyy HH:mm:ss", Locale.getDefault())
                 for (postSnapshot in snapshot.children) {
                     val post = postSnapshot.getValue(Post::class.java)
                     if (post != null) {
+                        if (post.timestamp == 0L) {
+                            try {
+                                val postDate = sdf.parse(post.postTime)
+                                postDate?.let {
+                                    post.timestamp = it.time
+                                }
+                            } catch (e: Exception) {
+                                post.timestamp = 0L
+                            }
+                        }
                         posts.add(post)
                     }
                 }
+                posts.sortByDescending { it.timestamp }
+
                 postAdapter.updatePosts(posts)
             }
 

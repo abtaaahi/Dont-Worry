@@ -12,10 +12,6 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.viewpager2.widget.ViewPager2
 import com.abtahiapp.dontworry.R
 import com.abtahiapp.dontworry.adapter.ViewPagerAdapter
-import com.abtahiapp.dontworry.apiservice.TextBlobApiService
-import com.abtahiapp.dontworry.utils.NetworkUtil
-import com.abtahiapp.dontworry.utils.RetrofitClient
-import com.abtahiapp.dontworry.utils.SentimentRequest
 import com.bumptech.glide.Glide
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
@@ -26,9 +22,6 @@ import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
 import de.hdodenhof.circleimageview.CircleImageView
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -38,10 +31,6 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-
-        if (NetworkUtil.isOnline(this)) {
-            wakeUpServer()
-        }
 
         val profileImageView: CircleImageView = findViewById(R.id.profile_image)
 
@@ -167,17 +156,6 @@ class MainActivity : AppCompatActivity() {
         database.child(userId).child("mood_history").push().setValue(moodData).addOnSuccessListener {
         }.addOnFailureListener {
             Toast.makeText(this, "Failed to save mood data", Toast.LENGTH_SHORT).show()
-        }
-    }
-
-    private fun wakeUpServer() {
-        CoroutineScope(Dispatchers.IO).launch {
-            try {
-                val service = RetrofitClient.create(TextBlobApiService::class.java)
-                service.analyzeSentiment(SentimentRequest("Test"))
-            } catch (e: Exception) {
-                e.printStackTrace()
-            }
         }
     }
 }
