@@ -134,7 +134,7 @@ class HomeAdapter(private val context: Context, private var items: List<HomeFeed
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
         return when (viewType) {
             VIEW_TYPE_POST -> {
-                val view = LayoutInflater.from(parent.context).inflate(R.layout.item_post, parent, false)
+                val view = LayoutInflater.from(parent.context).inflate(R.layout.item_my_post, parent, false)
                 PostViewHolder(view)
             }
             VIEW_TYPE_HOME_ITEM -> {

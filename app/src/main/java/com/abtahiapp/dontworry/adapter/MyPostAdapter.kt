@@ -1,7 +1,6 @@
 package com.abtahiapp.dontworry.adapter
 
 import android.text.TextUtils
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -15,21 +14,29 @@ import java.text.SimpleDateFormat
 import java.util.*
 import java.util.concurrent.TimeUnit
 
-class PostAdapter(val posts: MutableList<Post>, private val currentUserId: String) : RecyclerView.Adapter<PostAdapter.PostViewHolder>() {
+class MyPostAdapter(private var posts: MutableList<Post>) : RecyclerView.Adapter<MyPostAdapter.PostViewHolder>() {
 
+    private var onItemClickListener: ((Post) -> Unit)? = null
     private var onProfileImageClickListener: ((Post) -> Unit)? = null
-    private var onReactClickListener: ((Post) -> Unit)? = null
+    private var onPostLongClickListener: ((Post) -> Unit)? = null
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): PostViewHolder {
-        val view = LayoutInflater.from(parent.context).inflate(R.layout.item_post, parent, false)
+        val view = LayoutInflater.from(parent.context).inflate(R.layout.item_my_post, parent, false)
         return PostViewHolder(view)
     }
 
     override fun onBindViewHolder(holder: PostViewHolder, position: Int) {
         val post = posts[position]
-        holder.bind(post, currentUserId, onReactClickListener)
+        holder.bind(post)
+        holder.itemView.setOnClickListener {
+            onItemClickListener?.invoke(post)
+        }
         holder.profileImageView.setOnClickListener {
             onProfileImageClickListener?.invoke(post)
+        }
+        holder.postContentTextView.setOnLongClickListener {
+            onPostLongClickListener?.invoke(post)
+            true
         }
     }
 
@@ -41,12 +48,16 @@ class PostAdapter(val posts: MutableList<Post>, private val currentUserId: Strin
         notifyDataSetChanged()
     }
 
+    fun setOnItemClickListener(listener: (Post) -> Unit) {
+        onItemClickListener = listener
+    }
+
     fun setOnProfileImageClickListener(listener: (Post) -> Unit) {
         onProfileImageClickListener = listener
     }
 
-    fun setOnReactClickListener(listener: (Post) -> Unit) {
-        onReactClickListener = listener
+    fun setOnPostLongClickListener(listener: (Post) -> Unit) {
+        onPostLongClickListener = listener
     }
 
     class PostViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
@@ -54,11 +65,10 @@ class PostAdapter(val posts: MutableList<Post>, private val currentUserId: Strin
         private val userNameTextView: TextView = itemView.findViewById(R.id.user_name)
         private val postTimeTextView: TextView = itemView.findViewById(R.id.post_time)
         val postContentTextView: TextView = itemView.findViewById(R.id.post_text)
-        val reactImageView: ImageView = itemView.findViewById(R.id.react)
 
         private var isTextExpanded = false
 
-        fun bind(post: Post, currentUserId: String, onReactClickListener: ((Post) -> Unit)?) {
+        fun bind(post: Post) {
             Glide.with(itemView.context)
                 .load(post.userPhotoUrl)
                 .placeholder(R.drawable.person)
@@ -66,7 +76,9 @@ class PostAdapter(val posts: MutableList<Post>, private val currentUserId: Strin
 
             val firstName = post.userName.split(" ").first()
             userNameTextView.text = firstName
+
             postTimeTextView.text = getRelativeTime(post.postTime)
+
             postContentTextView.text = post.content
 
             postContentTextView.maxLines = 5
@@ -82,17 +94,6 @@ class PostAdapter(val posts: MutableList<Post>, private val currentUserId: Strin
                 }
                 isTextExpanded = !isTextExpanded
             }
-
-            updateReactIcon(post, currentUserId)
-
-            reactImageView.setOnClickListener {
-                onReactClickListener?.invoke(post)
-            }
-        }
-
-        private fun updateReactIcon(post: Post, currentUserId: String) {
-            val isReacted = post.reactedUsers.containsKey(currentUserId)
-            reactImageView.setBackgroundResource(if (isReacted) R.drawable.react else R.drawable.noreact)
         }
 
         private fun getRelativeTime(postTime: String): String {
@@ -104,21 +105,21 @@ class PostAdapter(val posts: MutableList<Post>, private val currentUserId: Strin
                 val diffInMillis = now.time - postDate.time
 
                 when {
-                    TimeUnit.MILLISECONDS.toMinutes(diffInMillis) < 1 -> "• Just now"
+                    TimeUnit.MILLISECONDS.toMinutes(diffInMillis) < 1 -> "Just now"
                     TimeUnit.MILLISECONDS.toMinutes(diffInMillis) < 60 -> {
-                        "• ${TimeUnit.MILLISECONDS.toMinutes(diffInMillis)}min ago"
+                        "${TimeUnit.MILLISECONDS.toMinutes(diffInMillis)}min ago"
                     }
                     TimeUnit.MILLISECONDS.toHours(diffInMillis) < 24 -> {
-                        "• ${TimeUnit.MILLISECONDS.toHours(diffInMillis)}h ago"
+                        "${TimeUnit.MILLISECONDS.toHours(diffInMillis)}h ago"
                     }
                     TimeUnit.MILLISECONDS.toDays(diffInMillis) < 7 -> {
-                        "• ${TimeUnit.MILLISECONDS.toDays(diffInMillis)}d ago"
+                        "${TimeUnit.MILLISECONDS.toDays(diffInMillis)}d ago"
                     }
                     TimeUnit.MILLISECONDS.toDays(diffInMillis) < 30 -> {
-                        "• ${TimeUnit.MILLISECONDS.toDays(diffInMillis) / 7}w ago"
+                        "${TimeUnit.MILLISECONDS.toDays(diffInMillis) / 7}w ago"
                     }
                     else -> {
-                        "• ${TimeUnit.MILLISECONDS.toDays(diffInMillis) / 30}mo ago"
+                        "${TimeUnit.MILLISECONDS.toDays(diffInMillis) / 30}mo ago"
                     }
                 }
             } catch (e: Exception) {

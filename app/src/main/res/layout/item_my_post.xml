@@ -25,25 +25,16 @@
         android:textSize="16sp"
         android:textColor="@color/textColor"
         app:layout_constraintStart_toEndOf="@+id/item_profile_image"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintEnd_toStartOf="@+id/post_time"/>
 
     <TextView
         android:id="@+id/post_time"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="• 2h ago"
+        android:text="2h ago"
         android:textSize="14sp"
-        android:layout_marginStart="8dp"
         android:textColor="@color/subtitlecolor"
-        app:layout_constraintStart_toEndOf="@id/user_name"
-        app:layout_constraintTop_toTopOf="parent"/>
-
-    <ImageView
-        android:id="@+id/react"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textColor="@color/subtitlecolor"
-        android:background="@drawable/noreact"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent"/>
 

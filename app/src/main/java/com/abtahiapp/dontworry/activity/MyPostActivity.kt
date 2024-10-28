@@ -13,7 +13,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.abtahiapp.dontworry.utils.Post
 import com.abtahiapp.dontworry.R
-import com.abtahiapp.dontworry.adapter.PostAdapter
+import com.abtahiapp.dontworry.adapter.MyPostAdapter
 import com.abtahiapp.dontworry.room.PostDao
 import com.abtahiapp.dontworry.room.PostDatabase
 import com.abtahiapp.dontworry.room.PostEntity
@@ -35,7 +35,7 @@ import kotlinx.coroutines.withContext
 class MyPostActivity : AppCompatActivity() {
 
     private lateinit var recyclerViewPosts: RecyclerView
-    private lateinit var postAdapter: PostAdapter
+    private lateinit var postAdapter: MyPostAdapter
     private lateinit var databaseReference: DatabaseReference
     private lateinit var currentUserId: String
     private lateinit var postDao: PostDao
@@ -49,7 +49,7 @@ class MyPostActivity : AppCompatActivity() {
 
         recyclerViewPosts = findViewById(R.id.recycler_view_posts)
         recyclerViewPosts.layoutManager = LinearLayoutManager(this)
-        postAdapter = PostAdapter(mutableListOf())
+        postAdapter = MyPostAdapter(mutableListOf())
         recyclerViewPosts.adapter = postAdapter
 
         val backButton: ImageButton = findViewById(R.id.back)

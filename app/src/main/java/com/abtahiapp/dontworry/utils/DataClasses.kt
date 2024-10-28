@@ -153,7 +153,8 @@ data class Post(
     val userId: String = "",
     var id: String = "",
     var email: String = "",
-    var timestamp: Long = 0L
+    var timestamp: Long = 0L,
+    var reactedUsers: MutableMap<String, Boolean> = mutableMapOf()
 )
 
 sealed class HomeFeedItem {

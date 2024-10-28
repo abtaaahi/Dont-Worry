@@ -60,6 +60,8 @@ class SocialSpaceActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_social_space)
 
+        databaseReference = FirebaseDatabase.getInstance().getReference("social_posts")
+
         profileImageView = findViewById(R.id.profile_image)
         editTextPost = findViewById(R.id.edit_text_post)
         postButton = findViewById(R.id.post_button)
@@ -70,6 +72,7 @@ class SocialSpaceActivity : AppCompatActivity() {
         statusTextView = bottomSheetView.findViewById(R.id.status_text)
 
         val account = GoogleSignIn.getLastSignedInAccount(this)
+        val currentUserId = account?.id ?: ""
         if (account != null) {
             Glide.with(this)
                 .load(account.photoUrl)
@@ -109,7 +112,7 @@ class SocialSpaceActivity : AppCompatActivity() {
         })
 
         recyclerViewPosts.layoutManager = LinearLayoutManager(this)
-        postAdapter = PostAdapter(mutableListOf())
+        postAdapter = PostAdapter(mutableListOf(), currentUserId)
         recyclerViewPosts.adapter = postAdapter
 
         checkAndUpdatePosts(account?.displayName, account?.photoUrl.toString())
@@ -128,6 +131,40 @@ class SocialSpaceActivity : AppCompatActivity() {
                 } else {
                     showUserProfileBottomSheet(post)
                 }
+            }
+        }
+
+        postAdapter.setOnReactClickListener { post ->
+            if (isOnline(this)) {
+                val postId = post.id ?: return@setOnReactClickListener
+                val reactRef = databaseReference.child(postId).child("reactedUsers").child(currentUserId)
+                val isReacted = post.reactedUsers.containsKey(currentUserId)
+
+                if (isReacted) {
+                    reactRef.removeValue().addOnCompleteListener { task ->
+                        if (task.isSuccessful) {
+                            Log.d("zzzzz", "Reaction removed successfully")
+                            post.reactedUsers.remove(currentUserId)
+                            val position = postAdapter.posts.indexOf(post)
+                            if (position != -1) postAdapter.notifyItemChanged(position)
+                        } else {
+                            Log.e("zzzzz", "Failed to remove reaction: ${task.exception?.message}")
+                        }
+                    }
+                } else {
+                    reactRef.setValue(true).addOnCompleteListener { task ->
+                        if (task.isSuccessful) {
+                            Log.d("zzzzz", "Reaction added successfully")
+                            post.reactedUsers[currentUserId] = true
+                            val position = postAdapter.posts.indexOf(post)
+                            if (position != -1) postAdapter.notifyItemChanged(position)
+                        } else {
+                            Log.e("zzzzz", "Failed to add reaction: ${task.exception?.message}")
+                        }
+                    }
+                }
+            } else {
+                Toast.makeText(this, "You are offline", Toast.LENGTH_SHORT).show()
             }
         }
 
