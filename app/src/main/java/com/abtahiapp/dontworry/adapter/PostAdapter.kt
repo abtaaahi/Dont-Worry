@@ -104,21 +104,21 @@ class PostAdapter(val posts: MutableList<Post>, private val currentUserId: Strin
                 val diffInMillis = now.time - postDate.time
 
                 when {
-                    TimeUnit.MILLISECONDS.toMinutes(diffInMillis) < 1 -> "• Just now"
+                    TimeUnit.MILLISECONDS.toMinutes(diffInMillis) < 1 -> "Just now"
                     TimeUnit.MILLISECONDS.toMinutes(diffInMillis) < 60 -> {
-                        "• ${TimeUnit.MILLISECONDS.toMinutes(diffInMillis)}min ago"
+                        "${TimeUnit.MILLISECONDS.toMinutes(diffInMillis)}min ago"
                     }
                     TimeUnit.MILLISECONDS.toHours(diffInMillis) < 24 -> {
-                        "• ${TimeUnit.MILLISECONDS.toHours(diffInMillis)}h ago"
+                        "${TimeUnit.MILLISECONDS.toHours(diffInMillis)}h ago"
                     }
                     TimeUnit.MILLISECONDS.toDays(diffInMillis) < 7 -> {
-                        "• ${TimeUnit.MILLISECONDS.toDays(diffInMillis)}d ago"
+                        "${TimeUnit.MILLISECONDS.toDays(diffInMillis)}d ago"
                     }
                     TimeUnit.MILLISECONDS.toDays(diffInMillis) < 30 -> {
-                        "• ${TimeUnit.MILLISECONDS.toDays(diffInMillis) / 7}w ago"
+                        "${TimeUnit.MILLISECONDS.toDays(diffInMillis) / 7}w ago"
                     }
                     else -> {
-                        "• ${TimeUnit.MILLISECONDS.toDays(diffInMillis) / 30}mo ago"
+                        "${TimeUnit.MILLISECONDS.toDays(diffInMillis) / 30}mo ago"
                     }
                 }
             } catch (e: Exception) {
