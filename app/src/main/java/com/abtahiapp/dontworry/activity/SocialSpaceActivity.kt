@@ -24,6 +24,7 @@ import com.abtahiapp.dontworry.adapter.PostAdapter
 import com.abtahiapp.dontworry.utils.BaseUrls
 import com.abtahiapp.dontworry.utils.InfoBottomSheetDialog
 import com.abtahiapp.dontworry.utils.NetworkUtil.isOnline
+import com.airbnb.lottie.LottieAnimationView
 import com.bumptech.glide.Glide
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.material.bottomsheet.BottomSheetDialog
@@ -299,6 +300,7 @@ class SocialSpaceActivity : AppCompatActivity() {
         val profileImage = bottomSheetView.findViewById<ImageView>(R.id.profile_image_view)
         val userName = bottomSheetView.findViewById<TextView>(R.id.user_name_text_view)
         val connectButton = bottomSheetView.findViewById<Button>(R.id.connect)
+        val progressBar = bottomSheetView.findViewById<LottieAnimationView>(R.id.progress_bar)
         val userNameCurrent = GoogleSignIn.getLastSignedInAccount(this)?.displayName
         val postUserEmail = post.email // Receiver Email
         val userEmail = GoogleSignIn.getLastSignedInAccount(this)?.email // Sender Email
@@ -309,9 +311,13 @@ class SocialSpaceActivity : AppCompatActivity() {
         Glide.with(this).load(post.userPhotoUrl).placeholder(R.drawable.person).into(profileImage)
         userName.text = post.userName
         userName.tag = post.userId
+
+        connectButton.visibility = View.VISIBLE
         connectButton.setOnClickListener {
             if (userNameCurrent != null) {
-                sendEmail(postUserEmail, userEmail, photoURL, userNameCurrent)
+                connectButton.visibility = View.GONE
+                progressBar.visibility = View.VISIBLE
+                sendEmail(postUserEmail, userEmail, photoURL, userNameCurrent, progressBar, connectButton)
             }
         }
 
@@ -321,7 +327,7 @@ class SocialSpaceActivity : AppCompatActivity() {
         updateStatusIndicator(onlineStatusMap[post.userId]?.let { if (it) "online" else "offline" } ?: "offline")
     }
 
-    private fun sendEmail(receiverEmail: String, senderEmail: String?, senderPhotoUrl: String, senderName: String) {
+    private fun sendEmail(receiverEmail: String, senderEmail: String?, senderPhotoUrl: String, senderName: String, progressBar: LottieAnimationView, connectButton: Button) {
         val emailData = JSONObject().apply {
             put("senderName", senderName)
             put("senderEmail", senderEmail)
@@ -340,19 +346,23 @@ class SocialSpaceActivity : AppCompatActivity() {
 
         client.newCall(request).enqueue(object : Callback {
             override fun onFailure(call: Call, e: IOException) {
-                Log.e("Email Error", "Failed to send email: ${e.message}")
                 runOnUiThread {
                     Toast.makeText(this@SocialSpaceActivity, "Failed to send email", Toast.LENGTH_SHORT).show()
+                    progressBar.visibility = View.GONE
+                    connectButton.visibility = View.VISIBLE
                 }
             }
 
             override fun onResponse(call: Call, response: Response) {
                 runOnUiThread {
+                    progressBar.visibility = View.GONE
                     if (response.isSuccessful) {
                         Toast.makeText(this@SocialSpaceActivity, "Email sent successfully", Toast.LENGTH_SHORT).show()
+                        connectButton.visibility = View.GONE
                     } else {
                         Log.e("Email Error", "Error sending email: ${response.message}")
                         Toast.makeText(this@SocialSpaceActivity, "Error sending email", Toast.LENGTH_SHORT).show()
+                        connectButton.visibility = View.VISIBLE
                     }
                 }
             }
