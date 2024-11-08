@@ -6,6 +6,8 @@ Your personal space for emotions, connections, and daily inspiration.
 ## Table of Contents
 
 - [Introduction](#introduction)
+- [Screenshots](#screenshots)
+- [Video](#video)
 - [Features](#features)
 - [Technologies Used](#technologies-used)
 - [Tools](#tools)
@@ -28,10 +30,10 @@ Here are a few screenshots of the app in action:
   <img src="https://res.cloudinary.com/dasqmi9fl/image/upload/v1730654825/1730215622551_jlkblp.jpg" alt="Light Mode" width="400"/>
 </p>
 
-## Demo Video
-[will be uploaded soon]
+## Video
 Watch a demo of the app to see it in action:
-[![Demo Video](https://img.youtube.com/vi/YOUR_VIDEO_ID/0.jpg)](https://www.youtube.com/watch?v=YOUR_VIDEO_ID)
+
+[![Demo Video](https://img.youtube.com/vi/XXAHZWyprVs/0.jpg)](https://www.youtube.com/watch?v=XXAHZWyprVs)
 
 ## Features
 
