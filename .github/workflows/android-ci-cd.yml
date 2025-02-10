@@ -23,7 +23,7 @@ jobs:
         uses: actions/setup-java@v3
         with:
           java-version: 11
-          distribution: 'adoptopenjdk'  # Specify the distribution
+          distribution: 'temurin'  # Use temurin instead of adoptopenjdk
 
       # Cache Gradle dependencies for faster builds
       - name: Cache Gradle dependencies
