@@ -23,6 +23,7 @@ jobs:
         uses: actions/setup-java@v3
         with:
           java-version: 11
+          distribution: 'adoptopenjdk'  # Specify the distribution
 
       # Cache Gradle dependencies for faster builds
       - name: Cache Gradle dependencies
